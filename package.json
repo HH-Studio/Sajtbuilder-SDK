@@ -1,0 +1,48 @@
+{
+  "name": "@snabbsajt/site-kit",
+  "version": "0.1.0",
+  "description": "Build, validate, and pack editable SnabbSajt site packages.",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HH-Studio/Sajtbuilder-SDK.git#v0.1.0"
+  },
+  "homepage": "https://snabbsajt.com/docs/en/developer/site-kit",
+  "bugs": "https://github.com/HH-Studio/Sajtbuilder-SDK/issues",
+  "bin": {
+    "site-kit": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts src/cli.ts --format esm --dts --clean",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "check": "bun run build && bun run typecheck && bun run test",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "convex": "^1.42.0",
+    "convex-helpers": "^0.1.120",
+    "fflate": "^0.8.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.2",
+    "tsup": "^8.5.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
