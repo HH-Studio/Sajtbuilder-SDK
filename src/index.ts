@@ -28,6 +28,31 @@ export type { PackInput, PackResult } from "./lib/site-kit/pack";
 export { packSitePackage } from "./lib/site-kit/pack";
 export { createStarterSite } from "./starter";
 export type { StarterTemplate } from "./starter";
+export {
+  IMPORT_DISPOSITIONS,
+  IMPORT_REPORT_FORMAT,
+  IMPORT_REPORT_FORMAT_VERSION,
+  IMPORT_REPORT_REVISION,
+  IMPORT_REPORT_STATUSES,
+  PORTABLE_SITE_FORMAT_VERSION,
+  normalizeImportReportJson,
+  renderImportReportMarkdown,
+  validateImportReport,
+} from "./import/report";
+export type {
+  ImportDisposition,
+  ImportReportItemV1,
+  ImportReportStatus,
+  ImportReportV1,
+  ImportReportValidation,
+  ImportSourceInputV1,
+} from "./import/report";
+export { EVIDENCE_KINDS, IMPORT_REPORT_LIMITS } from "./import/evidence";
+export type {
+  EvidenceItemV1,
+  EvidenceKind,
+  ImportReportIssue,
+} from "./import/evidence";
 
 type SectionBase = Omit<PortableSiteV1["sections"][number], "type" | "content">;
 
