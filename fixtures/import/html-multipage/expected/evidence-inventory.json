@@ -1,0 +1,13 @@
+{
+  "fixture": "html-multipage",
+  "sourceFiles": ["about.html", "assets/app.js", "assets/loaf.svg", "assets/styles.css", "contact.html", "index.html", "services.html"],
+  "evidence": [
+    { "kind": "page", "locator": "*.html", "marker": "four linked pages" },
+    { "kind": "css", "locator": "assets/styles.css", "marker": "linked styles and keyframes" },
+    { "kind": "script", "locator": "assets/app.js", "marker": "IntersectionObserver animation" },
+    { "kind": "analytics", "locator": "index.html", "marker": "G-SYNTHETIC-1 and GTM-SYNTHETIC-ID" },
+    { "kind": "form", "locator": "contact.html form", "marker": "synthetic form endpoint" },
+    { "kind": "unsafe", "locator": "contact.html script[data-obfuscated-synthetic]", "marker": "inert encoded script evidence" }
+  ],
+  "expected": { "pages": 4, "forms": 1, "analyticsTags": 2, "animations": 2, "obfuscatedScripts": 1 }
+}

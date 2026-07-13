@@ -1,0 +1,11 @@
+{
+  "format": "snabbsajt-import-report", "revision": "snabbsajt.import-report/v1", "status": "review_required",
+  "adapter": { "id": "fixture-html", "version": "0.0.0-fixture" },
+  "sourceInputs": [{ "id": "html-source", "kind": "file", "locator": "fixtures/import/html-multipage" }],
+  "detectedPlatform": { "id": "static-html", "confidence": 1 },
+  "timestamps": { "startedAt": "2026-07-14T00:00:00.000Z", "completedAt": "2026-07-14T00:00:01.000Z" },
+  "requiredVersions": { "reportFormat": "1", "portableSiteFormat": "1", "cli": "0.1.0" },
+  "evidence": [{ "id": "html-pages", "kind": "html_node", "sourceInputId": "html-source", "locator": "index.html#document", "contentHash": "sha256:1dd039294f31f48a3a1a27121b8a57c1113c7109457d582e348e918e9cbe7d44", "excerpt": "Entry page linking four synthetic pages" }, { "id": "html-script", "kind": "script", "sourceInputId": "html-source", "locator": "contact.html#script[data-obfuscated-synthetic]", "contentHash": "sha256:95562ac9f446db4efd72e44b58f6c60baf019aee4dc976707ce785b374345c0e", "excerpt": "Inert encoded script must not execute" }],
+  "items": [{ "id": "html-content", "disposition": "converted", "reason": "Pages, assets, and form are explicit source evidence.", "evidenceIds": ["html-pages"], "blocking": false }, { "id": "html-obfuscated", "disposition": "unsafe", "reason": "Obfuscated source script is rejected rather than executed.", "evidenceIds": ["html-script"], "blocking": false }],
+  "summary": { "total": 2, "blocking": 0, "byDisposition": { "exact": 0, "converted": 1, "merged": 0, "skipped": 0, "missing": 0, "ai_proposed": 0, "unsafe": 1, "redirect": 0, "manual": 0 } }
+}

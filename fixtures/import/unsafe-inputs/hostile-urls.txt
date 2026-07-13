@@ -1,0 +1,6 @@
+# Synthetic hostile URL evidence. Never navigate.
+javascript:alert('synthetic')
+data:text/html,<script>alert('synthetic')</script>
+file:///private/synthetic-secret
+https://127.0.0.1:3000/internal
+https://169.254.169.254/latest/meta-data/synthetic

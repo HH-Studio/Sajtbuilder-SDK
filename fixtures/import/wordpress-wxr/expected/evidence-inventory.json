@@ -1,0 +1,15 @@
+{
+  "fixture": "wordpress-wxr",
+  "sourceFiles": ["export.xml"],
+  "evidence": [
+    { "kind": "wxr", "locator": "channel/item[wp:post_type='post']", "marker": "24 published and 2 draft posts" },
+    { "kind": "taxonomy", "locator": "channel/wp:category|wp:tag", "marker": "three categories and four tags" },
+    { "kind": "authors", "locator": "channel/wp:author", "marker": "two synthetic authors" },
+    { "kind": "media", "locator": "item[wp:post_type='attachment']", "marker": "three example.test attachments" },
+    { "kind": "menu", "locator": "item[wp:post_type='nav_menu_item']", "marker": "five primary menu items" },
+    { "kind": "seo", "locator": "wp:postmeta", "marker": "Yoast and Rank Math metadata" },
+    { "kind": "plugins", "locator": "content:encoded", "marker": "synthetic booking form and gallery shortcodes" },
+    { "kind": "redirect", "locator": "wp:meta_key[_wp_old_slug]", "marker": "two old permalink slugs" }
+  ],
+  "expected": { "publishedPosts": 24, "draftPosts": 2, "pages": 5, "categories": 3, "tags": 4, "authors": 2, "attachments": 3, "menuItems": 5, "featuredMediaLinks": 3, "oldPermalinks": 2, "seoPlugins": ["Yoast SEO", "Rank Math"], "contentPlugins": ["booking", "form", "gallery"] }
+}

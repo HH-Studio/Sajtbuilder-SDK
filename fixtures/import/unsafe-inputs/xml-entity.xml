@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<!DOCTYPE fixture [
+  <!ENTITY local SYSTEM "file:///synthetic-do-not-read">
+  <!ENTITY remote SYSTEM "https://entity.example.test/synthetic">
+]>
+<fixture>&local;&remote;</fixture>

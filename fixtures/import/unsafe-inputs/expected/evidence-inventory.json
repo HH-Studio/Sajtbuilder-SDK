@@ -1,0 +1,15 @@
+{
+  "fixture": "unsafe-inputs",
+  "sourceFiles": ["hostile-urls.txt", "malformed.html", "oversized-cdata.xml", "symlink-entry.json", "xml-entity.xml", "zip-bomb-metadata.json", "zip-traversal.json"],
+  "evidence": [
+    { "kind": "archive", "locator": "zip-traversal.json", "marker": "parent path traversal" },
+    { "kind": "archive", "locator": "symlink-entry.json", "marker": "symlink-like entry metadata" },
+    { "kind": "archive", "locator": "zip-bomb-metadata.json", "marker": "extreme expansion ratio" },
+    { "kind": "html", "locator": "malformed.html", "marker": "unclosed markup and inert script" },
+    { "kind": "xml", "locator": "xml-entity.xml", "marker": "DTD and local entity" },
+    { "kind": "xml", "locator": "oversized-cdata.xml", "marker": "CDATA over fixture limit" },
+    { "kind": "url", "locator": "hostile-urls.txt:2-4", "marker": "javascript data and file schemes" },
+    { "kind": "url", "locator": "hostile-urls.txt:5-6", "marker": "loopback and metadata service" }
+  ],
+  "expected": { "blocked": 8, "executeNothing": true }
+}

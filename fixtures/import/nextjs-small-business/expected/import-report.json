@@ -1,0 +1,11 @@
+{
+  "format": "snabbsajt-import-report", "revision": "snabbsajt.import-report/v1", "status": "review_required",
+  "adapter": { "id": "fixture-nextjs", "version": "0.0.0-fixture" },
+  "sourceInputs": [{ "id": "next-source", "kind": "file", "locator": "fixtures/import/nextjs-small-business" }],
+  "detectedPlatform": { "id": "nextjs", "version": "synthetic", "confidence": 1 },
+  "timestamps": { "startedAt": "2026-07-14T00:00:00.000Z", "completedAt": "2026-07-14T00:00:01.000Z" },
+  "requiredVersions": { "reportFormat": "1", "portableSiteFormat": "1", "cli": "0.1.0" },
+  "evidence": [{ "id": "next-routes", "kind": "file", "sourceInputId": "next-source", "locator": "app/page.tsx#route-root", "contentHash": "sha256:b2dc7349f977c1e8b08fa364964804529bb8257408f9aeb1038c63efc9583f42", "excerpt": "Representative route from a five-route synthetic site" }, { "id": "next-widget", "kind": "script", "sourceInputId": "next-source", "locator": "components/UnsupportedMapWidget.tsx#component", "contentHash": "sha256:8b1d74f432991fecb48b7cb422a61449376c8f2fe68e86b1a5b611b656e16efc", "excerpt": "unsupported-widget synthetic-map-sdk" }],
+  "items": [{ "id": "next-content", "disposition": "converted", "reason": "Routes and business content map to native sections.", "evidenceIds": ["next-routes"], "target": { "kind": "site", "id": "draft" }, "blocking": false }, { "id": "next-map", "disposition": "skipped", "reason": "External widget must not execute and needs a native replacement.", "evidenceIds": ["next-widget"], "blocking": false }],
+  "summary": { "total": 2, "blocking": 0, "byDisposition": { "exact": 0, "converted": 1, "merged": 0, "skipped": 1, "missing": 0, "ai_proposed": 0, "unsafe": 0, "redirect": 0, "manual": 0 } }
+}

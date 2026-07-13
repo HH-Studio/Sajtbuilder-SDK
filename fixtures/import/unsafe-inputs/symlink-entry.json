@@ -1,0 +1,1 @@
+{"fixture":"inert archive-entry metadata","entry":"assets/current","type":"symlink","target":"/private/example","unixMode":"0120777","expected":"reject_link_entry"}

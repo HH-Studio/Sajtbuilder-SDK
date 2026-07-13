@@ -1,0 +1,1 @@
+{"fixture":"inert archive-entry metadata","entry":"../../outside.txt","compressedBytes":12,"uncompressedBytes":24,"expected":"reject_path_traversal"}

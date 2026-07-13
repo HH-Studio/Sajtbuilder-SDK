@@ -1,0 +1,4 @@
+body { font-family: system-ui; margin: 0; color: #17221b; }
+main { max-width: 68rem; margin: auto; padding: 3rem 1rem; }
+nav a { margin-right: 1rem; }
+.hero { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }

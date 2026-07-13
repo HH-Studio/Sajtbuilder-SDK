@@ -1,0 +1,1 @@
+{"fixture":"inert archive metadata","entry":"repeated.txt","compressedBytes":1024,"uncompressedBytes":1073741824,"ratio":1048576,"expected":"reject_expansion_limits"}

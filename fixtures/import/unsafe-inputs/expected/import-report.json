@@ -1,0 +1,29 @@
+{
+  "format": "snabbsajt-import-report", "revision": "snabbsajt.import-report/v1", "status": "blocked",
+  "adapter": { "id": "fixture-safety", "version": "0.0.0-fixture" },
+  "sourceInputs": [{ "id": "unsafe-source", "kind": "file", "locator": "fixtures/import/unsafe-inputs" }],
+  "detectedPlatform": { "id": "unsafe-fixtures", "confidence": 1 },
+  "timestamps": { "startedAt": "2026-07-14T00:00:00.000Z", "completedAt": "2026-07-14T00:00:01.000Z" },
+  "requiredVersions": { "reportFormat": "1", "portableSiteFormat": "1", "cli": "0.1.0" },
+  "evidence": [
+    { "id": "unsafe-traversal", "kind": "metadata", "sourceInputId": "unsafe-source", "locator": "zip-traversal.json", "contentHash": "sha256:3065f6e169d278ada92dd3f4d5ded38c6bf603b77e585c87c3b79a613b4bd4bc", "excerpt": "../../outside.txt" },
+    { "id": "unsafe-link", "kind": "metadata", "sourceInputId": "unsafe-source", "locator": "symlink-entry.json", "contentHash": "sha256:299aa877017fa579a7747557ed03d7e8ce3875184cd46e2b5ba4e83af35076ee", "excerpt": "symlink entry" },
+    { "id": "unsafe-bomb", "kind": "metadata", "sourceInputId": "unsafe-source", "locator": "zip-bomb-metadata.json", "contentHash": "sha256:ff68c0e324b6b5ec4b6e813cba6c7b82528f796f3f2873222c06c2bf084e802a", "excerpt": "expansion ratio 1048576" },
+    { "id": "unsafe-html", "kind": "html_node", "sourceInputId": "unsafe-source", "locator": "malformed.html", "contentHash": "sha256:bf9672d7edec377e84c62d176c6a27f58efc19f4e5b607b8d54e069e68468830", "excerpt": "unclosed script" },
+    { "id": "unsafe-entity", "kind": "file", "sourceInputId": "unsafe-source", "locator": "xml-entity.xml", "contentHash": "sha256:fc5d020813f350febcffcdea6cbccd1ffb30ef4ff944ce26074eefba80789ec9", "excerpt": "DOCTYPE external entity" },
+    { "id": "unsafe-cdata", "kind": "file", "sourceInputId": "unsafe-source", "locator": "oversized-cdata.xml", "contentHash": "sha256:b0254dd109395c13ebafeb3f0bcf3beb2098e0c73e8c1b80f242398e8d269c54", "excerpt": "oversized CDATA" },
+    { "id": "unsafe-scheme", "kind": "url", "sourceInputId": "unsafe-source", "locator": "hostile-urls.txt:2-4", "contentHash": "sha256:9bc1803bf09936a791dbb84b919d8df8b5249e3b430c0899e1552083c98ab780", "excerpt": "javascript data and file schemes" },
+    { "id": "unsafe-network", "kind": "url", "sourceInputId": "unsafe-source", "locator": "hostile-urls.txt:5-6", "contentHash": "sha256:9bc1803bf09936a791dbb84b919d8df8b5249e3b430c0899e1552083c98ab780", "excerpt": "loopback and metadata service" }
+  ],
+  "items": [
+    { "id": "block-traversal", "disposition": "unsafe", "reason": "Archive entry escapes the extraction root.", "evidenceIds": ["unsafe-traversal"], "blocking": true },
+    { "id": "block-link", "disposition": "unsafe", "reason": "Archive links are not accepted.", "evidenceIds": ["unsafe-link"], "blocking": true },
+    { "id": "block-bomb", "disposition": "unsafe", "reason": "Declared expansion exceeds bounded limits.", "evidenceIds": ["unsafe-bomb"], "blocking": true },
+    { "id": "block-html", "disposition": "unsafe", "reason": "Malformed script-bearing HTML requires rejection.", "evidenceIds": ["unsafe-html"], "blocking": true },
+    { "id": "block-entity", "disposition": "unsafe", "reason": "DTD and external entities are disabled.", "evidenceIds": ["unsafe-entity"], "blocking": true },
+    { "id": "block-cdata", "disposition": "unsafe", "reason": "CDATA exceeds the fixture parser limit.", "evidenceIds": ["unsafe-cdata"], "blocking": true },
+    { "id": "block-scheme", "disposition": "unsafe", "reason": "Active URL schemes are forbidden.", "evidenceIds": ["unsafe-scheme"], "blocking": true },
+    { "id": "block-network", "disposition": "unsafe", "reason": "Private and metadata network destinations are forbidden.", "evidenceIds": ["unsafe-network"], "blocking": true }
+  ],
+  "summary": { "total": 8, "blocking": 8, "byDisposition": { "exact": 0, "converted": 0, "merged": 0, "skipped": 0, "missing": 0, "ai_proposed": 0, "unsafe": 8, "redirect": 0, "manual": 0 } }
+}

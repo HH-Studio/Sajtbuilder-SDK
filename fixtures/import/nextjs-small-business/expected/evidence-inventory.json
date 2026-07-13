@@ -1,0 +1,13 @@
+{
+  "fixture": "nextjs-small-business",
+  "sourceFiles": ["app/about/page.tsx", "app/booking/page.tsx", "app/contact/page.tsx", "app/layout.tsx", "app/page.tsx", "app/services/page.tsx", "app/styles.css", "components/BusinessFacts.tsx", "components/Footer.tsx", "components/Header.tsx", "components/UnsupportedMapWidget.tsx", "public/mechanic.svg", "public/workshop.svg"],
+  "evidence": [
+    { "kind": "route", "locator": "app/**/page.tsx", "marker": "five file-system routes" },
+    { "kind": "component", "locator": "components/", "marker": "shared header footer facts and unsupported widget" },
+    { "kind": "asset", "locator": "public/*.svg", "marker": "two synthetic local images" },
+    { "kind": "contact", "locator": "components/BusinessFacts.tsx", "marker": "phone address and hours" },
+    { "kind": "booking", "locator": "app/booking/page.tsx", "marker": "booking.example.test" },
+    { "kind": "unsupported", "locator": "components/UnsupportedMapWidget.tsx", "marker": "synthetic-map-sdk" }
+  ],
+  "expected": { "routes": ["/", "/about", "/booking", "/contact", "/services"], "reusableComponents": ["BusinessFacts", "Footer", "Header", "UnsupportedMapWidget"], "images": 2, "unsupportedWidgets": 1 }
+}

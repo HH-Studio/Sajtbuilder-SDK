@@ -1,0 +1,7 @@
+:root { --ink: #202820; --cream: #fff8e8; }
+body { background: var(--cream); color: var(--ink); font-family: system-ui; margin: 2rem auto; max-width: 64rem; }
+nav a { margin-right: 1rem; }
+.reveal { opacity: 0; transform: translateY(1rem); transition: opacity .4s, transform .4s; }
+.reveal.visible { opacity: 1; transform: none; }
+img { animation: loaf-arrives .6s ease-out; max-width: 20rem; }
+@keyframes loaf-arrives { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: scale(1); } }

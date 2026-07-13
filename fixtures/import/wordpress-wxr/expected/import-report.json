@@ -1,0 +1,11 @@
+{
+  "format": "snabbsajt-import-report", "revision": "snabbsajt.import-report/v1", "status": "review_required",
+  "adapter": { "id": "fixture-wordpress", "version": "0.0.0-fixture" },
+  "sourceInputs": [{ "id": "wxr-source", "kind": "file", "locator": "fixtures/import/wordpress-wxr/export.xml" }],
+  "detectedPlatform": { "id": "wordpress", "version": "wxr-1.2", "confidence": 1 },
+  "timestamps": { "startedAt": "2026-07-14T00:00:00.000Z", "completedAt": "2026-07-14T00:00:01.000Z" },
+  "requiredVersions": { "reportFormat": "1", "portableSiteFormat": "1", "cli": "0.1.0" },
+  "evidence": [{ "id": "wxr-content", "kind": "wxr_item", "sourceInputId": "wxr-source", "locator": "export.xml#channel/item", "contentHash": "sha256:b6cc2cf4b6d091dde89a87557ce24019c375025f47a6b56c0cdd89dab3542ead", "excerpt": "Pages posts drafts media menus and taxonomies" }, { "id": "wxr-plugins", "kind": "metadata", "sourceInputId": "wxr-source", "locator": "export.xml#content-and-postmeta", "contentHash": "sha256:b6cc2cf4b6d091dde89a87557ce24019c375025f47a6b56c0cdd89dab3542ead", "excerpt": "Synthetic booking form gallery and SEO plugin metadata" }],
+  "items": [{ "id": "wxr-native", "disposition": "converted", "reason": "WXR content and relationships map to native draft data.", "evidenceIds": ["wxr-content"], "blocking": false }, { "id": "wxr-plugin-review", "disposition": "manual", "reason": "Plugin behavior requires allowlisted native replacements.", "evidenceIds": ["wxr-plugins"], "blocking": false }],
+  "summary": { "total": 2, "blocking": 0, "byDisposition": { "exact": 0, "converted": 1, "merged": 0, "skipped": 0, "missing": 0, "ai_proposed": 0, "unsafe": 0, "redirect": 0, "manual": 1 } }
+}
