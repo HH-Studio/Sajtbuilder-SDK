@@ -6,6 +6,7 @@
     { "kind": "css", "locator": "assets/styles.css", "marker": "linked styles and keyframes" },
     { "kind": "script", "locator": "assets/app.js", "marker": "IntersectionObserver animation" },
     { "kind": "analytics", "locator": "index.html", "marker": "GA4 script G-SYNTHETIC-1 and GTM noscript iframe GTM-SYNTHETIC-ID" },
+    { "kind": "safety", "locator": "index.html meta[http-equiv='Content-Security-Policy']", "marker": "deny-by-default CSP blocks script frame connect and form actions" },
     { "kind": "form", "locator": "contact.html form", "marker": "synthetic form endpoint" },
     { "kind": "unsafe", "locator": "contact.html script[data-obfuscated-synthetic]", "marker": "inert encoded script evidence" }
   ],

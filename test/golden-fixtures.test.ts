@@ -109,7 +109,7 @@ describe("golden import fixtures", () => {
     const businessFacts = read("nextjs-small-business/components/BusinessFacts.tsx");
     expect(contact).toContain("hello@northstar.example");
     expect(contact).toContain("<BusinessFacts />");
-    expect(businessFacts).toContain("+46 8 555 0100");
+    expect(businessFacts).toContain("08-46500456");
     expect(businessFacts).toContain("Example Street");
     expect(read("nextjs-small-business/components/UnsupportedMapWidget.tsx")).toContain("unsupported-widget");
     expect(read("nextjs-small-business/app/booking/page.tsx")).toContain("booking.example.test");
@@ -149,6 +149,16 @@ describe("golden import fixtures", () => {
     expect(pageSources.filter((source) => /<link rel="stylesheet" href="assets\/styles\.css">/.test(source))).toHaveLength(expected.pages);
 
     const allHtml = pageSources.join("\n");
+    const indexHtml = read("html-multipage/index.html");
+    const csp = indexHtml.match(/<meta http-equiv="Content-Security-Policy" content="([^"]+)">/)?.[1];
+    expect(csp).toBeDefined();
+    expect(csp).toContain("default-src 'none'");
+    expect(csp).toContain("script-src 'none'");
+    expect(csp).toContain("frame-src 'none'");
+    expect(csp).toContain("connect-src 'none'");
+    expect(csp).toContain("form-action 'none'");
+    expect(csp).not.toContain("'unsafe-inline'");
+    expect(csp).not.toContain("'unsafe-eval'");
     expect((allHtml.match(/<form\b/g) ?? [])).toHaveLength(expected.forms);
     expect(allHtml).toMatch(/googletagmanager\.com\/gtag\/js\?id=G-SYNTHETIC-1/);
     expect(allHtml).toContain("syntheticGtag('config','G-SYNTHETIC-1')");
@@ -162,7 +172,7 @@ describe("golden import fixtures", () => {
 
     const report = json<GoldenReport>("html-multipage/expected/import-report.json");
     expect(report.evidence.map((item) => item.id).sort()).toEqual([
-      "html-about", "html-animation-css", "html-animation-js", "html-contact", "html-css",
+      "html-about", "html-animation-css", "html-animation-js", "html-contact", "html-csp", "html-css",
       "html-form", "html-ga4", "html-gtm", "html-home", "html-loaf-asset", "html-obfuscated",
       "html-services",
     ]);
