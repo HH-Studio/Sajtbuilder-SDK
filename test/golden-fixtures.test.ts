@@ -32,7 +32,8 @@ type Inventory = {
 };
 
 type GoldenReport = {
-  evidence: Array<{ locator: string; contentHash: string }>;
+  evidence: Array<{ id: string; locator: string; contentHash: string }>;
+  items: Array<{ evidenceIds: string[] }>;
 };
 
 const fixtureNames = [
@@ -53,38 +54,118 @@ describe("golden import fixtures", () => {
       );
       expect(inventory.evidence.length).toBeGreaterThan(0);
       expect(validateImportReport(report)).toEqual({ ok: true, issues: [] });
-      for (const item of (report as GoldenReport).evidence) {
+      const goldenReport = report as GoldenReport;
+      for (const item of goldenReport.evidence) {
         const sourceFile = item.locator.split(/[#:]/, 1)[0];
         const digest = createHash("sha256")
           .update(readFileSync(join(fixturesRoot, name, sourceFile)))
           .digest("hex");
         expect(item.contentHash).toBe(`sha256:${digest}`);
       }
+      expect(new Set(goldenReport.items.flatMap((item) => item.evidenceIds))).toEqual(
+        new Set(goldenReport.evidence.map((item) => item.id)),
+      );
     }
   });
 
   it("models a five-route Next.js business site without executing the unsupported widget", () => {
     const inventory = json<Inventory>("nextjs-small-business/expected/evidence-inventory.json");
-    expect(inventory.expected).toMatchObject({
-      routes: ["/", "/about", "/booking", "/contact", "/services"],
-      reusableComponents: ["BusinessFacts", "Footer", "Header", "UnsupportedMapWidget"],
-      images: 2,
-      unsupportedWidgets: 1,
-    });
-    expect(read("nextjs-small-business/app/contact/page.tsx")).toContain("hello@northstar.example");
-    expect(read("nextjs-small-business/components/BusinessFacts.tsx")).toContain("+46 8 555 0100");
+    const expected = inventory.expected as {
+      routes: string[];
+      reusableComponents: string[];
+      images: number;
+      unsupportedWidgets: number;
+    };
+    const routeFiles = inventory.sourceFiles.filter((path) => /^app\/(?:.+\/)?page\.tsx$/.test(path));
+    const routes = routeFiles.map((path) => {
+      const segment = path.replace(/^app\//, "").replace(/\/page\.tsx$/, "");
+      return segment === "page.tsx" ? "/" : `/${segment}`;
+    }).sort();
+    expect(routes).toEqual(expected.routes);
+
+    const componentFiles = inventory.sourceFiles.filter((path) => path.startsWith("components/"));
+    const components = componentFiles.map((path) => path.replace(/^components\//, "").replace(/\.tsx$/, "")).sort();
+    expect(components).toEqual(expected.reusableComponents);
+
+    const appSource = inventory.sourceFiles
+      .filter((path) => path.startsWith("app/") && path.endsWith(".tsx"))
+      .map((path) => read(`nextjs-small-business/${path}`))
+      .join("\n");
+    const importedComponents = [...appSource.matchAll(/from ["'](?:\.\.\/)+components\/([^"']+)["']/g)]
+      .map((match) => match[1]);
+    expect([...new Set(importedComponents)].sort()).toEqual(expected.reusableComponents);
+    expect(importedComponents.filter((name) => name === "BusinessFacts")).toHaveLength(2);
+    expect((appSource.match(/<Header\s*\/>/g) ?? [])).toHaveLength(1);
+    expect((appSource.match(/<Footer\s*\/>/g) ?? [])).toHaveLength(1);
+
+    const imageSources = [...appSource.matchAll(/<Image src="([^"]+)"/g)].map((match) => match[1]);
+    expect(imageSources).toHaveLength(expected.images);
+    for (const source of imageSources) {
+      expect(inventory.sourceFiles).toContain(`public${source}`);
+    }
+    expect((appSource.match(/<UnsupportedMapWidget\s*\/>/g) ?? [])).toHaveLength(expected.unsupportedWidgets);
+
+    const contact = read("nextjs-small-business/app/contact/page.tsx");
+    const businessFacts = read("nextjs-small-business/components/BusinessFacts.tsx");
+    expect(contact).toContain("hello@northstar.example");
+    expect(contact).toContain("<BusinessFacts />");
+    expect(businessFacts).toContain("+46 8 555 0100");
+    expect(businessFacts).toContain("Example Street");
     expect(read("nextjs-small-business/components/UnsupportedMapWidget.tsx")).toContain("unsupported-widget");
     expect(read("nextjs-small-business/app/booking/page.tsx")).toContain("booking.example.test");
+
+    const report = json<GoldenReport>("nextjs-small-business/expected/import-report.json");
+    expect(report.evidence.map((item) => item.id).sort()).toEqual([
+      "next-about-route", "next-booking-route", "next-contact-route", "next-facts", "next-footer",
+      "next-header", "next-image-mechanic", "next-image-workshop", "next-root-route",
+      "next-services-route", "next-shared-layout", "next-widget",
+    ]);
   });
 
   it("captures linked HTML pages, analytics, animation, form, and obfuscated-script evidence", () => {
     const inventory = json<Inventory>("html-multipage/expected/evidence-inventory.json");
-    expect(inventory.expected).toMatchObject({ pages: 4, forms: 1, analyticsTags: 2, animations: 2, obfuscatedScripts: 1 });
-    expect(read("html-multipage/index.html")).toContain("G-SYNTHETIC-1");
-    expect(read("html-multipage/index.html")).toContain("GTM-SYNTHETIC-ID");
-    expect(read("html-multipage/assets/styles.css")).toContain("@keyframes");
-    expect(read("html-multipage/assets/app.js")).toContain("IntersectionObserver");
-    expect(read("html-multipage/contact.html")).toContain("data-obfuscated-synthetic");
+    const expected = inventory.expected as {
+      pages: number;
+      forms: number;
+      analyticsTags: number;
+      animations: number;
+      obfuscatedScripts: number;
+    };
+    const htmlFiles = inventory.sourceFiles.filter((path) => !path.includes("/") && path.endsWith(".html"));
+    expect(htmlFiles).toHaveLength(expected.pages);
+    const pageSources = htmlFiles.map((path) => read(`html-multipage/${path}`));
+    const interPageLinks = pageSources.flatMap((source) =>
+      [...source.matchAll(/href="([^"]+\.html)"/g)].map((match) => match[1]),
+    );
+    for (const source of pageSources) expect(source).toMatch(/href="[^"]+\.html"/);
+    expect([...new Set(interPageLinks)].sort()).toEqual(htmlFiles.sort());
+    for (const target of interPageLinks) expect(inventory.sourceFiles).toContain(target);
+
+    const linkedAssets = pageSources.flatMap((source) => [
+      ...[...source.matchAll(/(?:href|src)="(assets\/[^"]+)"/g)].map((match) => match[1]),
+    ]);
+    expect([...new Set(linkedAssets)].sort()).toEqual(["assets/app.js", "assets/loaf.svg", "assets/styles.css"]);
+    for (const target of linkedAssets) expect(inventory.sourceFiles).toContain(target);
+    expect(pageSources.filter((source) => /<link rel="stylesheet" href="assets\/styles\.css">/.test(source))).toHaveLength(expected.pages);
+
+    const allHtml = pageSources.join("\n");
+    expect((allHtml.match(/<form\b/g) ?? [])).toHaveLength(expected.forms);
+    expect(allHtml).toMatch(/googletagmanager\.com\/gtag\/js\?id=G-SYNTHETIC-1/);
+    expect(allHtml).toContain("syntheticGtag('config','G-SYNTHETIC-1')");
+    expect(allHtml).toMatch(/<noscript><iframe src="https:\/\/www\.googletagmanager\.com\/ns\.html\?id=GTM-SYNTHETIC-ID"/);
+    expect((allHtml.match(/G-(?:SYNTHETIC-1)|GTM-(?:SYNTHETIC-ID)/g) ?? []).length).toBeGreaterThanOrEqual(expected.analyticsTags);
+
+    const css = read("html-multipage/assets/styles.css");
+    const script = read("html-multipage/assets/app.js");
+    expect(Number(css.includes("@keyframes")) + Number(script.includes("IntersectionObserver"))).toBe(expected.animations);
+    expect((allHtml.match(/data-obfuscated-synthetic/g) ?? [])).toHaveLength(expected.obfuscatedScripts);
+
+    const report = json<GoldenReport>("html-multipage/expected/import-report.json");
+    expect(report.evidence.map((item) => item.id).sort()).toEqual([
+      "html-about", "html-animation-css", "html-animation-js", "html-contact", "html-css",
+      "html-form", "html-ga4", "html-gtm", "html-home", "html-loaf-asset", "html-obfuscated",
+      "html-services",
+    ]);
   });
 
   it("covers realistic WXR relationships and migration edge cases", () => {

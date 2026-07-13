@@ -5,7 +5,27 @@
   "detectedPlatform": { "id": "static-html", "confidence": 1 },
   "timestamps": { "startedAt": "2026-07-14T00:00:00.000Z", "completedAt": "2026-07-14T00:00:01.000Z" },
   "requiredVersions": { "reportFormat": "1", "portableSiteFormat": "1", "cli": "0.1.0" },
-  "evidence": [{ "id": "html-pages", "kind": "html_node", "sourceInputId": "html-source", "locator": "index.html#document", "contentHash": "sha256:1dd039294f31f48a3a1a27121b8a57c1113c7109457d582e348e918e9cbe7d44", "excerpt": "Entry page linking four synthetic pages" }, { "id": "html-script", "kind": "script", "sourceInputId": "html-source", "locator": "contact.html#script[data-obfuscated-synthetic]", "contentHash": "sha256:95562ac9f446db4efd72e44b58f6c60baf019aee4dc976707ce785b374345c0e", "excerpt": "Inert encoded script must not execute" }],
-  "items": [{ "id": "html-content", "disposition": "converted", "reason": "Pages, assets, and form are explicit source evidence.", "evidenceIds": ["html-pages"], "blocking": false }, { "id": "html-obfuscated", "disposition": "unsafe", "reason": "Obfuscated source script is rejected rather than executed.", "evidenceIds": ["html-script"], "blocking": false }],
-  "summary": { "total": 2, "blocking": 0, "byDisposition": { "exact": 0, "converted": 1, "merged": 0, "skipped": 0, "missing": 0, "ai_proposed": 0, "unsafe": 1, "redirect": 0, "manual": 0 } }
+  "evidence": [
+    { "id": "html-home", "kind": "html_node", "sourceInputId": "html-source", "locator": "index.html#document", "contentHash": "sha256:aea5cb113afb5805dd5705a776c0534a2bc52251cb46b6fe0aa44d16b01543cb", "excerpt": "Home page links all three sibling pages and local assets" },
+    { "id": "html-about", "kind": "html_node", "sourceInputId": "html-source", "locator": "about.html#document", "contentHash": "sha256:e6aa4c5c7bde6d4ba08720f9a7682c5ffcaec3f4bb564d5c222dafca9b99a0f6", "excerpt": "About page with linked stylesheet and animation script" },
+    { "id": "html-contact", "kind": "html_node", "sourceInputId": "html-source", "locator": "contact.html#document", "contentHash": "sha256:95562ac9f446db4efd72e44b58f6c60baf019aee4dc976707ce785b374345c0e", "excerpt": "Contact page with one form and inert obfuscated-script marker" },
+    { "id": "html-services", "kind": "html_node", "sourceInputId": "html-source", "locator": "services.html#document", "contentHash": "sha256:b977193f4f4e761684f3b1b30aedbc0158bcad9bcde1752e16079afd721a37b5", "excerpt": "Services page with linked stylesheet and sibling navigation" },
+    { "id": "html-css", "kind": "css_rule", "sourceInputId": "html-source", "locator": "assets/styles.css#linked-styles", "contentHash": "sha256:76c29a136c317498024b291e45a147543155e082a58a7d0eb975a2866871f7db", "excerpt": "Shared linked styles for all four pages" },
+    { "id": "html-loaf-asset", "kind": "asset", "sourceInputId": "html-source", "locator": "assets/loaf.svg#asset", "contentHash": "sha256:9c0a11c64a66846e5e24ce210f40df4dd9fee3346944be144858ca9c10d79c2e", "excerpt": "Synthetic linked loaf SVG" },
+    { "id": "html-ga4", "kind": "script", "sourceInputId": "html-source", "locator": "index.html#ga4", "contentHash": "sha256:aea5cb113afb5805dd5705a776c0534a2bc52251cb46b6fe0aa44d16b01543cb", "excerpt": "Detector-shaped GA4 source with G-SYNTHETIC-1" },
+    { "id": "html-gtm", "kind": "html_node", "sourceInputId": "html-source", "locator": "index.html#gtm-noscript", "contentHash": "sha256:aea5cb113afb5805dd5705a776c0534a2bc52251cb46b6fe0aa44d16b01543cb", "excerpt": "Synthetic GTM noscript iframe with GTM-SYNTHETIC-ID" },
+    { "id": "html-animation-css", "kind": "css_rule", "sourceInputId": "html-source", "locator": "assets/styles.css#keyframes", "contentHash": "sha256:76c29a136c317498024b291e45a147543155e082a58a7d0eb975a2866871f7db", "excerpt": "Keyframes and transition animation evidence" },
+    { "id": "html-animation-js", "kind": "script", "sourceInputId": "html-source", "locator": "assets/app.js#intersection-observer", "contentHash": "sha256:9f12112c9918e9ccf8d83adf208fe5a539298fb5006302b4022f9a71553660ca", "excerpt": "IntersectionObserver reveal behavior evidence" },
+    { "id": "html-form", "kind": "html_node", "sourceInputId": "html-source", "locator": "contact.html#form", "contentHash": "sha256:95562ac9f446db4efd72e44b58f6c60baf019aee4dc976707ce785b374345c0e", "excerpt": "Name, email, and message form fields" },
+    { "id": "html-obfuscated", "kind": "script", "sourceInputId": "html-source", "locator": "contact.html#script[data-obfuscated-synthetic]", "contentHash": "sha256:95562ac9f446db4efd72e44b58f6c60baf019aee4dc976707ce785b374345c0e", "excerpt": "Inert encoded script must not execute" }
+  ],
+  "items": [
+    { "id": "html-pages", "disposition": "converted", "reason": "All four interlinked HTML pages map to native pages.", "evidenceIds": ["html-home", "html-about", "html-contact", "html-services"], "blocking": false },
+    { "id": "html-assets", "disposition": "converted", "reason": "Linked CSS and synthetic SVG asset are explicit source evidence.", "evidenceIds": ["html-css", "html-loaf-asset"], "blocking": false },
+    { "id": "html-analytics", "disposition": "manual", "reason": "Synthetic GA4 and GTM evidence requires allowlisted native analytics settings.", "evidenceIds": ["html-ga4", "html-gtm"], "blocking": false },
+    { "id": "html-animation", "disposition": "converted", "reason": "CSS keyframes and JavaScript reveal behavior require a native animation replacement.", "evidenceIds": ["html-animation-css", "html-animation-js"], "blocking": false },
+    { "id": "html-form-item", "disposition": "converted", "reason": "The contact form maps to a native form section.", "evidenceIds": ["html-form"], "blocking": false },
+    { "id": "html-obfuscated-item", "disposition": "unsafe", "reason": "Obfuscated source script is rejected rather than executed.", "evidenceIds": ["html-obfuscated"], "blocking": false }
+  ],
+  "summary": { "total": 6, "blocking": 0, "byDisposition": { "exact": 0, "converted": 4, "merged": 0, "skipped": 0, "missing": 0, "ai_proposed": 0, "unsafe": 1, "redirect": 0, "manual": 1 } }
 }
