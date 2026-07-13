@@ -21,6 +21,7 @@
   },
   "files": [
     "dist",
+    "contract",
     "README.md",
     "LICENSE"
   ],
@@ -28,7 +29,8 @@
     "build": "tsup src/index.ts src/cli.ts --format esm --dts --clean",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "check": "bun run build && bun run typecheck && bun run test",
+    "contract:check": "bun scripts/sync-contract.ts --check",
+    "check": "bun run build && bun run typecheck && bun run test && bun run contract:check",
     "prepare": "npm run build"
   },
   "dependencies": {

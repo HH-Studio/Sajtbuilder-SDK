@@ -18,6 +18,7 @@ export const PORTABLE_CAPS = {
   maxAssets: 200,
   // A site realistically has 1-2 (Blog, News) - generous headroom over that.
   maxCollections: 20,
+  maxRedirects: 500,
   /** Per-image byte ceiling - matches IMAGE_LIMITS.maxBytes in lib/sections/limits.ts. */
   maxSingleAssetBytes: 15 * 1024 * 1024,
   /** Top-level JSON file size the client refuses to read. */
@@ -35,7 +36,8 @@ export type CapCode =
   | "too_many_fonts"
   | "too_many_services"
   | "too_many_assets"
-  | "too_many_collections";
+  | "too_many_collections"
+  | "too_many_redirects";
 
 /** First exceeded cap, or null when the payload is within every limit. */
 export function checkCaps(p: {
@@ -46,6 +48,7 @@ export function checkCaps(p: {
   services?: readonly unknown[];
   assets: readonly unknown[];
   contentCollections?: readonly unknown[];
+  redirects?: readonly unknown[];
 }): CapCode | null {
   if (p.pages.length > PORTABLE_CAPS.maxPages) return "too_many_pages";
   if (p.sections.length > PORTABLE_CAPS.maxSections) return "too_many_sections";
@@ -57,6 +60,9 @@ export function checkCaps(p: {
   if (p.assets.length > PORTABLE_CAPS.maxAssets) return "too_many_assets";
   if ((p.contentCollections?.length ?? 0) > PORTABLE_CAPS.maxCollections) {
     return "too_many_collections";
+  }
+  if ((p.redirects?.length ?? 0) > PORTABLE_CAPS.maxRedirects) {
+    return "too_many_redirects";
   }
   return null;
 }

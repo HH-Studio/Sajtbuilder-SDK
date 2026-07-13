@@ -198,6 +198,15 @@ export const portableSiteV1 = v.object({
     }),
   ),
 
+  redirects: v.optional(
+    v.array(
+      v.object({
+        fromPath: v.string(),
+        toPath: v.string(),
+      }),
+    ),
+  ),
+
   sections: v.array(
     v.object({
       pageTmpId: v.string(),

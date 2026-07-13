@@ -55,6 +55,70 @@ describe("public Site Kit API", () => {
     expect(report.issues.some((issue) => issue.message.includes("unknown page"))).toBe(true);
   });
 
+  it("keeps old bundles valid and validates redirect graphs", () => {
+    const legacy = createStarterSite();
+    expect("redirects" in legacy).toBe(false);
+    expect(validateSitePackage(legacy).ok).toBe(true);
+
+    const valid = createStarterSite();
+    valid.pages.push({
+      tmpId: "contact",
+      slug: "contact",
+      title: "Contact",
+      order: 1,
+      showInNav: true,
+    });
+    valid.redirects = [
+      { fromPath: "/old-contact/", toPath: "legacy-contact" },
+      { fromPath: "legacy-contact", toPath: "contact" },
+    ];
+    expect(validateSitePackage(valid).ok).toBe(true);
+  });
+
+  it("accepts secondary-locale pages and the news index as real targets", () => {
+    const site = createStarterSite();
+    site.site.languages = ["en", "sv"];
+    site.pages.push({
+      tmpId: "contact",
+      slug: "contact",
+      title: "Contact",
+      order: 1,
+      showInNav: true,
+    });
+    site.redirects = [
+      { fromPath: "old-swedish-contact", toPath: "sv/contact" },
+      { fromPath: "old-news", toPath: "news" },
+    ];
+    expect(validateSitePackage(site).issues.filter((issue) => issue.level === "error")).toEqual([]);
+  });
+
+  it.each([
+    [[{ fromPath: "news", toPath: "" }], "redirects[0].fromPath"],
+    [[{ fromPath: "en/old", toPath: "" }], "redirects[0].fromPath"],
+    [[{ fromPath: "old", toPath: "missing" }], "redirects[0].toPath"],
+    [[{ fromPath: "/old/", toPath: "" }, { fromPath: "OLD", toPath: "" }], "redirects[1].fromPath"],
+    [[{ fromPath: "a", toPath: "b" }, { fromPath: "b", toPath: "a" }], "redirects[0].toPath"],
+  ])("reports invalid redirects at their JSON path", (redirects, path) => {
+    const site = createStarterSite();
+    site.redirects = redirects;
+    const report = validateSitePackage(site);
+    expect(report.ok).toBe(false);
+    expect(report.issues.some((issue) => issue.path === path)).toBe(true);
+  });
+
+  it("enforces the shared 500 redirect cap", () => {
+    const site = createStarterSite();
+    site.redirects = Array.from({ length: 501 }, (_, index) => ({
+      fromPath: `old-${index}`,
+      toPath: "",
+    }));
+    expect(validateSitePackage(site).issues).toContainEqual({
+      level: "error",
+      path: "redirects",
+      message: expect.stringContaining("too_many_redirects"),
+    });
+  });
+
   it("rejects self-hosted video that the v1 importer cannot preserve", () => {
     const site = createStarterSite();
     site.sections[0].content = {

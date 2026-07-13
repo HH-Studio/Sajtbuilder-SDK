@@ -1,0 +1,2481 @@
+{
+  "caps": {
+    "maxAssets": 200,
+    "maxBundleBytes": 157286400,
+    "maxCollections": 20,
+    "maxFolders": 100,
+    "maxFonts": 12,
+    "maxJsonBytes": 5242880,
+    "maxPages": 50,
+    "maxRedirects": 500,
+    "maxSections": 500,
+    "maxServices": 100,
+    "maxSingleAssetBytes": 15728640
+  },
+  "format": "snabbsajt-site-kit-contract",
+  "hash": "sha256:9dcfb11f751cc8c8b63be811ff34755e6c063840d670f665c220a0f8d4d9b541",
+  "importReport": {
+    "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "properties": {
+      "adapter": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "(?=.*\\S)(?:^[A-Za-z0-9][A-Za-z0-9._:-]*$)",
+            "type": "string"
+          },
+          "version": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "version"
+        ],
+        "type": "object"
+      },
+      "detectedPlatform": {
+        "additionalProperties": false,
+        "properties": {
+          "confidence": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "(?=.*\\S)(?:^[A-Za-z0-9][A-Za-z0-9._:-]*$)",
+            "type": "string"
+          },
+          "version": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "confidence"
+        ],
+        "type": "object"
+      },
+      "evidence": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "contentHash": {
+              "pattern": "^sha256:[a-f0-9]{64}$",
+              "type": "string"
+            },
+            "excerpt": {
+              "maxLength": 500,
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            "id": {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "(?=.*\\S)(?:^[A-Za-z0-9][A-Za-z0-9._:-]*$)",
+              "type": "string"
+            },
+            "kind": {
+              "enum": [
+                "url",
+                "file",
+                "html_node",
+                "css_rule",
+                "script",
+                "wxr_item",
+                "asset",
+                "metadata"
+              ]
+            },
+            "locator": {
+              "maxLength": 1000,
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            "sourceInputId": {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "(?=.*\\S)(?:^[A-Za-z0-9][A-Za-z0-9._:-]*$)",
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "sourceInputId",
+            "locator",
+            "contentHash",
+            "excerpt"
+          ],
+          "type": "object"
+        },
+        "maxItems": 10000,
+        "type": "array"
+      },
+      "format": {
+        "const": "snabbsajt-import-report"
+      },
+      "items": {
+        "items": {
+          "additionalProperties": false,
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "disposition": {
+                    "const": "ai_proposed"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "confidence"
+                ]
+              }
+            }
+          ],
+          "properties": {
+            "blocking": {
+              "type": "boolean"
+            },
+            "confidence": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "disposition": {
+              "enum": [
+                "exact",
+                "converted",
+                "merged",
+                "skipped",
+                "missing",
+                "ai_proposed",
+                "unsafe",
+                "redirect",
+                "manual"
+              ]
+            },
+            "evidenceIds": {
+              "items": {
+                "maxLength": 128,
+                "minLength": 1,
+                "pattern": "(?=.*\\S)(?:^[A-Za-z0-9][A-Za-z0-9._:-]*$)",
+                "type": "string"
+              },
+              "maxItems": 256,
+              "minItems": 1,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "id": {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "(?=.*\\S)(?:^[A-Za-z0-9][A-Za-z0-9._:-]*$)",
+              "type": "string"
+            },
+            "reason": {
+              "maxLength": 2000,
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            "target": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "maxLength": 1000,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "type": "string"
+                },
+                "kind": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "id",
+            "disposition",
+            "reason",
+            "evidenceIds",
+            "blocking"
+          ],
+          "type": "object"
+        },
+        "maxItems": 10000,
+        "type": "array"
+      },
+      "requiredVersions": {
+        "additionalProperties": false,
+        "properties": {
+          "cli": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "portableSiteFormat": {
+            "const": "1"
+          },
+          "reportFormat": {
+            "const": "1"
+          }
+        },
+        "required": [
+          "reportFormat",
+          "portableSiteFormat",
+          "cli"
+        ],
+        "type": "object"
+      },
+      "revision": {
+        "const": "snabbsajt.import-report/v1"
+      },
+      "sourceInputs": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "contentHash": {
+              "pattern": "^sha256:[a-f0-9]{64}$",
+              "type": "string"
+            },
+            "id": {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "(?=.*\\S)(?:^[A-Za-z0-9][A-Za-z0-9._:-]*$)",
+              "type": "string"
+            },
+            "kind": {
+              "enum": [
+                "url",
+                "file"
+              ]
+            },
+            "locator": {
+              "maxLength": 1000,
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "locator"
+          ],
+          "type": "object"
+        },
+        "maxItems": 32,
+        "minItems": 1,
+        "type": "array"
+      },
+      "status": {
+        "enum": [
+          "ready",
+          "review_required",
+          "blocked"
+        ]
+      },
+      "summary": {
+        "additionalProperties": false,
+        "properties": {
+          "blocking": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "byDisposition": {
+            "additionalProperties": false,
+            "properties": {
+              "ai_proposed": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "converted": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "exact": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "manual": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "merged": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "missing": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "redirect": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "skipped": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "unsafe": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "exact",
+              "converted",
+              "merged",
+              "skipped",
+              "missing",
+              "ai_proposed",
+              "unsafe",
+              "redirect",
+              "manual"
+            ],
+            "type": "object"
+          },
+          "total": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total",
+          "blocking",
+          "byDisposition"
+        ],
+        "type": "object"
+      },
+      "timestamps": {
+        "additionalProperties": false,
+        "properties": {
+          "completedAt": {
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$",
+            "type": "string"
+          },
+          "startedAt": {
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "startedAt",
+          "completedAt"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "format",
+      "revision",
+      "status",
+      "adapter",
+      "sourceInputs",
+      "detectedPlatform",
+      "timestamps",
+      "requiredVersions",
+      "evidence",
+      "items",
+      "summary"
+    ],
+    "type": "object",
+    "x-snabbsajt-invariants": [
+      "sourceInputs ids are unique",
+      "evidence ids are unique and sourceInputId references sourceInputs",
+      "report item ids are unique and evidenceIds reference evidence",
+      "summary total blocking and disposition counts equal items",
+      "completedAt is not before startedAt",
+      "timestamps are real canonical ISO 8601 UTC instants",
+      "ready reports contain no blocking items",
+      "blocked reports contain at least one blocking item"
+    ]
+  },
+  "portable": {
+    "format": "sajt-site",
+    "schema": {
+      "type": "object",
+      "value": {
+        "assets": {
+          "fieldType": {
+            "type": "array",
+            "value": {
+              "type": "object",
+              "value": {
+                "alt": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "blurhash": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "exportId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "height": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                },
+                "kind": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "literal",
+                        "value": "image"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "logo"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "favicon"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "og"
+                      }
+                    ]
+                  },
+                  "optional": false
+                },
+                "mimeType": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "url": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "width": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                }
+              }
+            }
+          },
+          "optional": false
+        },
+        "contentCollections": {
+          "fieldType": {
+            "type": "array",
+            "value": {
+              "type": "object",
+              "value": {
+                "kind": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "literal",
+                        "value": "blog"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "news"
+                      }
+                    ]
+                  },
+                  "optional": false
+                },
+                "name": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "order": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                },
+                "slugPrefix": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "tmpId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                }
+              }
+            }
+          },
+          "optional": true
+        },
+        "exportedAt": {
+          "fieldType": {
+            "type": "string"
+          },
+          "optional": false
+        },
+        "folders": {
+          "fieldType": {
+            "type": "array",
+            "value": {
+              "type": "object",
+              "value": {
+                "collapsed": {
+                  "fieldType": {
+                    "type": "boolean"
+                  },
+                  "optional": true
+                },
+                "name": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "order": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                },
+                "parentTmpId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "tmpId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                }
+              }
+            }
+          },
+          "optional": false
+        },
+        "fonts": {
+          "fieldType": {
+            "type": "array",
+            "value": {
+              "type": "object",
+              "value": {
+                "adobeKitId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "family": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "files": {
+                  "fieldType": {
+                    "type": "array",
+                    "value": {
+                      "type": "object",
+                      "value": {
+                        "format": {
+                          "fieldType": {
+                            "type": "string"
+                          },
+                          "optional": false
+                        },
+                        "style": {
+                          "fieldType": {
+                            "type": "union",
+                            "value": [
+                              {
+                                "type": "literal",
+                                "value": "normal"
+                              },
+                              {
+                                "type": "literal",
+                                "value": "italic"
+                              }
+                            ]
+                          },
+                          "optional": false
+                        },
+                        "url": {
+                          "fieldType": {
+                            "type": "string"
+                          },
+                          "optional": false
+                        },
+                        "weight": {
+                          "fieldType": {
+                            "type": "number"
+                          },
+                          "optional": false
+                        }
+                      }
+                    }
+                  },
+                  "optional": true
+                },
+                "googleUrl": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "source": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "literal",
+                        "value": "upload"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "google"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "adobe"
+                      }
+                    ]
+                  },
+                  "optional": false
+                },
+                "tmpId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                }
+              }
+            }
+          },
+          "optional": false
+        },
+        "fontsAssignment": {
+          "fieldType": {
+            "type": "object",
+            "value": {
+              "bodyTmpId": {
+                "fieldType": {
+                  "type": "string"
+                },
+                "optional": true
+              },
+              "headingTmpId": {
+                "fieldType": {
+                  "type": "string"
+                },
+                "optional": true
+              }
+            }
+          },
+          "optional": true
+        },
+        "format": {
+          "fieldType": {
+            "type": "literal",
+            "value": "sajt-site"
+          },
+          "optional": false
+        },
+        "pages": {
+          "fieldType": {
+            "type": "array",
+            "value": {
+              "type": "object",
+              "value": {
+                "author": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "collectionTmpId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "contentType": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "literal",
+                        "value": "news"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "offer"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "customer-story"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "guide"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "tips"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "new-service"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "event"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "seasonal"
+                      }
+                    ]
+                  },
+                  "optional": true
+                },
+                "excerpt": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "featuredImage": {
+                  "fieldType": {
+                    "type": "object",
+                    "value": {
+                      "alt": {
+                        "fieldType": {
+                          "type": "string"
+                        },
+                        "optional": false
+                      },
+                      "assetId": {
+                        "fieldType": {
+                          "type": "string"
+                        },
+                        "optional": false
+                      },
+                      "focalX": {
+                        "fieldType": {
+                          "type": "number"
+                        },
+                        "optional": true
+                      },
+                      "focalY": {
+                        "fieldType": {
+                          "type": "number"
+                        },
+                        "optional": true
+                      }
+                    }
+                  },
+                  "optional": true
+                },
+                "firstPublishedAt": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "folderTmpId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "order": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                },
+                "pageType": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "literal",
+                        "value": "page"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "post"
+                      }
+                    ]
+                  },
+                  "optional": true
+                },
+                "plannedFor": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "seo": {
+                  "fieldType": {
+                    "type": "object",
+                    "value": {
+                      "canonical": {
+                        "fieldType": {
+                          "type": "string"
+                        },
+                        "optional": true
+                      },
+                      "metaDescription": {
+                        "fieldType": {
+                          "type": "string"
+                        },
+                        "optional": true
+                      },
+                      "metaTitle": {
+                        "fieldType": {
+                          "type": "string"
+                        },
+                        "optional": true
+                      },
+                      "noindex": {
+                        "fieldType": {
+                          "type": "boolean"
+                        },
+                        "optional": true
+                      },
+                      "sourceUrl": {
+                        "fieldType": {
+                          "type": "string"
+                        },
+                        "optional": true
+                      }
+                    }
+                  },
+                  "optional": true
+                },
+                "showInNav": {
+                  "fieldType": {
+                    "type": "boolean"
+                  },
+                  "optional": false
+                },
+                "slug": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "title": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "tmpId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                }
+              }
+            }
+          },
+          "optional": false
+        },
+        "redirects": {
+          "fieldType": {
+            "type": "array",
+            "value": {
+              "type": "object",
+              "value": {
+                "fromPath": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "toPath": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                }
+              }
+            }
+          },
+          "optional": true
+        },
+        "sections": {
+          "fieldType": {
+            "type": "array",
+            "value": {
+              "type": "object",
+              "value": {
+                "anchorId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "content": {
+                  "fieldType": {
+                    "type": "any"
+                  },
+                  "optional": false
+                },
+                "hidden": {
+                  "fieldType": {
+                    "type": "boolean"
+                  },
+                  "optional": true
+                },
+                "layout": {
+                  "fieldType": {
+                    "type": "object",
+                    "value": {
+                      "hideOnDesktop": {
+                        "fieldType": {
+                          "type": "literal",
+                          "value": true
+                        },
+                        "optional": true
+                      },
+                      "hideOnMobile": {
+                        "fieldType": {
+                          "type": "literal",
+                          "value": true
+                        },
+                        "optional": true
+                      },
+                      "paddingY": {
+                        "fieldType": {
+                          "type": "union",
+                          "value": [
+                            {
+                              "type": "literal",
+                              "value": "none"
+                            },
+                            {
+                              "type": "literal",
+                              "value": "compact"
+                            },
+                            {
+                              "type": "literal",
+                              "value": "normal"
+                            },
+                            {
+                              "type": "literal",
+                              "value": "spacious"
+                            }
+                          ]
+                        },
+                        "optional": true
+                      },
+                      "width": {
+                        "fieldType": {
+                          "type": "union",
+                          "value": [
+                            {
+                              "type": "literal",
+                              "value": "normal"
+                            },
+                            {
+                              "type": "literal",
+                              "value": "wide"
+                            },
+                            {
+                              "type": "literal",
+                              "value": "full"
+                            }
+                          ]
+                        },
+                        "optional": true
+                      }
+                    }
+                  },
+                  "optional": true
+                },
+                "order": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "pageTmpId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "tone": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "literal",
+                        "value": "light"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "clear"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "dark"
+                      }
+                    ]
+                  },
+                  "optional": true
+                },
+                "type": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "literal",
+                        "value": "hero"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "services"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "service-detail"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "about"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "team"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "testimonials"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "gallery"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "before-after"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "pricing"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "faq"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "process"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "service-areas"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "contact"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "opening-hours"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "location"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "certifications"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "social-proof"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "instagram"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "cta-band"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "booking"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "lead-form"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "quote-flow"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "footer"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "legal"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "logos"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "highlights"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "bento"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "banner"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "video"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "comparison"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "newsletter"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "statement"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "rich-text"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "image"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "featured-product"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "product-grid"
+                      }
+                    ]
+                  },
+                  "optional": false
+                },
+                "variant": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                }
+              }
+            }
+          },
+          "optional": false
+        },
+        "services": {
+          "fieldType": {
+            "type": "array",
+            "value": {
+              "type": "object",
+              "value": {
+                "archived": {
+                  "fieldType": {
+                    "type": "boolean"
+                  },
+                  "optional": true
+                },
+                "availability": {
+                  "fieldType": {
+                    "type": "array",
+                    "value": {
+                      "type": "object",
+                      "value": {
+                        "breaks": {
+                          "fieldType": {
+                            "type": "array",
+                            "value": {
+                              "type": "object",
+                              "value": {
+                                "end": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "start": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                }
+                              }
+                            }
+                          },
+                          "optional": true
+                        },
+                        "close": {
+                          "fieldType": {
+                            "type": "string"
+                          },
+                          "optional": true
+                        },
+                        "closed": {
+                          "fieldType": {
+                            "type": "boolean"
+                          },
+                          "optional": false
+                        },
+                        "day": {
+                          "fieldType": {
+                            "type": "union",
+                            "value": [
+                              {
+                                "type": "literal",
+                                "value": "mon"
+                              },
+                              {
+                                "type": "literal",
+                                "value": "tue"
+                              },
+                              {
+                                "type": "literal",
+                                "value": "wed"
+                              },
+                              {
+                                "type": "literal",
+                                "value": "thu"
+                              },
+                              {
+                                "type": "literal",
+                                "value": "fri"
+                              },
+                              {
+                                "type": "literal",
+                                "value": "sat"
+                              },
+                              {
+                                "type": "literal",
+                                "value": "sun"
+                              }
+                            ]
+                          },
+                          "optional": false
+                        },
+                        "open": {
+                          "fieldType": {
+                            "type": "string"
+                          },
+                          "optional": true
+                        }
+                      }
+                    }
+                  },
+                  "optional": true
+                },
+                "bookable": {
+                  "fieldType": {
+                    "type": "boolean"
+                  },
+                  "optional": false
+                },
+                "bufferMin": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "cancellationPolicy": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "category": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "confirmationMessage": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "depositAmount": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "description": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "durationMin": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "hidden": {
+                  "fieldType": {
+                    "type": "boolean"
+                  },
+                  "optional": true
+                },
+                "intake": {
+                  "fieldType": {
+                    "type": "array",
+                    "value": {
+                      "type": "object",
+                      "value": {
+                        "key": {
+                          "fieldType": {
+                            "type": "string"
+                          },
+                          "optional": false
+                        },
+                        "label": {
+                          "fieldType": {
+                            "type": "string"
+                          },
+                          "optional": false
+                        },
+                        "options": {
+                          "fieldType": {
+                            "type": "array",
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "optional": true
+                        },
+                        "placeholder": {
+                          "fieldType": {
+                            "type": "string"
+                          },
+                          "optional": true
+                        },
+                        "required": {
+                          "fieldType": {
+                            "type": "boolean"
+                          },
+                          "optional": false
+                        },
+                        "type": {
+                          "fieldType": {
+                            "type": "union",
+                            "value": [
+                              {
+                                "type": "literal",
+                                "value": "text"
+                              },
+                              {
+                                "type": "literal",
+                                "value": "email"
+                              },
+                              {
+                                "type": "literal",
+                                "value": "phone"
+                              },
+                              {
+                                "type": "literal",
+                                "value": "textarea"
+                              },
+                              {
+                                "type": "literal",
+                                "value": "select"
+                              }
+                            ]
+                          },
+                          "optional": false
+                        }
+                      }
+                    }
+                  },
+                  "optional": true
+                },
+                "leadTimeHours": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "name": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "order": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                },
+                "paymentMode": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "literal",
+                        "value": "none"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "deposit"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "full"
+                      }
+                    ]
+                  },
+                  "optional": true
+                },
+                "priceAmount": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "priceCurrency": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "priceModel": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "literal",
+                        "value": "fixed"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "from"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "hourly"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "quote"
+                      }
+                    ]
+                  },
+                  "optional": true
+                },
+                "priceText": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "primaryAction": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "literal",
+                        "value": "book"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "quote"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "call"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "message"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "pay"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "review"
+                      }
+                    ]
+                  },
+                  "optional": true
+                },
+                "timezone": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "tmpId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "windowDays": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                }
+              }
+            }
+          },
+          "optional": true
+        },
+        "site": {
+          "fieldType": {
+            "type": "object",
+            "value": {
+              "bookingConfig": {
+                "fieldType": {
+                  "type": "object",
+                  "value": {
+                    "availability": {
+                      "fieldType": {
+                        "type": "array",
+                        "value": {
+                          "type": "object",
+                          "value": {
+                            "breaks": {
+                              "fieldType": {
+                                "type": "array",
+                                "value": {
+                                  "type": "object",
+                                  "value": {
+                                    "end": {
+                                      "fieldType": {
+                                        "type": "string"
+                                      },
+                                      "optional": false
+                                    },
+                                    "start": {
+                                      "fieldType": {
+                                        "type": "string"
+                                      },
+                                      "optional": false
+                                    }
+                                  }
+                                }
+                              },
+                              "optional": true
+                            },
+                            "close": {
+                              "fieldType": {
+                                "type": "string"
+                              },
+                              "optional": true
+                            },
+                            "closed": {
+                              "fieldType": {
+                                "type": "boolean"
+                              },
+                              "optional": false
+                            },
+                            "day": {
+                              "fieldType": {
+                                "type": "union",
+                                "value": [
+                                  {
+                                    "type": "literal",
+                                    "value": "mon"
+                                  },
+                                  {
+                                    "type": "literal",
+                                    "value": "tue"
+                                  },
+                                  {
+                                    "type": "literal",
+                                    "value": "wed"
+                                  },
+                                  {
+                                    "type": "literal",
+                                    "value": "thu"
+                                  },
+                                  {
+                                    "type": "literal",
+                                    "value": "fri"
+                                  },
+                                  {
+                                    "type": "literal",
+                                    "value": "sat"
+                                  },
+                                  {
+                                    "type": "literal",
+                                    "value": "sun"
+                                  }
+                                ]
+                              },
+                              "optional": false
+                            },
+                            "open": {
+                              "fieldType": {
+                                "type": "string"
+                              },
+                              "optional": true
+                            }
+                          }
+                        }
+                      },
+                      "optional": false
+                    },
+                    "bufferMin": {
+                      "fieldType": {
+                        "type": "number"
+                      },
+                      "optional": true
+                    },
+                    "cancellationPolicy": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": true
+                    },
+                    "closedDates": {
+                      "fieldType": {
+                        "type": "array",
+                        "value": {
+                          "type": "string"
+                        }
+                      },
+                      "optional": true
+                    },
+                    "confirmationMessage": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": true
+                    },
+                    "leadTimeHours": {
+                      "fieldType": {
+                        "type": "number"
+                      },
+                      "optional": true
+                    },
+                    "timezone": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": true
+                    },
+                    "windowDays": {
+                      "fieldType": {
+                        "type": "number"
+                      },
+                      "optional": true
+                    }
+                  }
+                },
+                "optional": true
+              },
+              "businessName": {
+                "fieldType": {
+                  "type": "string"
+                },
+                "optional": false
+              },
+              "contact": {
+                "fieldType": {
+                  "type": "object",
+                  "value": {
+                    "address": {
+                      "fieldType": {
+                        "type": "object",
+                        "value": {
+                          "city": {
+                            "fieldType": {
+                              "type": "string"
+                            },
+                            "optional": true
+                          },
+                          "country": {
+                            "fieldType": {
+                              "type": "string"
+                            },
+                            "optional": true
+                          },
+                          "lat": {
+                            "fieldType": {
+                              "type": "number"
+                            },
+                            "optional": true
+                          },
+                          "lng": {
+                            "fieldType": {
+                              "type": "number"
+                            },
+                            "optional": true
+                          },
+                          "postalCode": {
+                            "fieldType": {
+                              "type": "string"
+                            },
+                            "optional": true
+                          },
+                          "street": {
+                            "fieldType": {
+                              "type": "string"
+                            },
+                            "optional": true
+                          }
+                        }
+                      },
+                      "optional": true
+                    },
+                    "email": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": true
+                    },
+                    "phone": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": true
+                    }
+                  }
+                },
+                "optional": false
+              },
+              "faviconAssetId": {
+                "fieldType": {
+                  "type": "string"
+                },
+                "optional": true
+              },
+              "goal": {
+                "fieldType": {
+                  "type": "union",
+                  "value": [
+                    {
+                      "type": "literal",
+                      "value": "get_calls"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "get_bookings"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "show_services"
+                    }
+                  ]
+                },
+                "optional": false
+              },
+              "language": {
+                "fieldType": {
+                  "type": "union",
+                  "value": [
+                    {
+                      "type": "literal",
+                      "value": "sv"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "en"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "pl"
+                    }
+                  ]
+                },
+                "optional": false
+              },
+              "languages": {
+                "fieldType": {
+                  "type": "array",
+                  "value": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "literal",
+                        "value": "sv"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "en"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "pl"
+                      }
+                    ]
+                  }
+                },
+                "optional": true
+              },
+              "logoAssetId": {
+                "fieldType": {
+                  "type": "string"
+                },
+                "optional": true
+              },
+              "ogImageAssetId": {
+                "fieldType": {
+                  "type": "string"
+                },
+                "optional": true
+              },
+              "socials": {
+                "fieldType": {
+                  "type": "object",
+                  "value": {
+                    "facebook": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": true
+                    },
+                    "google": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": true
+                    },
+                    "instagram": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": true
+                    },
+                    "linkedin": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": true
+                    },
+                    "tiktok": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": true
+                    },
+                    "x": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": true
+                    },
+                    "youtube": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": true
+                    }
+                  }
+                },
+                "optional": true
+              },
+              "theme": {
+                "fieldType": {
+                  "type": "object",
+                  "value": {
+                    "appearance": {
+                      "fieldType": {
+                        "type": "union",
+                        "value": [
+                          {
+                            "type": "literal",
+                            "value": "light"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "dark"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "system"
+                          }
+                        ]
+                      },
+                      "optional": true
+                    },
+                    "buttonStyle": {
+                      "fieldType": {
+                        "type": "union",
+                        "value": [
+                          {
+                            "type": "literal",
+                            "value": "solid"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "outline"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "pill"
+                          }
+                        ]
+                      },
+                      "optional": false
+                    },
+                    "density": {
+                      "fieldType": {
+                        "type": "union",
+                        "value": [
+                          {
+                            "type": "literal",
+                            "value": "compact"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "comfortable"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "spacious"
+                          }
+                        ]
+                      },
+                      "optional": false
+                    },
+                    "fontPair": {
+                      "fieldType": {
+                        "type": "union",
+                        "value": [
+                          {
+                            "type": "literal",
+                            "value": "modern"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "classic"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "friendly"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "premium"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "editorial"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "grotesk"
+                          }
+                        ]
+                      },
+                      "optional": false
+                    },
+                    "palette": {
+                      "fieldType": {
+                        "type": "union",
+                        "value": [
+                          {
+                            "type": "literal",
+                            "value": "slate"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "ocean"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "forest"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "clay"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "sand"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "mono"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "rose"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "sage"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "plum"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "midnight"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "amber"
+                          }
+                        ]
+                      },
+                      "optional": false
+                    },
+                    "radius": {
+                      "fieldType": {
+                        "type": "union",
+                        "value": [
+                          {
+                            "type": "literal",
+                            "value": "sharp"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "soft"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "round"
+                          }
+                        ]
+                      },
+                      "optional": false
+                    }
+                  }
+                },
+                "optional": false
+              },
+              "tracking": {
+                "fieldType": {
+                  "type": "object",
+                  "value": {
+                    "ga4": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": true
+                    },
+                    "gtm": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": true
+                    },
+                    "hotjar": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": true
+                    },
+                    "hubspot": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": true
+                    },
+                    "linkedin": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": true
+                    },
+                    "metaPixel": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": true
+                    }
+                  }
+                },
+                "optional": true
+              },
+              "vertical": {
+                "fieldType": {
+                  "type": "union",
+                  "value": [
+                    {
+                      "type": "literal",
+                      "value": "dentist"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "clinic"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "salon"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "cleaning"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "restaurant"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "fitness"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "handyman"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "consultant"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "coach"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "freelancer"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "generic"
+                    }
+                  ]
+                },
+                "optional": false
+              }
+            }
+          },
+          "optional": false
+        },
+        "version": {
+          "fieldType": {
+            "type": "literal",
+            "value": 1
+          },
+          "optional": false
+        }
+      }
+    },
+    "version": 1
+  },
+  "provenance": {
+    "generator": "scripts/export-site-kit-contract.ts",
+    "repository": "HH-Studio/simple-site-builder"
+  },
+  "revision": 1,
+  "sections": {
+    "types": [
+      "hero",
+      "services",
+      "service-detail",
+      "about",
+      "team",
+      "testimonials",
+      "gallery",
+      "before-after",
+      "pricing",
+      "faq",
+      "process",
+      "service-areas",
+      "contact",
+      "opening-hours",
+      "location",
+      "certifications",
+      "social-proof",
+      "instagram",
+      "cta-band",
+      "booking",
+      "lead-form",
+      "quote-flow",
+      "footer",
+      "legal",
+      "logos",
+      "highlights",
+      "bento",
+      "banner",
+      "video",
+      "comparison",
+      "newsletter",
+      "statement",
+      "rich-text",
+      "image",
+      "featured-product",
+      "product-grid"
+    ],
+    "variants": {
+      "about": [
+        "image-left",
+        "text-image",
+        "text-only",
+        "wide"
+      ],
+      "banner": [
+        "bar",
+        "card",
+        "split"
+      ],
+      "before-after": [
+        "side-by-side",
+        "stacked",
+        "wide"
+      ],
+      "bento": [
+        "bento",
+        "list",
+        "uniform"
+      ],
+      "booking": [
+        "button",
+        "inline"
+      ],
+      "certifications": [
+        "badges",
+        "grid",
+        "list"
+      ],
+      "comparison": [
+        "cards",
+        "features",
+        "table"
+      ],
+      "contact": [
+        "form-info",
+        "info-cards",
+        "info-only"
+      ],
+      "cta-band": [
+        "boxed",
+        "centered",
+        "gradient",
+        "split"
+      ],
+      "faq": [
+        "accordion",
+        "accordion-cta",
+        "cards",
+        "two-column"
+      ],
+      "featured-product": [
+        "default"
+      ],
+      "footer": [
+        "centered",
+        "columns",
+        "contact",
+        "simple"
+      ],
+      "gallery": [
+        "carousel",
+        "full-bleed",
+        "grid-3",
+        "grid-4",
+        "masonry"
+      ],
+      "hero": [
+        "centered",
+        "gradient",
+        "image-left",
+        "image-right",
+        "minimal",
+        "overlay",
+        "split"
+      ],
+      "highlights": [
+        "alternating",
+        "grid-2",
+        "grid-3",
+        "icon-list",
+        "plain"
+      ],
+      "image": [
+        "full",
+        "inset",
+        "wide"
+      ],
+      "instagram": [
+        "collage",
+        "grid",
+        "row"
+      ],
+      "lead-form": [
+        "card",
+        "stacked",
+        "two-column"
+      ],
+      "legal": [
+        "centered",
+        "document",
+        "paper"
+      ],
+      "location": [
+        "address-only",
+        "map-card",
+        "map-first"
+      ],
+      "logos": [
+        "grid",
+        "marquee",
+        "row"
+      ],
+      "newsletter": [
+        "boxed",
+        "centered",
+        "inline"
+      ],
+      "opening-hours": [
+        "cards",
+        "compact",
+        "table"
+      ],
+      "pricing": [
+        "simple-list",
+        "single",
+        "tiers-3",
+        "two-col"
+      ],
+      "process": [
+        "numbered-cards",
+        "steps-horizontal",
+        "steps-vertical",
+        "timeline"
+      ],
+      "product-grid": [
+        "default"
+      ],
+      "quote-flow": [
+        "card",
+        "inline"
+      ],
+      "rich-text": [
+        "narrow",
+        "paper",
+        "prose"
+      ],
+      "service-areas": [
+        "cards",
+        "chips",
+        "list"
+      ],
+      "service-detail": [
+        "media-left",
+        "media-right",
+        "stacked"
+      ],
+      "services": [
+        "grid-2",
+        "grid-3",
+        "icon-grid",
+        "icon-grid-cta",
+        "list",
+        "numbered",
+        "split"
+      ],
+      "social-proof": [
+        "cards",
+        "inline",
+        "stats"
+      ],
+      "statement": [
+        "bordered",
+        "centered",
+        "framed"
+      ],
+      "team": [
+        "cards",
+        "grid",
+        "grid-cta",
+        "list"
+      ],
+      "testimonials": [
+        "cards",
+        "logos-quote",
+        "marquee",
+        "single"
+      ],
+      "video": [
+        "cinema",
+        "full",
+        "side"
+      ]
+    }
+  }
+}

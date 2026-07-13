@@ -27,6 +27,10 @@ import { checkCaps } from "../portability/caps";
 import { collectAssetIds } from "../portability/assets";
 import { isValidVariant } from "../sections/registry";
 import type { SectionType } from "../../convex/model/sections";
+import { LOCALES } from "../../convex/model/business";
+import { validateRedirectMap } from "../site/redirects";
+
+const NEWS_SEGMENT = "news";
 
 export type SiteKitIssue = {
   level: "error" | "warning";
@@ -100,8 +104,9 @@ export function validateSitePackage(
     services: site.services,
     assets: site.assets,
     contentCollections: site.contentCollections,
+    redirects: site.redirects,
   });
-  if (cap) err(issues, "$", `payload exceeds import cap: ${cap}`);
+  if (cap) err(issues, cap === "too_many_redirects" ? "redirects" : "$", `payload exceeds import cap: ${cap}`);
 
   // 3. Id uniqueness + shape.
   const pageIds = checkUnique(issues, site.pages.map((p) => p.tmpId), "pages", "page tmpId");
@@ -137,6 +142,28 @@ export function validateSitePackage(
   if (site.pages.length > 0 && homeCount === 0) {
     warn(issues, "pages", 'no home page (slug "") — import will promote the lowest-order page to home');
   }
+
+  const livePaths = new Set<string>(["", NEWS_SEGMENT]);
+  for (const page of site.pages) {
+    if (page.pageType === "post") livePaths.add(`${NEWS_SEGMENT}/${page.slug}`);
+    else livePaths.add(page.slug);
+  }
+  const basePaths = [...livePaths];
+  for (const locale of site.site.languages ?? [site.site.language]) {
+    if (locale === site.site.language) continue;
+    for (const path of basePaths) {
+      livePaths.add(path === "" ? locale : `${locale}/${path}`);
+    }
+  }
+  const redirectValidation = validateRedirectMap(site.redirects ?? [], {
+    livePaths,
+    targetPaths: livePaths,
+    locales: LOCALES,
+    reservedPaths: [NEWS_SEGMENT],
+  });
+  redirectValidation.issues.forEach((issue) =>
+    err(issues, `redirects[${issue.index}].${issue.field}`, issue.code),
+  );
 
   // 5. Cross-references.
   site.pages.forEach((p, i) => {
