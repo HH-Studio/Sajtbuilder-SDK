@@ -47,7 +47,8 @@
     "css-tree": "^3.2.1",
     "fflate": "^0.8.3",
     "fractional-indexing": "^3.4.0",
-    "parse5": "^8.0.1"
+    "parse5": "^8.0.1",
+    "saxes": "^6.0.0"
   },
   "devDependencies": {
     "@types/css-tree": "^2.3.11",

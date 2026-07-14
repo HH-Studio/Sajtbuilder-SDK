@@ -92,6 +92,7 @@ then runs the same runtime validators and caps used by the production importer.
 - [Quickstart](docs/quickstart.md)
 - [Convert a Next.js site](docs/nextjs.md)
 - [Convert a plain HTML site](docs/html.md)
+- [Convert a WordPress site](docs/wordpress.md)
 - [Package format](docs/package-format.md)
 - [CLI reference](docs/cli.md)
 - [API reference](docs/api-reference.md)

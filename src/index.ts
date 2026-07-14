@@ -60,6 +60,12 @@ export type { BehaviorSignal, HtmlBehaviorInventory } from "./import/html/behavi
 export { mapHtmlIngestion } from "./import/html/map";
 export type { HtmlMappedAssetFile, HtmlMappingOptions, HtmlMappingResult } from "./import/html/map";
 export { BOOKING_PROVIDER_HOSTS, detectSupportedBookingProvider, nativeFormReplacement } from "./import/native-replacements";
+export { parseWxr } from "./import/wordpress/wxr";
+export { indexWxrMedia } from "./import/wordpress/media";
+export type { WxrMediaIndex } from "./import/wordpress/media";
+export { extractWxrSeo } from "./import/wordpress/seo";
+export { DEFAULT_WXR_LIMITS } from "./import/wordpress/model";
+export type { WxrAuthor, WxrDocument, WxrItem, WxrItemTerm, WxrLimits, WxrSeo, WxrTerm } from "./import/wordpress/model";
 
 type SectionBase = Omit<PortableSiteV1["sections"][number], "type" | "content">;
 
