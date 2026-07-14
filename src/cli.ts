@@ -13,6 +13,7 @@ import { basename, join, resolve } from "node:path";
 import type { PortableSiteV1 } from "./convex/model/portable";
 import { PORTABLE_CAPS } from "./lib/portability/caps";
 import { packSitePackage } from "./lib/site-kit/pack";
+import { readBoundedLocalFiles } from "./lib/site-kit/localFiles";
 import { validateSitePackage, type SiteKitReport } from "./lib/site-kit/validate";
 import { createStarterSite, type StarterTemplate } from "./starter";
 
@@ -32,20 +33,6 @@ Usage:
 
 No API key is required. Commands run locally.`);
   process.exit(exitCode);
-}
-
-function readDirFiles(dir: string): Record<string, Uint8Array> {
-  if (!existsSync(dir)) return {};
-  if (lstatSync(dir).isSymbolicLink()) {
-    fail(`${dir} must be a real directory, not a symbolic link`);
-  }
-  const output: Record<string, Uint8Array> = {};
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const path = join(dir, entry.name);
-    if (entry.isSymbolicLink()) fail(`${path} must not be a symbolic link`);
-    if (entry.isFile()) output[entry.name] = new Uint8Array(readFileSync(path));
-  }
-  return output;
 }
 
 function loadPackage(target: string) {
@@ -68,12 +55,25 @@ function loadPackage(target: string) {
   } catch (error) {
     fail(`site.json is not valid JSON: ${(error as Error).message}`);
   }
-  return {
-    payload,
-    dir: isDir ? resolved : null,
-    assetFiles: isDir ? readDirFiles(join(resolved, "assets")) : {},
-    fontFiles: isDir ? readDirFiles(join(resolved, "fonts")) : {},
-  };
+  try {
+    const assets = isDir
+      ? readBoundedLocalFiles(join(resolved, "assets"), {
+          maxFiles: PORTABLE_CAPS.maxAssets,
+          maxSingleBytes: PORTABLE_CAPS.maxSingleAssetBytes,
+          maxTotalBytes: PORTABLE_CAPS.maxBundleBytes,
+        })
+      : { files: {}, totalBytes: 0 };
+    const fonts = isDir
+      ? readBoundedLocalFiles(join(resolved, "fonts"), {
+          maxFiles: PORTABLE_CAPS.maxAssets,
+          maxSingleBytes: PORTABLE_CAPS.maxSingleAssetBytes,
+          maxTotalBytes: PORTABLE_CAPS.maxBundleBytes - assets.totalBytes,
+        })
+      : { files: {}, totalBytes: 0 };
+    return { payload, dir: isDir ? resolved : null, assetFiles: assets.files, fontFiles: fonts.files };
+  } catch (error) {
+    fail((error as Error).message);
+  }
 }
 
 function printReport(report: SiteKitReport): void {
@@ -92,7 +92,11 @@ function init(target: string, rest: string[]): void {
     fail(`unknown template "${template}"; use nextjs or html`);
   }
   const dir = resolve(target);
-  if (existsSync(join(dir, "site.json"))) fail(`${join(dir, "site.json")} already exists`);
+  if (existsSync(dir)) {
+    if (lstatSync(dir).isSymbolicLink()) fail(`${dir} must be a real directory, not a symbolic link`);
+    if (!statSync(dir).isDirectory()) fail(`${dir} is not a directory`);
+    if (readdirSync(dir).length > 0) fail(`${dir} is not empty`);
+  }
   mkdirSync(join(dir, "assets"), { recursive: true });
   mkdirSync(join(dir, "fonts"), { recursive: true });
   writeFileSync(join(dir, "site.json"), `${JSON.stringify(createStarterSite(template), null, 2)}\n`);

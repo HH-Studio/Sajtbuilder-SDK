@@ -16,6 +16,34 @@
         "vitest": "^4.1.9",
       },
     },
+    "packages/cli": {
+      "name": "@snabbsajt/cli",
+      "version": "0.1.0",
+      "bin": {
+        "snabbsajt": "./dist/cli.js",
+      },
+      "dependencies": {
+        "@snabbsajt/site-kit": "0.1.0",
+      },
+      "devDependencies": {
+        "@types/node": "^24.13.2",
+        "tsup": "^8.5.0",
+        "typescript": "^6.0.3",
+        "vitest": "^4.1.9",
+      },
+    },
+    "packages/site-kit": {
+      "name": "@snabbsajt/site-kit",
+      "version": "0.1.0",
+      "bin": {
+        "site-kit": "./dist/cli.js",
+      },
+      "dependencies": {
+        "convex": "^1.42.0",
+        "convex-helpers": "^0.1.120",
+        "fflate": "^0.8.3",
+      },
+    },
   },
   "packages": {
     "@emnapi/core": ["@emnapi/core@1.11.1", "", { "dependencies": { "@emnapi/wasi-threads": "1.2.2", "tslib": "^2.4.0" } }, "sha512-RSvbQmHzdKzNsLYa/wHrbc3KN4sYLKAdPZxqiM2HATqv/SBk2/ENSHpvXGaLOMcsAyz0poEGqkmmKYG3OWiJEQ=="],
@@ -169,6 +197,10 @@
     "@rollup/rollup-win32-x64-gnu": ["@rollup/rollup-win32-x64-gnu@4.62.2", "", { "os": "win32", "cpu": "x64" }, "sha512-T6xr6ucWSFto+VGajA8YH26LdpHRuP4YLHEKAtCWvJDOlnmWcDZVCI2Jmjr+IFHDlt2zRaTAKE4tfjTaWLgJBg=="],
 
     "@rollup/rollup-win32-x64-msvc": ["@rollup/rollup-win32-x64-msvc@4.62.2", "", { "os": "win32", "cpu": "x64" }, "sha512-BfzEnDJOt9T8M989/lA37EcJgat01wLRnoi5dQf3QzOH7jzpqTAzdDbVfRljVr5r+jzKqpbHeyOfAaXxAd0PAA=="],
+
+    "@snabbsajt/cli": ["@snabbsajt/cli@workspace:packages/cli"],
+
+    "@snabbsajt/site-kit": ["@snabbsajt/site-kit@workspace:packages/site-kit"],
 
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
 

@@ -1,0 +1,25 @@
+{
+  "name": "@snabbsajt/site-kit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local workspace link for the root Site Kit package.",
+  "type": "module",
+  "bin": {
+    "site-kit": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./local-files": {
+      "types": "./dist/lib/site-kit/localFiles.d.ts",
+      "import": "./dist/lib/site-kit/localFiles.js"
+    }
+  },
+  "dependencies": {
+    "convex": "^1.42.0",
+    "convex-helpers": "^0.1.120",
+    "fflate": "^0.8.3"
+  }
+}

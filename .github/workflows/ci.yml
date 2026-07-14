@@ -33,3 +33,17 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run check
       - run: bun scripts/sync-contract.ts --check-app-contract .canonical-app
+      - name: Pack npm tarballs
+        id: pack
+        run: |
+          mkdir -p "$RUNNER_TEMP/packs"
+          npm pack --pack-destination "$RUNNER_TEMP/packs" .
+          npm pack --pack-destination "$RUNNER_TEMP/packs" ./packages/cli
+          echo "site_kit_tarball=$(find "$RUNNER_TEMP/packs" -name 'snabbsajt-site-kit-*.tgz' -print -quit)" >> "$GITHUB_OUTPUT"
+          echo "cli_tarball=$(find "$RUNNER_TEMP/packs" -name 'snabbsajt-cli-*.tgz' -print -quit)" >> "$GITHUB_OUTPUT"
+      - name: Smoke test clean tarball install
+        env:
+          SNABBSAJT_TARBALL_SMOKE: "1"
+          SITE_KIT_TARBALL: ${{ steps.pack.outputs.site_kit_tarball }}
+          CLI_TARBALL: ${{ steps.pack.outputs.cli_tarball }}
+        run: bunx vitest run --root packages/cli
