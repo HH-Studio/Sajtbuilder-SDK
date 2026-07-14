@@ -15,6 +15,19 @@ same Site Kit version, so reversing the order creates a broken install window.
    npm whoami --cache "$TMPDIR/npm-cache"
    ```
 
+If `npm publish` reports `E403` and says two-factor authentication is required,
+the browser login succeeded but the account is not allowed to publish yet.
+Enable **Authorization and writes** in npm Account → Two-Factor Authentication,
+or run the interactive command below, then retry Site Kit:
+
+```bash
+npm profile enable-2fa auth-and-writes --cache "$TMPDIR/npm-cache"
+```
+
+Do not continue to the CLI after a failed Site Kit publication. The CLI has an
+exact Site Kit dependency and cannot install correctly until Site Kit exists in
+the registry.
+
 Never put an npm token in this repository, `.npmrc`, a screenshot, or a command
 that will be committed. A future CI release should use npm trusted publishing.
 
