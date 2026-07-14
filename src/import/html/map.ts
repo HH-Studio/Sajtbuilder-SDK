@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { extname } from "node:path";
+import { generateKeyBetween } from "fractional-indexing";
 import type { PortableSiteV1 } from "../../convex/model/portable";
 import type { ThemeTokens } from "../../convex/model/theme";
 import { DEFAULT_THEME } from "../../convex/model/theme";
@@ -263,13 +264,16 @@ export function mapHtmlIngestion(input: HtmlIngestionResult, options: HtmlMappin
 
   const sections: PortableSiteV1["sections"] = [];
   const items: ImportReportItemV1[] = [];
+  let lastSectionOrder: string | null = null;
   const addSection = (pageIndex: number, type: keyof typeof SECTION_REGISTRY, content: unknown, evidenceIds: string[], anchorId?: string) => {
     const sectionIndex = sections.length;
+    const order = generateKeyBetween(lastSectionOrder, null);
+    lastSectionOrder = order;
     sections.push({
       pageTmpId: pages[pageIndex]!.tmpId,
       type,
       variant: defaultVariant(type),
-      order: `a${String(sectionIndex).padStart(3, "0")}`,
+      order,
       ...(anchorId ? { anchorId } : {}),
       content,
     });

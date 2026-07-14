@@ -35,8 +35,10 @@ the leading slash. `showInNav` controls navigation visibility.
 ## Sections
 
 Every section has matching `type` and `content.type` values. `variant` must be
-allowed for that section type. `order` is a sortable string; `a0`, `a1`, `a2`
-is sufficient for a hand-authored package.
+allowed for that section type. `order` must be a valid `fractional-indexing`
+key; `a0`, `a1`, `a2` is sufficient for a hand-authored package. Validation
+rejects lookalike strings such as `a000` because the editor cannot insert a
+section after them safely.
 
 ## Theme
 

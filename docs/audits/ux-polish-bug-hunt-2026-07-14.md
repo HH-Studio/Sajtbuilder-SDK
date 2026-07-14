@@ -57,6 +57,17 @@ tested here.
 - Verification: regressions cover changed deterministic findings and both
   blocked-to-review and blocked-to-ready provenance refreshes.
 
+### UX-CLI-004: Generated order keys broke the normal publish journey
+
+- Evidence: verified in the real SnabbSajt browser flow. The generated archive
+  imported and remained editable, but publish autofix failed with
+  `invalid order key: a000`.
+- Impact: a developer could complete conversion and upload, then leave the
+  customer with a draft that failed during ordinary publishing.
+- Fix: HTML mapping now generates keys through `fractional-indexing`, and Site
+  Kit validation rejects malformed order strings before packing.
+- Verification: focused mapping/validator regressions plus the full SDK gate.
+
 ## Should-have findings
 
 All six verified findings were fixed:
@@ -113,6 +124,7 @@ separate integration scope and was not claimed as verified.
 - The earlier “review archive has no evidence” finding no longer reproduces.
 - Arbitrary `G-*` prose no longer becomes verified analytics.
 - The two provenance-refresh approval bypasses no longer reproduce.
+- The imported `a000` publish failure no longer survives SDK validation.
 
 ## Remaining risks
 

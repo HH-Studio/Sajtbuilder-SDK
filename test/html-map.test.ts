@@ -2,6 +2,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { generateKeyBetween } from "fractional-indexing";
 import { detectSupportedBookingProvider, nativeFormReplacement } from "../src/import/native-replacements";
 import { ingestHtmlInput } from "../src/import/html/input";
 import { mapHtmlIngestion } from "../src/import/html/map";
@@ -23,6 +24,9 @@ describe("deterministic HTML mapping", () => {
     expect(mapped.site.site.businessName).toBe("Harbor Bakery");
     expect(mapped.site.sections.some((section) => section.type === "hero")).toBe(true);
     expect(mapped.site.sections.some((section) => section.type === "footer")).toBe(true);
+    for (const section of mapped.site.sections) {
+      expect(() => generateKeyBetween(section.order, null)).not.toThrow();
+    }
     expect(mapped.site.sections).toContainEqual(expect.objectContaining({
       pageTmpId: "page-2",
       type: "rich-text",

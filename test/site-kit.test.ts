@@ -55,6 +55,16 @@ describe("public Site Kit API", () => {
     expect(report.issues.some((issue) => issue.message.includes("unknown page"))).toBe(true);
   });
 
+  it("rejects section order keys that the editor cannot extend", () => {
+    const site = createStarterSite();
+    site.sections[0].order = "a000";
+    expect(validateSitePackage(site).issues).toContainEqual({
+      level: "error",
+      path: "sections[0].order",
+      message: "invalid fractional order key",
+    });
+  });
+
   it("keeps old bundles valid and validates redirect graphs", () => {
     const legacy = createStarterSite();
     expect("redirects" in legacy).toBe(false);

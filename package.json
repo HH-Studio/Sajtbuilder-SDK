@@ -46,6 +46,7 @@
     "convex-helpers": "^0.1.120",
     "css-tree": "^3.2.1",
     "fflate": "^0.8.3",
+    "fractional-indexing": "^3.4.0",
     "parse5": "^8.0.1"
   },
   "devDependencies": {

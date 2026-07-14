@@ -99,6 +99,9 @@ type Section = {
 `SECTION_REGISTRY[type].variants` for valid variant names and
 `SECTION_REGISTRY[type].defaultContent` as a complete starter. In the catalogue
 below, fields before `?` are required. Nested item fields are shown in braces.
+Section `order` values must use the `fractional-indexing` key grammar; use `a0`,
+`a1`, `a2` for simple hand-authored packages and let Site Kit validation catch
+invalid keys before import.
 
 | Type | Content fields after `type` |
 | --- | --- |

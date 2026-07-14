@@ -32,3 +32,17 @@ No unresolved runtime defects were found in the changed-file scope.
 ### Needs human review (0 issues)
 
 No unresolved runtime defects were found in the Task 8 changed-file scope.
+
+## Browser gate — 2026-07-14
+
+### Auto-fixed (1 issue)
+
+- `src/import/html/map.ts` and `src/lib/site-kit/validate.ts` — HTML conversion
+  emitted lookalike order keys such as `a000` that imported successfully but
+  crashed normal publish autofixes. Generated keys now come from the same
+  fractional-indexing library as SnabbSajt, and validation rejects malformed
+  keys before pack.
+
+### Needs human review (0 issues)
+
+The generated package-order defect is covered by mapping and validator tests.

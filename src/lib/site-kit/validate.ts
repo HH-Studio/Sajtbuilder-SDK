@@ -18,6 +18,7 @@
 // ---------------------------------------------------------------------------
 
 import { validate, ValidationError } from "convex-helpers/validators";
+import { generateKeyBetween } from "fractional-indexing";
 import {
   portableSiteV1,
   type PortableSiteV1,
@@ -47,6 +48,15 @@ export type SiteKitReport = {
 
 /** exportIds/tmpIds become zip entry names — keep them filename/URL-safe. */
 const SAFE_ID = /^[A-Za-z0-9_-]+$/;
+
+function isValidOrderKey(value: string): boolean {
+  try {
+    generateKeyBetween(value, null);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function err(issues: SiteKitIssue[], path: string, message: string): void {
   issues.push({ level: "error", path, message });
@@ -200,6 +210,9 @@ export function validateSitePackage(
   site.sections.forEach((s, i) => {
     if (!pageIds.has(s.pageTmpId)) {
       err(issues, `sections[${i}].pageTmpId`, `unknown page "${s.pageTmpId}"`);
+    }
+    if (!isValidOrderKey(s.order)) {
+      err(issues, `sections[${i}].order`, "invalid fractional order key");
     }
     try {
       validate(sectionContent, s.content, { throw: true, _pathPrefix: `sections[${i}].content` });
