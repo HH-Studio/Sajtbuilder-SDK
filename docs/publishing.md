@@ -15,6 +15,19 @@ same Site Kit version, so reversing the order creates a broken install window.
    npm whoami --cache "$TMPDIR/npm-cache"
    ```
 
+The npm profile name and package scope are separate. Signing in as
+`ludvighedin` does not grant access to `@snabbsajt`. Confirm the organization
+exists and lists your account before publishing:
+
+```bash
+npm org ls snabbsajt --json --cache "$TMPDIR/npm-cache"
+```
+
+If that command or `npm publish` reports `E404 Scope not found`, create the
+`snabbsajt` organization at <https://www.npmjs.com/org/create> while signed in
+as `ludvighedin`, or have an existing owner add that account. Then rerun the
+organization check. Do not rename the packages merely to bypass this setup.
+
 If `npm publish` reports `E403` and says two-factor authentication is required,
 the browser login succeeded but the account is not allowed to publish yet.
 Enable **Authorization and writes** in npm Account → Two-Factor Authentication,
