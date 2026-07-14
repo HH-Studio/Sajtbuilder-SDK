@@ -52,6 +52,7 @@ The generated directory contains:
 site.json
 evidence.json
 import-report.json
+import-report.original.json # preserved deterministic baseline for agent proposals
 import-report.md
 import-provenance.json
 validation.json
@@ -72,6 +73,15 @@ snabbsajt site pack ./example-import -o example.zip
 
 `--yes` is an audit decision, not AI reconstruction. A blocked import cannot be
 approved. Re-import it with a smaller or corrected source.
+
+## Optional agent-assisted mapping
+
+Install the `import-website` skill and let your configured coding agent improve
+the native section mapping after the deterministic pass. The agent must preserve
+`import-report.original.json`, may only add evidence-cited `ai_proposed` items,
+and cannot change report status. `site import approve` verifies those rules
+before a human can accept the candidate. No hosted SnabbSajt model or API key is
+used.
 
 ## Review drafts
 

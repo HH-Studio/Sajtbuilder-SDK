@@ -1,4 +1,5 @@
 import { execFileSync, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import {
   existsSync,
   mkdirSync,
@@ -109,7 +110,7 @@ describe("snabbsajt site CLI", () => {
       status: "review_required",
       publishReady: false,
     });
-    for (const artifact of ["site.json", "evidence.json", "import-report.json", "import-report.md", "validation.json", "import-provenance.json", "REVIEW-DRAFT.md"]) {
+    for (const artifact of ["site.json", "evidence.json", "import-report.json", "import-report.original.json", "import-report.md", "validation.json", "import-provenance.json", "REVIEW-DRAFT.md"]) {
       expect(existsSync(join(packageDir, artifact))).toBe(true);
     }
 
@@ -126,6 +127,7 @@ describe("snabbsajt site CLI", () => {
     expect(archive["site.json"]).toBeUndefined();
     expect(archive["REVIEW-DRAFT/site.json"]).toBeDefined();
     expect(archive["REVIEW-DRAFT/import-report.json"]).toBeDefined();
+    expect(archive["REVIEW-DRAFT/import-report.original.json"]).toBeDefined();
     expect(archive["REVIEW-DRAFT/import-report.md"]).toBeDefined();
     expect(archive["REVIEW-DRAFT/evidence.json"]).toBeDefined();
     expect(JSON.parse(new TextDecoder().decode(archive["REVIEW-DRAFT.json"]))).toMatchObject({
@@ -159,6 +161,94 @@ describe("snabbsajt site CLI", () => {
     const archive = unzipSync(readFileSync(bundle));
     expect(archive["site.json"]).toBeDefined();
     expect(archive["REVIEW-DRAFT.json"]).toBeUndefined();
+  });
+
+  it("accepts additive evidence-cited AI proposals but refuses edits to deterministic findings", () => {
+    const root = mkdtempSync(join(tmpdir(), "snabbsajt-cli-ai-proposal-"));
+    const source = join(root, "source.html");
+    const packageDir = join(root, "package");
+    writeFileSync(source, `<title>Studio</title><h1>Studio</h1><form action="/unknown"><input name="email"></form>`);
+    expect(runJson(["site", "import", "html", source, "-o", packageDir])).toMatchObject({ status: "review_required" });
+    expect(existsSync(join(packageDir, "import-report.original.json"))).toBe(true);
+
+    const reportPath = join(packageDir, "import-report.json");
+    const report = JSON.parse(readFileSync(reportPath, "utf8"));
+    report.items.push({
+      id: "ai-proposal-about-001",
+      disposition: "ai_proposed",
+      reason: "Proposed a native section grouping from cited visible copy",
+      evidenceIds: [report.evidence[0].id],
+      target: { kind: "section", id: "page-1:hero" },
+      confidence: 0.8,
+      blocking: false,
+    });
+    report.summary.total += 1;
+    report.summary.byDisposition.ai_proposed += 1;
+    writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
+
+    expect(runJson(["site", "import", "approve", packageDir, "--yes"])).toMatchObject({
+      ok: true,
+      accepted: 2,
+      status: "ready",
+    });
+    const approved = JSON.parse(readFileSync(reportPath, "utf8"));
+    expect(approved.items.find((item: { id: string }) => item.id === "ai-proposal-about-001").resolution).toMatchObject({ status: "accepted" });
+
+    const tamperedDir = join(root, "tampered");
+    expect(runJson(["site", "import", "html", source, "-o", tamperedDir])).toMatchObject({ status: "review_required" });
+    const tamperedPath = join(tamperedDir, "import-report.json");
+    const tampered = JSON.parse(readFileSync(tamperedPath, "utf8"));
+    tampered.items[0].reason = "weakened deterministic finding";
+    writeFileSync(tamperedPath, `${JSON.stringify(tampered, null, 2)}\n`);
+    const provenancePath = join(tamperedDir, "import-provenance.json");
+    const provenance = JSON.parse(readFileSync(provenancePath, "utf8"));
+    provenance.reportSha256 = createHash("sha256").update(readFileSync(tamperedPath)).digest("hex");
+    writeFileSync(provenancePath, `${JSON.stringify(provenance, null, 2)}\n`);
+    const refusal = run(["site", "import", "approve", tamperedDir, "--yes"]);
+    expect(refusal.status).toBe(1);
+    expect(refusal.stderr).toContain("deterministic import findings must remain unchanged");
+
+    const blockedDir = join(root, "blocked");
+    const longSource = join(root, "long.html");
+    writeFileSync(longSource, `<title>Long</title><h1>Long</h1><p>${"A".repeat(2_000)}</p>`);
+    expect(runJson(["site", "import", "html", longSource, "-o", blockedDir])).toMatchObject({ status: "blocked" });
+    const blockedReportPath = join(blockedDir, "import-report.json");
+    const downgraded = JSON.parse(readFileSync(blockedReportPath, "utf8"));
+    downgraded.status = "review_required";
+    for (const item of downgraded.items) item.blocking = false;
+    downgraded.summary.blocking = 0;
+    writeFileSync(blockedReportPath, `${JSON.stringify(downgraded, null, 2)}\n`);
+    const blockedProvenancePath = join(blockedDir, "import-provenance.json");
+    const blockedProvenance = JSON.parse(readFileSync(blockedProvenancePath, "utf8"));
+    blockedProvenance.status = "review_required";
+    blockedProvenance.reportSha256 = createHash("sha256").update(readFileSync(blockedReportPath)).digest("hex");
+    writeFileSync(blockedProvenancePath, `${JSON.stringify(blockedProvenance, null, 2)}\n`);
+    const downgradeRefusal = run(["site", "import", "approve", blockedDir, "--yes"]);
+    expect(downgradeRefusal.status).toBe(1);
+    expect(downgradeRefusal.stderr).toContain("agent must not change import report status");
+
+    const readyBypassDir = join(root, "blocked-ready-bypass");
+    expect(runJson(["site", "import", "html", longSource, "-o", readyBypassDir])).toMatchObject({ status: "blocked" });
+    const readyReportPath = join(readyBypassDir, "import-report.json");
+    const readyReport = JSON.parse(readFileSync(readyReportPath, "utf8"));
+    readyReport.status = "ready";
+    const resolvedAt = new Date().toISOString();
+    for (const item of readyReport.items) {
+      item.blocking = false;
+      if (["manual", "missing", "unsafe", "ai_proposed"].includes(item.disposition)) {
+        item.resolution = { status: "accepted", note: "forged approval", resolvedAt };
+      }
+    }
+    readyReport.summary.blocking = 0;
+    writeFileSync(readyReportPath, `${JSON.stringify(readyReport, null, 2)}\n`);
+    const readyProvenancePath = join(readyBypassDir, "import-provenance.json");
+    const readyProvenance = JSON.parse(readFileSync(readyProvenancePath, "utf8"));
+    readyProvenance.status = "ready";
+    readyProvenance.reportSha256 = createHash("sha256").update(readFileSync(readyReportPath)).digest("hex");
+    writeFileSync(readyProvenancePath, `${JSON.stringify(readyProvenance, null, 2)}\n`);
+    const readyBypassRefusal = run(["site", "import", "approve", readyBypassDir, "--yes"]);
+    expect(readyBypassRefusal.status).toBe(1);
+    expect(readyBypassRefusal.stderr).toContain("agent must not change import report status");
   });
 
   it("still detects an imported package after the primary gate files are deleted", () => {

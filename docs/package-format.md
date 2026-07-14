@@ -6,6 +6,7 @@
 site-package/
   site.json
   import-report.json       # generated HTML imports only
+  import-report.original.json # deterministic baseline for agent proposals
   import-report.md         # generated HTML imports only
   import-provenance.json   # generated HTML imports only
   evidence.json            # generated HTML imports only

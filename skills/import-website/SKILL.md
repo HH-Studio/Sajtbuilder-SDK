@@ -2,7 +2,7 @@
 name: import-website
 description: Convert an existing public website or local export into a safe editable SnabbSajt site package.
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.1.0"
   minimum-cli-version: "0.1.0"
   portable-format: "sajt-site@1"
   report-contract: "snabbsajt-import-report@1"
@@ -10,34 +10,44 @@ metadata:
 
 # Import a website into SnabbSajt
 
-Use this workflow when a developer asks to migrate a Next.js site, static HTML,
-or WordPress export. Treat source code as evidence, never runtime code.
+Use this workflow when a developer asks to migrate a Next.js site, rendered
+HTML, or a WordPress export. The deterministic importer runs first. AI may then
+improve the native mapping, but it cannot invent facts or bypass review.
+
+Read [the shared mapping rules](references/import-mapping-rules.md) completely
+before inspecting or changing a candidate package.
 
 ## Safety contract
 
-- Never execute imported React, JavaScript, PHP, plugins, scripts, or arbitrary CSS.
-- Never forward local cookies, authorization headers, or environment secrets.
-- Convert source into `PortableSiteV1`, validate it, and report every loss,
-  replacement, warning, and manual follow-up in `ImportReportV1`.
-- Analytics, booking, and animation behavior may only become allowlisted native
-  SnabbSajt settings or sections.
-- Keep preview and production on the same SnabbSajt renderer.
+- Never run the source or execute imported React, JavaScript, PHP, plugins,
+  scripts, build tools, or arbitrary CSS.
+- Never install source dependencies or load its environment variables.
+- Never forward cookies, authorization headers, credentials, or secrets.
+- Convert evidence into `PortableSiteV1` through native SnabbSajt sections.
+- Preserve and cite every loss, replacement, warning, proposal, and manual
+  follow-up in `ImportReportV1`.
 
 ## Workflow
 
 1. Run `snabbsajt site doctor --json` and stop on incompatible formats.
-2. Preserve the source location and hashes as evidence.
-3. Inspect the source without executing it. Inventory routes, copy, media, SEO,
-   forms, analytics, booking, animations, redirects, and unsupported behavior.
-4. Map the inventory to supported SnabbSajt sections and settings. Prefer native
-   equivalents. Mark uncertain mappings for review.
-5. Build a normal `site.json` package plus local assets.
-6. Run `snabbsajt site validate <dir> --json`.
-7. Run `snabbsajt site inspect <dir> --json` and compare route/content counts to
-   the source inventory.
-8. Produce `import-report.json` using `snabbsajt-import-report@1`. Cite source
-   paths or URLs for material claims and state what was not imported.
-9. Pack only after validation passes: `snabbsajt site pack <dir>`.
+2. Run `snabbsajt site import html <source> -o <candidate-dir> --json` for a
+   public URL, local HTML entry, or static zip.
+3. Read the deterministic evidence and report. Preserve their ids and hashes.
+4. Inventory routes, copy, media, SEO, forms, analytics, booking, animations,
+   redirects, and unsupported behavior without executing the source.
+5. Improve `site.json` only with native, evidence-backed sections/settings.
+6. Add every AI-created mapping as an `ai_proposed` report item with real
+   evidence ids and confidence, following the shared lint rules.
+7. Run `snabbsajt site validate <candidate-dir> --json` after each meaningful
+   proposal.
+8. Run `snabbsajt site inspect <candidate-dir> --json` and compare page,
+   section, content, and asset counts to the evidence inventory.
+9. Run `snabbsajt site doctor --json` again before handoff.
+10. Require human approval for all `ai_proposed`, `missing`, `unsafe`, and
+    `manual` findings. The human records it with
+    `snabbsajt site import approve <candidate-dir> --yes`.
+11. Pack only after approval: `snabbsajt site pack <candidate-dir> -o site.zip`.
 
-The current CLI does not require an API key or SnabbSajt login for these local
-steps. Do not claim a hosted import or publish happened unless separately proven.
+Do not claim the migration, browser import, edit, publish, or restore succeeded
+unless that exact step was verified. Local conversion requires no SnabbSajt API
+key or bundled model client.

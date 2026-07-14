@@ -1,6 +1,6 @@
 {
   "manifestVersion": 1,
-  "releaseVersion": "1.0.0",
+  "releaseVersion": "1.1.0",
   "minimumCliVersion": "0.1.0",
   "portableFormat": {
     "format": "sajt-site",
@@ -13,11 +13,16 @@
   "skills": [
     {
       "name": "import-website",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "files": [
         {
           "path": "SKILL.md",
-          "sha256": "2ea5cae31026f55659214bd0f9168ddbe60964e4f50ec8ec183aaf5d05aee05c"
+          "sha256": "fab6949fe025646b6be6f9adbaa14fa6c35d164118be600bfafa672e2de495c8"
+        },
+        {
+          "path": "references/import-mapping-rules.md",
+          "source": "shared/import-mapping-rules.md",
+          "sha256": "55b078378d75ff43b1a1ac7a01a6927dbd40c7c22f55c5fae66343f2f150a792"
         }
       ]
     },

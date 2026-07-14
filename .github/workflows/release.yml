@@ -32,7 +32,14 @@ jobs:
           mkdir -p release-assets
           for skill in import-website build-snabbsajt-site review-site-package; do
             archive="snabbsajt-${skill}-${version}.zip"
-            (cd skills && zip -qr "../release-assets/${archive}" "${skill}")
+            staging=$(mktemp -d)
+            cp -R "skills/${skill}" "${staging}/${skill}"
+            if [ "${skill}" = "import-website" ]; then
+              mkdir -p "${staging}/${skill}/references"
+              cp skills/shared/import-mapping-rules.md "${staging}/${skill}/references/import-mapping-rules.md"
+            fi
+            (cd "${staging}" && zip -qr "${GITHUB_WORKSPACE}/release-assets/${archive}" "${skill}")
+            rm -rf "${staging}"
             (cd release-assets && sha256sum "${archive}" > "${archive}.sha256")
           done
           cp skills/manifest.json "release-assets/snabbsajt-skills-${version}.json"

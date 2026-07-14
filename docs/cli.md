@@ -30,7 +30,10 @@ snabbsajt site pack ./package-dir -o site.zip
 ```
 
 Approval records a resolution on every remaining review finding and refreshes
-the package provenance. It refuses blocked or schema-invalid packages.
+the package provenance. It refuses blocked or schema-invalid packages. When an
+installed agent skill adds proposals, approval also proves the deterministic
+baseline is unchanged and accepts only additive, unresolved `ai_proposed`
+findings with valid evidence citations.
 
 ## Create a package
 

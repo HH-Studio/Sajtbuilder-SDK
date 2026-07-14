@@ -250,9 +250,34 @@ const IMPORT_MARKER_NAMES = [
   "REVIEW-DRAFT.md",
   "evidence.json",
   "import-report.md",
+  "import-report.original.json",
 ] as const;
 
-function importReportFor(directory: string, allowReviewedSiteChanges = false): ImportReportV1 | null {
+function sameJson(left: unknown, right: unknown): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function assertAdditiveAiReport(original: ImportReportV1, candidate: ImportReportV1): void {
+  for (const key of ["format", "revision", "adapter", "sourceInputs", "detectedPlatform", "timestamps", "requiredVersions"] as const) {
+    if (!sameJson(original[key], candidate[key])) throw new CliError("deterministic import report metadata must remain unchanged");
+  }
+  if (candidate.status !== original.status) throw new CliError("the agent must not change import report status");
+  const candidateEvidence = new Map(candidate.evidence.map((item) => [item.id, item]));
+  if (candidate.evidence.length !== original.evidence.length || original.evidence.some((item) => !sameJson(item, candidateEvidence.get(item.id)))) {
+    throw new CliError("deterministic import evidence must remain unchanged");
+  }
+  const originalItems = new Map(original.items.map((item) => [item.id, item]));
+  const candidateItems = new Map(candidate.items.map((item) => [item.id, item]));
+  if (original.items.some((item) => !sameJson(item, candidateItems.get(item.id)))) {
+    throw new CliError("deterministic import findings must remain unchanged");
+  }
+  const additions = candidate.items.filter((item) => !originalItems.has(item.id));
+  if (additions.some((item) => item.disposition !== "ai_proposed" || item.resolution !== undefined)) {
+    throw new CliError("agent report additions must be unresolved ai_proposed findings");
+  }
+}
+
+function importReportFor(directory: string, options: { allowReviewedSiteChanges?: boolean; allowAdditiveAiReport?: boolean } = {}): ImportReportV1 | null {
   const path = join(directory, "import-report.json");
   const provenancePath = join(directory, "import-provenance.json");
   if (!existsSync(path)) {
@@ -269,13 +294,31 @@ function importReportFor(directory: string, allowReviewedSiteChanges = false): I
   if (!validation.ok) throw new CliError(`${path} is invalid: ${validation.issues[0]?.path} ${validation.issues[0]?.message}`);
   if (!existsSync(provenancePath)) throw new CliError("import-provenance.json is missing; imported package provenance cannot be verified");
   if (lstatSync(provenancePath).isSymbolicLink()) throw new CliError(`${provenancePath} must not be a symbolic link`);
-  let provenance: { revision?: string; status?: string; siteSha256?: string; reportSha256?: string };
+  let provenance: { revision?: string; status?: string; siteSha256?: string; reportSha256?: string; originalReportSha256?: string; approvedAt?: string };
   try { provenance = JSON.parse(readBoundedFile(provenancePath, PORTABLE_CAPS.maxJsonBytes).toString("utf8")); } catch { throw new CliError(`${provenancePath} is not valid JSON`); }
   const digest = (file: string) => createHash("sha256").update(readBoundedFile(file, PORTABLE_CAPS.maxJsonBytes)).digest("hex");
   if (provenance.revision !== "snabbsajt.import-provenance/v1" || provenance.status !== (report as { status: string }).status) {
     throw new CliError("import provenance does not match the report status");
   }
-  if (provenance.reportSha256 !== digest(path) || (!allowReviewedSiteChanges && provenance.siteSha256 !== digest(join(directory, "site.json")))) {
+  const currentReportMatches = provenance.reportSha256 === digest(path);
+  if (options.allowAdditiveAiReport) {
+    const originalPath = join(directory, "import-report.original.json");
+    if (!existsSync(originalPath)) {
+      throw new CliError("original deterministic import report is missing or does not match provenance");
+    }
+    const originalDigest = digest(originalPath);
+    if (provenance.originalReportSha256 !== originalDigest && provenance.reportSha256 !== originalDigest) {
+      throw new CliError("original deterministic import report is missing or does not match provenance");
+    }
+    let original: unknown;
+    try { original = JSON.parse(readBoundedFile(originalPath, PORTABLE_CAPS.maxJsonBytes).toString("utf8")); } catch { throw new CliError(`${originalPath} is not valid JSON`); }
+    const originalValidation = validateImportReport(original);
+    if (!originalValidation.ok) throw new CliError(`${originalPath} is invalid`);
+    assertAdditiveAiReport(original as ImportReportV1, report as ImportReportV1);
+  } else if (!currentReportMatches) {
+    throw new CliError("site.json or import-report.json changed after conversion; regenerate or intentionally approve the reviewed candidate");
+  }
+  if (!options.allowReviewedSiteChanges && provenance.siteSha256 !== digest(join(directory, "site.json"))) {
     throw new CliError("site.json or import-report.json changed after conversion; regenerate or intentionally update import provenance after review");
   }
   return report as ImportReportV1;
@@ -292,7 +335,7 @@ function approveImport(directoryInput: string, args: string[], asJson: boolean, 
     fontFileNames: new Set(Object.keys(loaded.fontFiles)),
   });
   if (!siteValidation.ok) throw new CliError("reviewed site package is invalid; run site validate and fix every error first");
-  const report = importReportFor(loaded.dir, true);
+  const report = importReportFor(loaded.dir, { allowReviewedSiteChanges: true, allowAdditiveAiReport: true });
   if (!report) throw new CliError("site import approve only works on an HTML import package");
   if (report.status === "blocked" || report.items.some((item) => item.blocking)) {
     throw new CliError("blocked imports cannot be approved; re-import after resolving the blocking loss");
@@ -311,6 +354,10 @@ function approveImport(directoryInput: string, args: string[], asJson: boolean, 
   if (!reportValidation.ok) throw new CliError(`approved report is invalid: ${reportValidation.issues[0]?.path} ${reportValidation.issues[0]?.message}`);
   const reportJson = normalizeImportReportJson(approved);
   const siteJson = readBoundedFile(join(loaded.dir, "site.json"), PORTABLE_CAPS.maxJsonBytes);
+  const originalPath = join(loaded.dir, "import-report.original.json");
+  const originalReportSha256 = existsSync(originalPath)
+    ? createHash("sha256").update(readBoundedFile(originalPath, PORTABLE_CAPS.maxJsonBytes)).digest("hex")
+    : undefined;
   writeFileSync(join(loaded.dir, "import-report.json"), reportJson);
   writeFileSync(join(loaded.dir, "import-report.md"), renderImportReportMarkdown(approved));
   writeFileSync(join(loaded.dir, "import-provenance.json"), `${JSON.stringify({
@@ -318,6 +365,7 @@ function approveImport(directoryInput: string, args: string[], asJson: boolean, 
     status: "ready",
     siteSha256: createHash("sha256").update(siteJson).digest("hex"),
     reportSha256: createHash("sha256").update(reportJson).digest("hex"),
+    ...(originalReportSha256 ? { originalReportSha256 } : {}),
     approvedAt: resolvedAt,
   }, null, 2)}\n`);
   const marker = join(loaded.dir, "REVIEW-DRAFT.md");

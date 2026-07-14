@@ -16,3 +16,19 @@
 ### Needs human review (0 issues)
 
 No unresolved runtime defects were found in the changed-file scope.
+
+## Bug Hunt — 2026-07-14 — evidence-cited import skill
+
+### Auto-fixed (3 issues)
+
+- `packages/cli/src/commands/site.ts` — approval now always compares the
+  candidate report with the preserved deterministic baseline, so refreshing
+  provenance cannot hide changed findings.
+- `packages/cli/src/commands/site.ts` — candidates forged from `blocked` to
+  `ready` cannot skip baseline validation.
+- `packages/cli/src/skills/install.ts` — failed shared-reference copies now
+  remove the partial staging directory.
+
+### Needs human review (0 issues)
+
+No unresolved runtime defects were found in the Task 8 changed-file scope.

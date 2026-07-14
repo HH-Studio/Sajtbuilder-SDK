@@ -6,6 +6,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  rmSync,
   symlinkSync,
   writeFileSync,
 } from "node:fs";
@@ -64,6 +65,7 @@ describe("snabbsajt skills", () => {
       for (const name of ["import-website", "build-snabbsajt-site", "review-site-package"]) {
         expect(existsSync(join(root, skillRoot, name, "SKILL.md"))).toBe(true);
       }
+      expect(existsSync(join(root, skillRoot, "import-website/references/import-mapping-rules.md"))).toBe(true);
     }
   });
 
@@ -214,6 +216,20 @@ describe("snabbsajt skills", () => {
     expect(existsSync(join(root, ".agents/escape"))).toBe(false);
   });
 
+  it("rejects Windows-style traversal in manifest paths on every host OS", () => {
+    const root = createDetectedRoot("codex");
+    const assets = join(fixture(), "skills");
+    cpSync(join(repoRoot, "skills"), assets, { recursive: true });
+    const manifestPath = join(assets, "manifest.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.skills[0].files[0].source = "shared\\..\\outside.md";
+    writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+    const result = run(["skills", "install", "--agent", "auto", "--json"], root, { SNABBSAJT_SKILLS_DIR: assets });
+    expect(result.status).toBe(1);
+    expect(JSON.parse(result.stderr)).toMatchObject({ ok: false, code: "UNSAFE_PATH" });
+  });
+
   it("rejects symlinked install roots and skill targets", () => {
     const root = fixture();
     const outside = fixture();
@@ -278,6 +294,37 @@ describe("snabbsajt skills", () => {
     expect(JSON.parse(result.stderr)).toMatchObject({ ok: false, code: "CHECKSUM_MISMATCH" });
     expect(readFileSync(installed, "utf8")).toBe(before);
     expect(existsSync(join(root, ".agents/skills/import-website/undeclared.txt"))).toBe(false);
+  });
+
+  it("rejects undeclared or checksum-mismatched shared skill sources", () => {
+    const root = createDetectedRoot("codex");
+    const assets = join(fixture(), "skills");
+    cpSync(join(repoRoot, "skills"), assets, { recursive: true });
+    writeFileSync(join(assets, "shared/undeclared.md"), "must not ship");
+    let result = run(["skills", "install", "--agent", "auto", "--json"], root, { SNABBSAJT_SKILLS_DIR: assets });
+    expect(result.status).toBe(1);
+    expect(JSON.parse(result.stderr)).toMatchObject({ ok: false, code: "CHECKSUM_MISMATCH" });
+
+    const cleanAssets = join(fixture(), "skills");
+    cpSync(join(repoRoot, "skills"), cleanAssets, { recursive: true });
+    writeFileSync(join(cleanAssets, "shared/import-mapping-rules.md"), "modified without manifest update");
+    result = run(["skills", "install", "--agent", "auto", "--json"], root, { SNABBSAJT_SKILLS_DIR: cleanAssets });
+    expect(result.status).toBe(1);
+    expect(JSON.parse(result.stderr)).toMatchObject({ ok: false, code: "CHECKSUM_MISMATCH" });
+  });
+
+  it("rejects a symlinked shared skill source directory", () => {
+    const root = createDetectedRoot("codex");
+    const assets = join(fixture(), "skills");
+    cpSync(join(repoRoot, "skills"), assets, { recursive: true });
+    const outside = join(fixture(), "shared");
+    cpSync(join(assets, "shared"), outside, { recursive: true });
+    rmSync(join(assets, "shared"), { recursive: true });
+    symlinkSync(outside, join(assets, "shared"));
+
+    const result = run(["skills", "install", "--agent", "auto", "--json"], root, { SNABBSAJT_SKILLS_DIR: assets });
+    expect(result.status).toBe(1);
+    expect(JSON.parse(result.stderr)).toMatchObject({ ok: false, code: "UNSAFE_PATH" });
   });
 
   it("rejects nested source symlinks before copying", () => {

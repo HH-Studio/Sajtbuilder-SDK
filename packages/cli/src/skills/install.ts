@@ -1,5 +1,6 @@
 import {
   cpSync,
+  copyFileSync,
   existsSync,
   lstatSync,
   mkdirSync,
@@ -98,7 +99,7 @@ function installedFiles(root: string): Record<string, string> {
         throw new SkillsError("SYMLINK_TARGET", `refusing symbolic-link skill content ${path}`, { path });
       }
       if (entry.isDirectory()) visit(path);
-      else if (entry.isFile()) files[relative(root, path)] = sha256(path);
+      else if (entry.isFile()) files[relative(root, path).split(sep).join("/")] = sha256(path);
       else throw new SkillsError("UNSAFE_PATH", `unsupported installed skill entry ${path}`);
     }
   };
@@ -183,8 +184,15 @@ function replaceSkill(
   }
   const staging = join(root, `.snabbsajt-install-${planned.skill.name}-${process.pid}-${Date.now()}`);
   assertNoSymlinks(root, staging);
-  cpSync(join(assetsDir, planned.skill.name), staging, { recursive: true, errorOnExist: true });
   try {
+    cpSync(join(assetsDir, planned.skill.name), staging, { recursive: true, errorOnExist: true });
+    for (const file of planned.skill.files) {
+      if (!file.source) continue;
+      const destination = join(staging, file.path);
+      assertInside(staging, destination);
+      mkdirSync(dirname(destination), { recursive: true });
+      copyFileSync(join(assetsDir, file.source), destination);
+    }
     verifySkillDirectory(staging, planned.skill);
   } catch (error) {
     rmSync(staging, { recursive: true, force: true });

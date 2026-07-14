@@ -16,7 +16,8 @@ tested here.
   analytics prose, malformed contact escapes, unavailable remote media, long
   content, non-HTML URL responses and missing `/tmp` files.
 - Review states: `ready`, `review_required`, `blocked`, review-draft packing,
-  explicit approval, provenance changes and marker-file deletion.
+  explicit approval, evidence-cited AI proposals, provenance changes and
+  marker-file deletion.
 - Tools: source CLI through Bun, Vitest, TypeScript, package builds and archive
   inspection with `unzip`.
 - Viewports/accounts: not applicable. No browser UI, auth or account data is
@@ -44,6 +45,18 @@ tested here.
   provenance and instructions under `REVIEW-DRAFT/`.
 - Verification: `unzip -l` showed all review artifacts and no root `site.json`.
 
+### UX-CLI-003: Agent proposals could weaken the deterministic review baseline
+
+- Evidence: verified fact reproduced by changing a finding or changing a
+  blocked report to ready while refreshing candidate provenance.
+- Impact: approval could present a false clean result and undermine trust in
+  the import receipt.
+- Fix: conversion preserves `import-report.original.json`; approval always
+  compares candidates with that baseline and permits only additive, unresolved,
+  evidence-cited `ai_proposed` findings.
+- Verification: regressions cover changed deterministic findings and both
+  blocked-to-review and blocked-to-ready provenance refreshes.
+
 ## Should-have findings
 
 All six verified findings were fixed:
@@ -69,20 +82,25 @@ Both verified copy issues were fixed:
 
 1. Keep the approval receipt: it now states how many review findings were
    accepted and prints the next shell-safe command.
-2. Later, let a downloadable agent skill walk through findings one by one. This
-   is intentionally outside this narrow CLI pass.
+2. The downloadable `import-website` skill now walks through deterministic
+   findings with shared evidence rules and explicit human approval.
 
 ## Fixes completed
 
 - Review/approval flow: `packages/cli/src/commands/site.ts` and
   `packages/cli/src/commands/site/import-html.ts`.
 - Review archive contents: `src/lib/site-kit/pack.ts`.
+- Evidence-cited agent workflow: `skills/import-website/SKILL.md`,
+  `skills/shared/import-mapping-rules.md`, and `skills/manifest.json`.
+- Safe shared-reference installation: `packages/cli/src/skills/install.ts` and
+  `packages/cli/src/skills/verify.ts`.
 - Action-first, auditable report rendering: `src/import/report.ts`.
 - Clear usage: `packages/cli/src/cli.ts`, `docs/cli.md`, and `docs/html.md`.
 - Recovery and honest input errors: `src/import/html/assets.ts` and
   `src/import/html/input.ts`.
 - Automated proof: `packages/cli/test/cli.test.ts`, `test/html-input.test.ts`,
-  `test/html-map.test.ts`, and `test/import-report.test.ts`.
+  `test/html-map.test.ts`, `test/import-report.test.ts`,
+  `test/skill-contract.test.ts`, and `packages/cli/test/skills-install.test.ts`.
 
 ## Findings not fixed
 
@@ -94,12 +112,14 @@ separate integration scope and was not claimed as verified.
 - The earlier “no way to become ready” finding no longer reproduces.
 - The earlier “review archive has no evidence” finding no longer reproduces.
 - Arbitrary `G-*` prose no longer becomes verified analytics.
+- The two provenance-refresh approval bypasses no longer reproduce.
 
 ## Remaining risks
 
-- A user who owns the local directory can deliberately delete every import
-  artifact and reconstruct a hand-authored package. The provenance gate prevents
-  accidental bypass; it is not a DRM or hostile-local-user security boundary.
+- A user who owns the local directory can deliberately rewrite the candidate,
+  preserved baseline, and provenance together. These local files are not a
+  cryptographically signed external record; the gate protects the documented
+  agent workflow, not against a hostile local owner.
 - The generated ready zip still needs verification through SnabbSajt's actual
   browser upload and regular editor before the end-to-end product milestone can
   be called complete.

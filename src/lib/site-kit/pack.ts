@@ -41,6 +41,7 @@ export type PackInput = {
 
 export const REVIEW_ARTIFACT_NAMES = [
   "import-report.json",
+  "import-report.original.json",
   "import-report.md",
   "evidence.json",
   "validation.json",

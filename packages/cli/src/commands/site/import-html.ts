@@ -34,6 +34,7 @@ export async function importHtmlToDirectory(input: string, outputDirectory: stri
   writeFileSync(join(directory, "site.json"), siteJson, { flag: "wx" });
   writeFileSync(join(directory, "evidence.json"), `${JSON.stringify({ revision: "snabbsajt.evidence/v1", evidence: result.evidence }, null, 2)}\n`, { flag: "wx" });
   writeFileSync(join(directory, "import-report.json"), reportJson, { flag: "wx" });
+  writeFileSync(join(directory, "import-report.original.json"), reportJson, { flag: "wx" });
   writeFileSync(join(directory, "import-report.md"), renderImportReportMarkdown(result.report), { flag: "wx" });
   writeFileSync(join(directory, "validation.json"), `${JSON.stringify(result.validation, null, 2)}\n`, { flag: "wx" });
   for (const asset of result.assetFiles) writeFileSync(join(directory, "assets", asset.fileName), asset.bytes, { flag: "wx" });
@@ -45,6 +46,7 @@ export async function importHtmlToDirectory(input: string, outputDirectory: stri
     status: result.report.status,
     siteSha256: createHash("sha256").update(siteJson).digest("hex"),
     reportSha256: createHash("sha256").update(reportJson).digest("hex"),
+    originalReportSha256: createHash("sha256").update(reportJson).digest("hex"),
   }, null, 2)}\n`, { flag: "wx" });
   return { ...result, directory };
 }

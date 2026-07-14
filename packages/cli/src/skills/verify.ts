@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { existsSync, lstatSync, readFileSync, readdirSync } from "node:fs";
-import { dirname, isAbsolute, join, normalize, relative, resolve, sep } from "node:path";
+import { dirname, join, posix, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   IMPORT_REPORT_FORMAT,
@@ -9,7 +9,7 @@ import {
   PORTABLE_VERSION,
 } from "@snabbsajt/site-kit";
 
-export type SkillFile = { path: string; sha256: string };
+export type SkillFile = { path: string; sha256: string; source?: string };
 export type SkillManifestEntry = { name: string; version: string; files: SkillFile[] };
 export type SkillManifest = {
   manifestVersion: number;
@@ -35,9 +35,9 @@ export function sha256(path: string): string {
 }
 
 export function isSafeRelativePath(path: string): boolean {
-  if (!path || isAbsolute(path) || path.includes("\0")) return false;
-  const normalized = normalize(path);
-  return normalized !== ".." && !normalized.startsWith(`..${sep}`) && normalized === path;
+  if (!path || path.includes("\0") || path.includes("\\") || posix.isAbsolute(path)) return false;
+  const normalized = posix.normalize(path);
+  return normalized !== ".." && !normalized.startsWith("../") && normalized === path;
 }
 
 function validateManifest(value: unknown): asserts value is SkillManifest {
@@ -82,6 +82,13 @@ function validateManifest(value: unknown): asserts value is SkillManifest {
       if (!file || typeof file.path !== "string" || !isSafeRelativePath(file.path)) {
         throw new SkillsError("UNSAFE_PATH", `${skill.name} contains an unsafe file path`);
       }
+      if (file.source !== undefined && (
+        typeof file.source !== "string" ||
+        !isSafeRelativePath(file.source) ||
+        !file.source.startsWith("shared/")
+      )) {
+        throw new SkillsError("UNSAFE_PATH", `${skill.name}/${file.path} contains an unsafe shared source path`);
+      }
       if (typeof file.sha256 !== "string" || !/^[a-f0-9]{64}$/.test(file.sha256)) {
         throw new SkillsError("INVALID_MANIFEST", `${skill.name}/${file.path} has an invalid checksum`);
       }
@@ -103,7 +110,7 @@ function inventoryRegularFiles(root: string): Record<string, string> {
         throw new SkillsError("UNSAFE_PATH", `skill source must not contain symbolic links: ${relative(root, path)}`);
       }
       if (stat.isDirectory()) visit(path);
-      else if (stat.isFile()) files[relative(root, path)] = sha256(path);
+      else if (stat.isFile()) files[relative(root, path).split(sep).join("/")] = sha256(path);
       else throw new SkillsError("UNSAFE_PATH", `skill source contains unsupported entry: ${relative(root, path)}`);
     }
   };
@@ -147,7 +154,35 @@ export function loadManifest(assetsDir = canonicalSkillsDirectory()): SkillManif
     if (!existsSync(sourceRoot) || lstatSync(sourceRoot).isSymbolicLink() || !lstatSync(sourceRoot).isDirectory()) {
       throw new SkillsError("UNSAFE_PATH", `skill source must be a real directory: ${skill.name}`);
     }
-    verifySkillDirectory(sourceRoot, skill);
+    verifySkillDirectory(sourceRoot, {
+      ...skill,
+      files: skill.files.filter((file) => file.source === undefined),
+    });
+    for (const file of skill.files.filter((entry) => entry.source !== undefined)) {
+      const source = resolve(assetsDir, file.source!);
+      const sharedRoot = resolve(assetsDir, "shared");
+      if (source !== sharedRoot && !source.startsWith(`${sharedRoot}${sep}`)) {
+        throw new SkillsError("UNSAFE_PATH", `${skill.name}/${file.path} escapes shared skill assets`);
+      }
+      if (!existsSync(source) || lstatSync(source).isSymbolicLink() || !lstatSync(source).isFile()) {
+        throw new SkillsError("UNSAFE_PATH", `shared skill source must be a regular file: ${file.source}`);
+      }
+      if (sha256(source) !== file.sha256) {
+        throw new SkillsError("CHECKSUM_MISMATCH", `shared source checksum does not match manifest for ${file.source}`);
+      }
+    }
+  }
+  const sharedSources = value.skills.flatMap((skill) => skill.files.flatMap((file) => file.source ? [file.source.replace(/^shared\//, "")] : []));
+  const sharedRoot = resolve(assetsDir, "shared");
+  if (sharedSources.length > 0) {
+    if (!existsSync(sharedRoot) || lstatSync(sharedRoot).isSymbolicLink() || !lstatSync(sharedRoot).isDirectory()) {
+      throw new SkillsError("UNSAFE_PATH", "shared skill source must be a real directory");
+    }
+    const actual = Object.keys(inventoryRegularFiles(sharedRoot)).sort();
+    const expected = [...new Set(sharedSources)].sort();
+    if (actual.length !== expected.length || actual.some((path, index) => path !== expected[index])) {
+      throw new SkillsError("CHECKSUM_MISMATCH", "shared skill source inventory does not match manifest");
+    }
   }
   return value;
 }
