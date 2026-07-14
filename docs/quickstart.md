@@ -1,9 +1,10 @@
 # Quickstart
 
-Install the tagged beta for a reproducible schema:
+Until `0.2.0` is published and tagged, install the release candidate from
+`main`:
 
 ```bash
-npm install github:HH-Studio/Sajtbuilder-SDK#v0.1.0
+npm install github:HH-Studio/Sajtbuilder-SDK#main
 ```
 
 ## 1. Create a package folder

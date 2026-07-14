@@ -9,14 +9,15 @@ SnabbSajt's typed sections, validate it locally, and pack it as a safe bundle.
 
 ## Status
 
-`0.1` is a public beta. The package format, validator, and bundle format match
-the production SnabbSajt importer. The npm package name is reserved for a later
-registry release; today, install from GitHub or clone this repository.
+`0.2` is ready for its first npm beta release. The package format, validator,
+HTML/WordPress converters, CLI, skills, and bundle format match the production
+SnabbSajt importer. The packages are not public until the owner completes the
+two-step npm release in [`docs/publishing.md`](docs/publishing.md).
 
-## Install from GitHub
+## Install from GitHub before the npm release
 
 ```bash
-npm install github:HH-Studio/Sajtbuilder-SDK#v0.1.0
+npm install github:HH-Studio/Sajtbuilder-SDK#main
 ```
 
 Or clone the repository and use Bun:
@@ -44,6 +45,7 @@ No API key is needed. Every command runs locally.
 To convert rendered HTML with the newer namespaced CLI:
 
 ```bash
+npx @snabbsajt/cli@0.2.0 site import html https://example.com -o ./example-import
 snabbsajt site import html https://example.com -o ./example-import
 snabbsajt site import approve ./example-import --yes
 snabbsajt site pack ./example-import -o example.zip
@@ -105,6 +107,8 @@ then runs the same runtime validators and caps used by the production importer.
 - [Schema reference](docs/schema-reference.md)
 - [Security and limits](docs/security.md)
 - [Troubleshooting](docs/troubleshooting.md)
+- [Publish `@snabbsajt/site-kit`, then `@snabbsajt/cli`](docs/publishing.md)
+- [Versioned skill archives and checksums](release-assets/)
 - [Latest UX polish audit](docs/audits/ux-polish-bug-hunt-2026-07-14.md)
 - [Code review backlog](CODE_REVIEW_BACKLOG.md)
 - [Public SnabbSajt developer docs](https://snabbsajt.com/docs/en/developer/site-kit)
