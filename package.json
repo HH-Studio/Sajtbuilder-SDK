@@ -44,9 +44,12 @@
   "dependencies": {
     "convex": "^1.42.0",
     "convex-helpers": "^0.1.120",
-    "fflate": "^0.8.3"
+    "css-tree": "^3.2.1",
+    "fflate": "^0.8.3",
+    "parse5": "^8.0.1"
   },
   "devDependencies": {
+    "@types/css-tree": "^2.3.11",
     "@types/node": "^24.13.2",
     "tsup": "^8.5.0",
     "typescript": "^6.0.3",
