@@ -5,9 +5,11 @@ import {
   readFileSync,
   readdirSync,
   statSync,
+  unlinkSync,
   writeFileSync,
 } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import {
   IMPORT_REPORT_FORMAT,
@@ -16,13 +18,19 @@ import {
   PORTABLE_FORMAT,
   PORTABLE_VERSION,
   createStarterSite,
+  normalizeImportReportJson,
   packSitePackage,
+  renderImportReportMarkdown,
+  REVIEW_ARTIFACT_NAMES,
   validateSitePackage,
+  validateImportReport,
+  type ImportReportV1,
   type PortableSiteV1,
   type SiteKitReport,
   type StarterTemplate,
 } from "@snabbsajt/site-kit";
 import { readBoundedLocalFiles } from "@snabbsajt/site-kit/local-files";
+import { importHtmlToDirectory } from "./site/import-html";
 
 type Output = {
   stdout(message: string): void;
@@ -30,6 +38,59 @@ type Output = {
 };
 
 class CliError extends Error {}
+
+function readBoundedFile(path: string, maxBytes: number): Buffer {
+  if (!existsSync(path)) throw new CliError(`${path} does not exist`);
+  if (lstatSync(path).isSymbolicLink()) throw new CliError(`${path} must not be a symbolic link`);
+  const expected = statSync(path);
+  if (!expected.isFile()) throw new CliError(`${path} must be a regular file`);
+  if (expected.size > maxBytes) throw new CliError(`${path} exceeds the ${maxBytes} byte cap`);
+  const bytes = readFileSync(path);
+  if (bytes.byteLength !== expected.size || bytes.byteLength > maxBytes) throw new CliError(`${path} changed while it was being read`);
+  return bytes;
+}
+
+function parseImportHtmlArgs(args: string[]): { input: string; outputDirectory?: string } {
+  let input: string | undefined;
+  let outputDirectory: string | undefined;
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index]!;
+    if (argument === "-o") {
+      if (outputDirectory !== undefined) throw new CliError("site import html accepts -o only once");
+      const value = args[++index];
+      if (!value || value.startsWith("-")) throw new CliError("site import html -o requires a directory");
+      outputDirectory = value;
+      continue;
+    }
+    if (argument.startsWith("-")) throw new CliError(`unknown site import html option "${argument}"`);
+    if (input !== undefined) throw new CliError(`unexpected site import html argument "${argument}"`);
+    input = argument;
+  }
+  if (!input) throw new CliError("site import html requires a public URL, .html file, or .zip archive");
+  return { input, ...(outputDirectory ? { outputDirectory } : {}) };
+}
+
+function parsePackArgs(args: string[]): { outputPath?: string; reviewDraft: boolean } {
+  let outputPath: string | undefined;
+  let reviewDraft = false;
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index]!;
+    if (argument === "--review-draft") {
+      if (reviewDraft) throw new CliError("site pack accepts --review-draft only once");
+      reviewDraft = true;
+      continue;
+    }
+    if (argument === "-o") {
+      if (outputPath !== undefined) throw new CliError("site pack accepts -o only once");
+      const value = args[++index];
+      if (!value || value.startsWith("-")) throw new CliError("site pack -o requires a file path");
+      outputPath = value;
+      continue;
+    }
+    throw new CliError(argument.startsWith("-") ? `unknown site pack option "${argument}"` : `unexpected site pack argument "${argument}"`);
+  }
+  return { ...(outputPath ? { outputPath } : {}), reviewDraft };
+}
 
 function findPackageVersion(start: string, expectedName: string): string {
   let current = resolve(start);
@@ -127,6 +188,10 @@ function json(output: Output, value: unknown): void {
   output.stdout(JSON.stringify(value));
 }
 
+function shellArg(value: string): string {
+  return `'${value.replaceAll("'", `'\\''`)}'`;
+}
+
 function requiredTarget(command: string, target: string | undefined): string {
   if (!target) throw new CliError(`site ${command} requires a target`);
   return target;
@@ -149,7 +214,7 @@ function runDoctor(asJson: boolean, output: Output): number {
     output.stdout(`Site Kit: ${result.siteKit.package} ${result.siteKit.version}`);
     output.stdout(`Portable format: ${result.portableFormat.format} v${result.portableFormat.version}`);
     output.stdout(`Import report: ${result.importReport.format} v${result.importReport.version}`);
-    output.stdout("Skills: manifest v1 supported; no bundled skills installed");
+    output.stdout("Skills: bundled skill assets available; no skills installed in this project");
   }
   return 0;
 }
@@ -177,6 +242,92 @@ function runInit(target: string, args: string[], asJson: boolean, output: Output
   );
   if (asJson) json(output, { ok: true, command: "site init", directory: dir, template });
   else output.stdout(`created ${dir}`);
+  return 0;
+}
+
+const IMPORT_MARKER_NAMES = [
+  "import-provenance.json",
+  "REVIEW-DRAFT.md",
+  "evidence.json",
+  "import-report.md",
+] as const;
+
+function importReportFor(directory: string, allowReviewedSiteChanges = false): ImportReportV1 | null {
+  const path = join(directory, "import-report.json");
+  const provenancePath = join(directory, "import-provenance.json");
+  if (!existsSync(path)) {
+    if (IMPORT_MARKER_NAMES.some((name) => existsSync(join(directory, name)))) {
+      throw new CliError("import-report.json is missing from an imported package; packing cannot bypass its review state");
+    }
+    return null;
+  }
+  if (lstatSync(path).isSymbolicLink()) throw new CliError(`${path} must not be a symbolic link`);
+  const raw = readBoundedFile(path, PORTABLE_CAPS.maxJsonBytes);
+  let report: unknown;
+  try { report = JSON.parse(raw.toString("utf8")); } catch { throw new CliError(`${path} is not valid JSON`); }
+  const validation = validateImportReport(report);
+  if (!validation.ok) throw new CliError(`${path} is invalid: ${validation.issues[0]?.path} ${validation.issues[0]?.message}`);
+  if (!existsSync(provenancePath)) throw new CliError("import-provenance.json is missing; imported package provenance cannot be verified");
+  if (lstatSync(provenancePath).isSymbolicLink()) throw new CliError(`${provenancePath} must not be a symbolic link`);
+  let provenance: { revision?: string; status?: string; siteSha256?: string; reportSha256?: string };
+  try { provenance = JSON.parse(readBoundedFile(provenancePath, PORTABLE_CAPS.maxJsonBytes).toString("utf8")); } catch { throw new CliError(`${provenancePath} is not valid JSON`); }
+  const digest = (file: string) => createHash("sha256").update(readBoundedFile(file, PORTABLE_CAPS.maxJsonBytes)).digest("hex");
+  if (provenance.revision !== "snabbsajt.import-provenance/v1" || provenance.status !== (report as { status: string }).status) {
+    throw new CliError("import provenance does not match the report status");
+  }
+  if (provenance.reportSha256 !== digest(path) || (!allowReviewedSiteChanges && provenance.siteSha256 !== digest(join(directory, "site.json")))) {
+    throw new CliError("site.json or import-report.json changed after conversion; regenerate or intentionally update import provenance after review");
+  }
+  return report as ImportReportV1;
+}
+
+function approveImport(directoryInput: string, args: string[], asJson: boolean, output: Output): number {
+  if (args.length !== 1 || args[0] !== "--yes") {
+    throw new CliError("site import approve requires <package-dir> --yes after you review import-report.md");
+  }
+  const loaded = loadPackage(directoryInput);
+  if (!loaded.dir) throw new CliError("site import approve needs a package directory");
+  const siteValidation = validateSitePackage(loaded.payload, {
+    assetFileNames: new Set(Object.keys(loaded.assetFiles)),
+    fontFileNames: new Set(Object.keys(loaded.fontFiles)),
+  });
+  if (!siteValidation.ok) throw new CliError("reviewed site package is invalid; run site validate and fix every error first");
+  const report = importReportFor(loaded.dir, true);
+  if (!report) throw new CliError("site import approve only works on an HTML import package");
+  if (report.status === "blocked" || report.items.some((item) => item.blocking)) {
+    throw new CliError("blocked imports cannot be approved; re-import after resolving the blocking loss");
+  }
+  const resolvedAt = new Date().toISOString();
+  const reviewDispositions = new Set(["manual", "missing", "unsafe", "ai_proposed"]);
+  const approved: ImportReportV1 = {
+    ...report,
+    status: "ready",
+    items: report.items.map((item) => reviewDispositions.has(item.disposition) && !item.resolution
+      ? { ...item, resolution: { status: "accepted" as const, note: "Accepted after explicit local review", resolvedAt } }
+      : item),
+  };
+  const accepted = approved.items.filter((item) => item.resolution?.resolvedAt === resolvedAt).length;
+  const reportValidation = validateImportReport(approved);
+  if (!reportValidation.ok) throw new CliError(`approved report is invalid: ${reportValidation.issues[0]?.path} ${reportValidation.issues[0]?.message}`);
+  const reportJson = normalizeImportReportJson(approved);
+  const siteJson = readBoundedFile(join(loaded.dir, "site.json"), PORTABLE_CAPS.maxJsonBytes);
+  writeFileSync(join(loaded.dir, "import-report.json"), reportJson);
+  writeFileSync(join(loaded.dir, "import-report.md"), renderImportReportMarkdown(approved));
+  writeFileSync(join(loaded.dir, "import-provenance.json"), `${JSON.stringify({
+    revision: "snabbsajt.import-provenance/v1",
+    status: "ready",
+    siteSha256: createHash("sha256").update(siteJson).digest("hex"),
+    reportSha256: createHash("sha256").update(reportJson).digest("hex"),
+    approvedAt: resolvedAt,
+  }, null, 2)}\n`);
+  const marker = join(loaded.dir, "REVIEW-DRAFT.md");
+  if (existsSync(marker)) unlinkSync(marker);
+  if (asJson) json(output, { ok: true, command: "site import approve", directory: loaded.dir, status: "ready", publishReady: true, accepted });
+  else {
+    output.stdout(`approved ${loaded.dir}`);
+    output.stdout(`Import status: ready; publish-ready: yes; accepted review findings: ${accepted}`);
+    output.stdout(`Next: snabbsajt site pack ${shellArg(loaded.dir)}`);
+  }
   return 0;
 }
 
@@ -209,9 +360,68 @@ export async function runSiteCommand(
   try {
     if (command === "doctor") return runDoctor(asJson, output);
     if (command === "init") return runInit(requiredTarget(command, target), rest, asJson, output);
+    if (command === "import") {
+      if (target === "--help" || target === "-h") {
+        output.stdout("Usage: snabbsajt site import html <url|file.html|site.zip> [-o package-dir] [--json]");
+        output.stdout("       snabbsajt site import approve <package-dir> --yes [--json]");
+        return 0;
+      }
+      if (target === "approve") {
+        if (rest.includes("--help") || rest.includes("-h")) {
+          output.stdout("Usage: snabbsajt site import approve <package-dir> --yes [--json]");
+          output.stdout("Review import-report.md first. Blocked or invalid imports cannot be approved.");
+          return 0;
+        }
+        const directory = rest.shift();
+        if (!directory) throw new CliError("site import approve requires a package directory");
+        return approveImport(directory, rest, asJson, output);
+      }
+      if (target !== "html") throw new CliError(`unknown site import adapter "${target ?? ""}"`);
+      if (rest.includes("--help") || rest.includes("-h")) {
+        output.stdout("Usage: snabbsajt site import html <url|file.html|site.zip> [-o package-dir] [--json]");
+        output.stdout("Review import-report.md, edit site.json if needed, then run: snabbsajt site import approve <package-dir> --yes");
+        return 0;
+      }
+      const parsed = parseImportHtmlArgs(rest);
+      const input = parsed.input;
+      const outputDirectory = parsed.outputDirectory
+        ? parsed.outputDirectory
+        : `${basename(input).replace(/\.(?:html?|zip)$/i, "") || "import"}-snabbsajt`;
+      const result = await importHtmlToDirectory(input, outputDirectory, installedVersions().cli);
+      const counts = reportCounts(result.validation);
+      const response = {
+        ok: result.validation.ok,
+        command: "site import html",
+        directory: result.directory,
+        status: result.report.status,
+        publishReady: result.report.status === "ready" && result.validation.ok,
+        pages: result.site.pages.length,
+        sections: result.site.sections.length,
+        ...counts,
+        issues: result.validation.issues,
+      };
+      if (asJson) json(output, response);
+      else {
+        output.stdout(`created ${result.directory}`);
+        output.stdout(`Import status: ${result.report.status}; publish-ready: ${response.publishReady ? "yes" : "no"}`);
+        output.stdout(`Imported: ${response.pages} page(s), ${response.sections} section(s), ${result.site.assets.length} asset(s)`);
+        output.stdout(`Review: ${join(result.directory, "import-report.md")}`);
+        output.stdout(`Next: snabbsajt site import approve ${shellArg(result.directory)} --yes`);
+        output.stdout("Schema validation:");
+        printReport(result.validation, output);
+      }
+      return result.validation.ok ? 0 : 1;
+    }
     if (command !== "inspect" && command !== "validate" && command !== "pack") {
       throw new CliError(`unknown site command "${command ?? ""}"`);
     }
+    if (command === "pack" && (target === "--help" || target === "-h" || rest.includes("--help") || rest.includes("-h"))) {
+      output.stdout("Usage: snabbsajt site pack <dir> [-o bundle.zip] [--review-draft] [--json]");
+      output.stdout("Unresolved imports require --review-draft. Review drafts are not importable or publish-ready.");
+      return 0;
+    }
+    if (command !== "pack" && rest.length > 0) throw new CliError(`site ${command} does not accept extra arguments`);
+    const packOptions = command === "pack" ? parsePackArgs(rest) : undefined;
 
     const loaded = loadPackage(requiredTarget(command, target));
     const report = validateSitePackage(loaded.payload, {
@@ -251,16 +461,31 @@ export async function runSiteCommand(
       printReport(report, output);
     }
     if (!loaded.dir) throw new CliError("pack needs a package directory");
-    const outIndex = rest.indexOf("-o");
+    const importReport = importReportFor(loaded.dir);
+    const reviewDraft = packOptions!.reviewDraft;
+    if (reviewDraft && !importReport) throw new CliError("--review-draft is only valid for a package with an unresolved import report");
+    if (reviewDraft && importReport?.status === "ready") throw new CliError("import report is ready; pack without --review-draft");
+    if (importReport && importReport.status !== "ready" && !reviewDraft) {
+      throw new CliError(`import report status is ${importReport.status}; resolve review items or explicitly pass --review-draft`);
+    }
     const outPath = resolve(
-      outIndex >= 0 && rest[outIndex + 1]
-        ? rest[outIndex + 1]
-        : `${basename(loaded.dir)}-bundle.zip`,
+      packOptions!.outputPath
+        ? packOptions!.outputPath
+        : `${basename(loaded.dir)}-${importReport && importReport.status !== "ready" ? "review-draft" : "bundle"}.zip`,
     );
+    const reviewFiles = importReport && importReport.status !== "ready"
+      ? Object.fromEntries(REVIEW_ARTIFACT_NAMES.flatMap((name) => {
+          const path = join(loaded.dir!, name);
+          return existsSync(path) ? [[name, readBoundedFile(path, PORTABLE_CAPS.maxJsonBytes)]] : [];
+        }))
+      : undefined;
     const result = await packSitePackage({
       site: loaded.payload as PortableSiteV1,
       assetFiles: loaded.assetFiles,
       fontFiles: loaded.fontFiles,
+      ...(importReport && importReport.status !== "ready" ? {
+        reviewDraft: { reportStatus: importReport.status, acknowledgedAt: new Date().toISOString(), files: reviewFiles },
+      } : {}),
     });
     writeFileSync(outPath, result.zip);
     if (asJson) {
@@ -270,12 +495,18 @@ export async function runSiteCommand(
         output: outPath,
         bytes: result.zip.byteLength,
         missing: result.missing,
+        reviewDraft: Boolean(importReport && importReport.status !== "ready"),
+        publishReady: !(importReport && importReport.status !== "ready"),
       });
-    } else output.stdout(`wrote ${outPath} (${result.zip.byteLength} bytes)`);
+    } else {
+      output.stdout(`wrote ${outPath} (${result.zip.byteLength} bytes)`);
+      if (importReport && importReport.status !== "ready") output.stdout("REVIEW DRAFT: this bundle is not publish-ready");
+    }
     return 0;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    if (asJson) json(output, { ok: false, command: `site ${command ?? ""}`.trim(), error: message });
+    const commandName = command === "import" && target ? `site import ${target}` : `site ${command ?? ""}`.trim();
+    if (asJson) json(output, { ok: false, command: commandName, error: message });
     else output.stderr(`snabbsajt: ${message}`);
     return 1;
   }

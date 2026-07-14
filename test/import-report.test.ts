@@ -74,6 +74,16 @@ describe("ImportReportV1", () => {
     const blocker = clone(fixtures().find(({ name }) => name === "missing-booking-facts.json")!.report);
     blocker.status = "ready";
     expect(validateImportReport(blocker).issues.some((issue) => issue.path === "status")).toBe(true);
+
+    const unresolved = clone(fixtures().find(({ name }) => name === "unsafe-script.json")!.report);
+    unresolved.status = "ready";
+    expect(validateImportReport(unresolved).issues.some((issue) => issue.path === "status")).toBe(true);
+    unresolved.items[0].resolution = {
+      status: "accepted",
+      note: "Reviewed and intentionally omitted",
+      resolvedAt: "2026-07-14T10:00:00.000Z",
+    };
+    expect(validateImportReport(unresolved)).toEqual({ ok: true, issues: [] });
   });
 
   it("normalizes JSON and Markdown deterministically", () => {

@@ -103,7 +103,11 @@ export function readLocalFile(options: {
   const lexicalRoot = resolve(options.root);
   const lexicalTarget = resolve(lexicalRoot, options.path);
   if (!isWithin(lexicalRoot, lexicalTarget)) throw new Error(`path is outside selected root: ${options.path}`);
-  if (lstatSync(lexicalRoot).isSymbolicLink()) throw new Error(`selected root must not be a symbolic link: ${options.root}`);
+  if (lstatSync(lexicalRoot).isSymbolicLink()) {
+    const canonical = realpathSync(lexicalRoot);
+    const trustedMacTmp = process.platform === "darwin" && lexicalRoot === "/tmp" && canonical === "/private/tmp";
+    if (!trustedMacTmp) throw new Error(`selected root must not be a symbolic link: ${options.root}`);
+  }
 
   let canonicalRoot: string;
   let canonicalParent: string;

@@ -31,7 +31,23 @@ export type PackInput = {
   fontFiles?: Record<string, Uint8Array>;
   /** Injectable for tests; defaults to now. */
   exportedAt?: string;
+  /** Explicit label embedded in a bundle produced from an unresolved import report. */
+  reviewDraft?: {
+    reportStatus: "review_required" | "blocked";
+    acknowledgedAt: string;
+    files?: Partial<Record<ReviewArtifactName, Uint8Array>>;
+  };
 };
+
+export const REVIEW_ARTIFACT_NAMES = [
+  "import-report.json",
+  "import-report.md",
+  "evidence.json",
+  "validation.json",
+  "import-provenance.json",
+  "REVIEW-DRAFT.md",
+] as const;
+export type ReviewArtifactName = (typeof REVIEW_ARTIFACT_NAMES)[number];
 
 export type PackResult = {
   zip: Uint8Array;
@@ -120,9 +136,25 @@ export async function packSitePackage(input: PackInput): Promise<PackResult> {
   };
 
   const enc = new TextEncoder();
-  files[BUNDLE_SITE_JSON] = enc.encode(JSON.stringify(site));
+  const sitePath = input.reviewDraft ? "REVIEW-DRAFT/site.json" : BUNDLE_SITE_JSON;
+  files[sitePath] = enc.encode(JSON.stringify(site));
   files[BUNDLE_MANIFEST_JSON] = enc.encode(JSON.stringify(manifest));
-  totalBytes += files[BUNDLE_SITE_JSON].byteLength + files[BUNDLE_MANIFEST_JSON].byteLength;
+  if (input.reviewDraft) {
+    const { files: reviewFiles, ...reviewMetadata } = input.reviewDraft;
+    files["REVIEW-DRAFT.json"] = enc.encode(JSON.stringify({
+      kind: "snabbsajt-review-draft",
+      publishReady: false,
+      ...reviewMetadata,
+    }));
+    for (const name of REVIEW_ARTIFACT_NAMES) {
+      const bytes = reviewFiles?.[name];
+      if (!bytes) continue;
+      files[`REVIEW-DRAFT/${name}`] = bytes;
+      totalBytes += bytes.byteLength;
+    }
+  }
+  totalBytes += files[sitePath].byteLength + files[BUNDLE_MANIFEST_JSON].byteLength;
+  if (files["REVIEW-DRAFT.json"]) totalBytes += files["REVIEW-DRAFT.json"].byteLength;
 
   if (totalBytes > PORTABLE_CAPS.maxBundleBytes) {
     throw new Error(

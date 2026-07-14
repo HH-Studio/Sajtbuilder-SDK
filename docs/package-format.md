@@ -5,6 +5,10 @@
 ```text
 site-package/
   site.json
+  import-report.json       # generated HTML imports only
+  import-report.md         # generated HTML imports only
+  import-provenance.json   # generated HTML imports only
+  evidence.json            # generated HTML imports only
   assets/<exportId>.<ext>
   fonts/<tmpId>__<index>.<ext>
 ```
@@ -43,6 +47,14 @@ Themes use allow-listed tokens. Raw colors and CSS are not accepted. Import
 `site-kit pack` creates a zip containing `site.json`, `manifest.json`, and all
 declared blobs. The manifest records SHA-256 and byte length for each file.
 SnabbSajt verifies those checksums before storing any asset.
+
+An unresolved HTML import can only be packed with `--review-draft`. That archive
+places `site.json`, report, evidence and validation under `REVIEW-DRAFT/` and
+omits root `site.json`. It is a review artifact, not an importable site bundle.
+
+Approved imports keep their reviewed findings and per-item resolutions in the
+report. The provenance file binds the approved report and current `site.json`
+by SHA-256 so accidental post-review changes are caught before packing.
 
 ## Compatibility
 

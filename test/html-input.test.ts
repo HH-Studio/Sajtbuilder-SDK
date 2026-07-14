@@ -104,6 +104,22 @@ describe("structural HTML inventory", () => {
     ]);
   });
 
+  it("captures editable copy, nested form labels, and explicit gallery groups", () => {
+    const result = parseHtmlDocument(`
+      <main><h1>Work</h1><p>Intro copy</p><ul><li>First service</li></ul>
+      <form action="mailto:lead@example.com" method="post"><label>Your name <input name="name" required></label></form>
+      <div class="project-gallery"><img src="a.png"><img src="b.png"><img src="c.png"></div></main>
+    `, "https://example.com/");
+
+    expect(result.contentBlocks).toEqual([
+      { kind: "heading", level: 1, text: "Work" },
+      { kind: "paragraph", text: "Intro copy" },
+      { kind: "list-item", text: "First service" },
+    ]);
+    expect(result.evidence.forms[0]?.fields[0]).toMatchObject({ label: "Your name", required: true });
+    expect(result.mediaGroups).toEqual([["https://example.com/a.png", "https://example.com/b.png", "https://example.com/c.png"]]);
+  });
+
   it("walks deeply nested hostile markup without recursive overflow or quadratic subtree scans", () => {
     const depth = 3_000;
     const html = `<h1>${"<span>".repeat(depth)}Deep${"</span>".repeat(depth)}</h1><p>Done</p>`;
@@ -340,6 +356,20 @@ describe("bounded HTML input", () => {
     expect(result.evidence.thirdPartyHosts).toContain("cdn.example");
     expect(calls.map((call) => call.url).sort()).toEqual(Object.keys(bodies).sort());
     expect(calls.every((call) => call.options.maxBytes! > 0 && call.options.timeoutMs! > 0)).toBe(true);
+  });
+
+  it("rejects a non-HTML entry URL and skips non-HTML anchor targets", async () => {
+    const fetcher = async (url: string): Promise<SafeFetchResult> => ({
+      status: 200,
+      headers: { "content-type": url.endsWith(".pdf") ? "application/pdf" : "text/html; charset=utf-8" },
+      body: new TextEncoder().encode(url.endsWith(".pdf") ? "%PDF" : '<title>Home</title><a href="/guide.pdf">Guide</a>'),
+      finalUrl: url,
+      redirects: [],
+    });
+    await expect(ingestHtmlInput("https://site.example/guide.pdf", { fetcher })).rejects.toThrow(/did not return HTML/i);
+    const result = await ingestHtmlInput("https://site.example/", { fetcher });
+    expect(result.pages).toHaveLength(1);
+    expect(result.warnings).toContainEqual(expect.stringContaining("Skipped non-HTML page candidate"));
   });
 
   it("propagates safe-fetch rejection for a hostile media hop instead of bypassing the policy", async () => {

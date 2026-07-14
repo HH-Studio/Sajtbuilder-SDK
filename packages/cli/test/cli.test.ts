@@ -6,11 +6,13 @@ import {
   readFileSync,
   symlinkSync,
   truncateSync,
+  unlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { unzipSync } from "fflate";
 import { readBoundedLocalFiles } from "@snabbsajt/site-kit/local-files";
 
 const repoRoot = resolve(import.meta.dirname, "../../..");
@@ -30,7 +32,7 @@ function runJson(args: string[], cwd = repoRoot): unknown {
 }
 
 describe("snabbsajt site CLI", () => {
-  it("documents local site and Task 5 skill commands without exposing import commands", () => {
+  it("documents local site, HTML import, and skill commands", () => {
     const result = run(["--help"]);
 
     expect(result.status).toBe(0);
@@ -40,7 +42,7 @@ describe("snabbsajt site CLI", () => {
     expect(result.stdout).toContain("snabbsajt site pack");
     expect(result.stdout).toContain("snabbsajt site doctor");
     expect(result.stdout).toContain("No API key is required");
-    expect(result.stdout).not.toContain("site import");
+    expect(result.stdout).toContain("site import html");
     expect(result.stdout).toContain("skills install");
   });
 
@@ -91,6 +93,107 @@ describe("snabbsajt site CLI", () => {
       output: bundle,
     });
     expect(existsSync(bundle)).toBe(true);
+  });
+
+  it("imports HTML artifacts and durably gates unresolved review drafts", () => {
+    const root = mkdtempSync(join(tmpdir(), "snabbsajt-cli-import-"));
+    const source = join(root, "source.html");
+    const packageDir = join(root, "package");
+    const bundle = join(root, "review-draft.zip");
+    writeFileSync(source, `<h1>Studio</h1><form action="/unknown" method="post"><input name="email" type="email"></form><script>alert('inert')</script>`);
+
+    expect(runJson(["site", "import", "html", source, "-o", packageDir])).toMatchObject({
+      ok: true,
+      command: "site import html",
+      directory: packageDir,
+      status: "review_required",
+      publishReady: false,
+    });
+    for (const artifact of ["site.json", "evidence.json", "import-report.json", "import-report.md", "validation.json", "import-provenance.json", "REVIEW-DRAFT.md"]) {
+      expect(existsSync(join(packageDir, artifact))).toBe(true);
+    }
+
+    const refused = run(["site", "pack", packageDir, "-o", bundle]);
+    expect(refused.status).toBe(1);
+    expect(refused.stderr).toContain("explicitly pass --review-draft");
+
+    expect(runJson(["site", "pack", packageDir, "-o", bundle, "--review-draft"])).toMatchObject({
+      ok: true,
+      reviewDraft: true,
+      publishReady: false,
+    });
+    const archive = unzipSync(readFileSync(bundle));
+    expect(archive["site.json"]).toBeUndefined();
+    expect(archive["REVIEW-DRAFT/site.json"]).toBeDefined();
+    expect(archive["REVIEW-DRAFT/import-report.json"]).toBeDefined();
+    expect(archive["REVIEW-DRAFT/import-report.md"]).toBeDefined();
+    expect(archive["REVIEW-DRAFT/evidence.json"]).toBeDefined();
+    expect(JSON.parse(new TextDecoder().decode(archive["REVIEW-DRAFT.json"]))).toMatchObject({
+      kind: "snabbsajt-review-draft",
+      reportStatus: "review_required",
+      publishReady: false,
+    });
+
+    unlinkSync(join(packageDir, "import-report.json"));
+    const bypass = run(["site", "pack", packageDir, "--review-draft"]);
+    expect(bypass.status).toBe(1);
+    expect(bypass.stderr).toContain("packing cannot bypass its review state");
+  });
+
+  it("supports explicit review approval and then emits a normal publish-ready bundle", () => {
+    const root = mkdtempSync(join(tmpdir(), "snabbsajt-cli-approve-"));
+    const source = join(root, "source.html");
+    const packageDir = join(root, "package");
+    const bundle = join(root, "site.zip");
+    writeFileSync(source, `<title>Studio</title><h1>Studio</h1><form action="/unknown" method="post"><input name="email"></form>`);
+    expect(runJson(["site", "import", "html", source, "-o", packageDir])).toMatchObject({ status: "review_required" });
+    expect(runJson(["site", "import", "approve", packageDir, "--yes"])).toMatchObject({
+      ok: true,
+      status: "ready",
+      publishReady: true,
+    });
+    const report = JSON.parse(readFileSync(join(packageDir, "import-report.json"), "utf8"));
+    expect(report.items.some((item: { resolution?: unknown }) => item.resolution)).toBe(true);
+    expect(existsSync(join(packageDir, "REVIEW-DRAFT.md"))).toBe(false);
+    expect(runJson(["site", "pack", packageDir, "-o", bundle])).toMatchObject({ publishReady: true, reviewDraft: false });
+    const archive = unzipSync(readFileSync(bundle));
+    expect(archive["site.json"]).toBeDefined();
+    expect(archive["REVIEW-DRAFT.json"]).toBeUndefined();
+  });
+
+  it("still detects an imported package after the primary gate files are deleted", () => {
+    const root = mkdtempSync(join(tmpdir(), "snabbsajt-cli-gate-removal-"));
+    const source = join(root, "source.html");
+    const packageDir = join(root, "package");
+    writeFileSync(source, `<h1>Studio</h1><form action="/unknown"><input name="email"></form>`);
+    expect(runJson(["site", "import", "html", source, "-o", packageDir])).toMatchObject({ status: "review_required" });
+    unlinkSync(join(packageDir, "import-report.json"));
+    unlinkSync(join(packageDir, "import-provenance.json"));
+    unlinkSync(join(packageDir, "REVIEW-DRAFT.md"));
+    const bypass = run(["site", "pack", packageDir]);
+    expect(bypass.status).toBe(1);
+    expect(bypass.stderr).toContain("packing cannot bypass its review state");
+  });
+
+  it("shows nested import and pack help without treating help as input", () => {
+    expect(run(["site", "import", "--help"]).stdout).toContain("site import approve");
+    expect(run(["site", "import", "html", "--help"]).stdout).toContain("site import approve");
+    expect(run(["site", "import", "approve", "--help"]).stdout).toContain("Blocked or invalid imports cannot be approved");
+    expect(run(["site", "pack", "--help"]).stdout).toContain("Review drafts are not importable");
+  });
+
+  it("rejects ambiguous and misspelled HTML import or pack options", () => {
+    const root = mkdtempSync(join(tmpdir(), "snabbsajt-cli-options-"));
+    const source = join(root, "source.html");
+    const packageDir = join(root, "package");
+    writeFileSync(source, "<h1>Studio</h1>");
+
+    expect(run(["site", "import", "html", source, "-o"]).stderr).toContain("-o requires a directory");
+    expect(run(["site", "import", "html", source, "extra.html"]).stderr).toContain("unexpected site import html argument");
+    expect(run(["site", "import", "html", source, "--ouput", packageDir]).stderr).toContain("unknown site import html option");
+    expect(runJson(["site", "import", "html", source, "-o", packageDir])).toMatchObject({ ok: true });
+    expect(run(["site", "pack", packageDir, "--review-darft"]).stderr).toContain("unknown site pack option");
+    expect(run(["site", "pack", packageDir, "-o"]).stderr).toContain("-o requires a file path");
   });
 
   it("preserves non-JSON output and failure exit codes", () => {

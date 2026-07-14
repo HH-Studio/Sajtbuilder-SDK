@@ -8,9 +8,11 @@ function usage(): void {
 
 Usage:
   snabbsajt site init <dir> [--template nextjs|html] [--json]
+  snabbsajt site import html <url|file.html|site.zip> [-o package-dir] [--json]
+  snabbsajt site import approve <package-dir> --yes [--json]
   snabbsajt site inspect <site.json|dir> [--json]
   snabbsajt site validate <site.json|dir> [--json]
-  snabbsajt site pack <dir> [-o bundle.zip] [--json]
+  snabbsajt site pack <dir> [-o bundle.zip] [--review-draft] [--json]
   snabbsajt site doctor [--json]
   snabbsajt skills install --agent auto|codex|claude|all [--global] [--force] [--json]
   snabbsajt skills list --agent auto|codex|claude|all [--global] [--json]

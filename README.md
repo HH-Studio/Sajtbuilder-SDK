@@ -41,6 +41,17 @@ creates a new unpublished draft. It never overwrites or publishes a site.
 
 No API key is needed. Every command runs locally.
 
+To convert rendered HTML with the newer namespaced CLI:
+
+```bash
+snabbsajt site import html https://example.com -o ./example-import
+snabbsajt site import approve ./example-import --yes
+snabbsajt site pack ./example-import -o example.zip
+```
+
+Always read `import-report.md` before approval. Unsupported behavior is reported
+and stays inert; blocked content loss cannot be approved.
+
 ## Typed authoring
 
 ```ts
@@ -87,6 +98,8 @@ then runs the same runtime validators and caps used by the production importer.
 - [Schema reference](docs/schema-reference.md)
 - [Security and limits](docs/security.md)
 - [Troubleshooting](docs/troubleshooting.md)
+- [Latest UX polish audit](docs/audits/ux-polish-bug-hunt-2026-07-14.md)
+- [Code review backlog](CODE_REVIEW_BACKLOG.md)
 - [Public SnabbSajt developer docs](https://snabbsajt.com/docs/en/developer/site-kit)
 
 ## What Site Kit will not do

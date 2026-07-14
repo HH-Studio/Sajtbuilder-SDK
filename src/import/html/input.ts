@@ -62,6 +62,11 @@ const HTML_EXTENSIONS = new Set([".html", ".htm"]);
 const TEXT_DECODER = new TextDecoder("utf-8");
 const EVIDENCE_TEXT_CAP = 64 * 1024;
 
+function isHtmlResponse(response: SafeFetchResult): boolean {
+  const contentType = response.headers["content-type"]?.split(";", 1)[0]?.trim().toLowerCase();
+  return !contentType || contentType === "text/html" || contentType === "application/xhtml+xml";
+}
+
 function limitsFrom(options: HtmlIngestionOptions): HtmlInputLimits {
   const limits = { ...DEFAULT_HTML_INPUT_LIMITS };
   for (const key of Object.keys(limits) as Array<keyof HtmlInputLimits>) {
@@ -256,6 +261,8 @@ async function ingestVirtual(
     const page = parseHtmlDocument(TEXT_DECODER.decode(bytes), syntheticUrl(pagePath));
     page.url = pagePath;
     page.links = page.links.map(localize);
+    page.navigation = page.navigation.map((entry) => ({ ...entry, href: localize(entry.href) }));
+    page.mediaGroups = page.mediaGroups.map((group) => group.map(localize));
     page.media = page.media.map(localize);
     page.stylesheets = page.stylesheets.map(localize);
     for (const form of page.evidence.forms) if (form.action) form.action = localize(form.action);
@@ -357,6 +364,7 @@ async function ingestUrl(input: string, options: HtmlIngestionOptions, limits: H
   };
 
   const first = await fetchResource(input, limits.maxHtmlBytes);
+  if (!isHtmlResponse(first)) throw new Error(`public URL did not return HTML (${first.headers["content-type"] ?? "unknown content type"})`);
   selectedOrigin = new URL(first.finalUrl).origin;
   result.source.value = first.finalUrl;
   const pageQueue = [first.finalUrl];
@@ -392,6 +400,10 @@ async function ingestUrl(input: string, options: HtmlIngestionOptions, limits: H
   while (pageQueue.length > 0) {
     const pageUrl = pageQueue.shift()!;
     const response = await fetchResource(pageUrl, limits.maxHtmlBytes);
+    if (!isHtmlResponse(response)) {
+      result.warnings.push(`Skipped non-HTML page candidate ${response.finalUrl} (${response.headers["content-type"] ?? "unknown content type"})`);
+      continue;
+    }
     const page = parseHtmlDocument(TEXT_DECODER.decode(response.body), response.finalUrl);
     result.pages.push(page);
     mergePageEvidence(result, page);

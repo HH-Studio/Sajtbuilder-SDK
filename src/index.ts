@@ -24,8 +24,8 @@ export { SECTION_REGISTRY, isValidVariant } from "./lib/sections/registry";
 export { PORTABLE_CAPS, checkCaps } from "./lib/portability/caps";
 export type { SiteKitIssue, SiteKitReport } from "./lib/site-kit/validate";
 export { validateSitePackage } from "./lib/site-kit/validate";
-export type { PackInput, PackResult } from "./lib/site-kit/pack";
-export { packSitePackage } from "./lib/site-kit/pack";
+export type { PackInput, PackResult, ReviewArtifactName } from "./lib/site-kit/pack";
+export { packSitePackage, REVIEW_ARTIFACT_NAMES } from "./lib/site-kit/pack";
 export { createStarterSite } from "./starter";
 export type { StarterTemplate } from "./starter";
 export {
@@ -53,6 +53,13 @@ export type {
   EvidenceKind,
   ImportReportIssue,
 } from "./import/evidence";
+export { ingestHtmlInput, DEFAULT_HTML_INPUT_LIMITS } from "./import/html/input";
+export type { HtmlIngestionOptions, HtmlIngestionResult, HtmlInputLimits } from "./import/html/input";
+export { detectHtmlBehavior } from "./import/html/behavior";
+export type { BehaviorSignal, HtmlBehaviorInventory } from "./import/html/behavior";
+export { mapHtmlIngestion } from "./import/html/map";
+export type { HtmlMappedAssetFile, HtmlMappingOptions, HtmlMappingResult } from "./import/html/map";
+export { BOOKING_PROVIDER_HOSTS, detectSupportedBookingProvider, nativeFormReplacement } from "./import/native-replacements";
 
 type SectionBase = Omit<PortableSiteV1["sections"][number], "type" | "content">;
 
