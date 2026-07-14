@@ -68,7 +68,7 @@ private `packages/site-kit` workspace link.
 
 ```bash
 npm publish --access public --cache "$TMPDIR/npm-cache"
-npm view @snabbsajt/site-kit@0.2.0 version dist.integrity --json --cache "$TMPDIR/npm-cache"
+npm view @snabbsajt/site-kit@0.2.0 version dist.integrity --json --prefer-online --cache "$TMPDIR/npm-cache"
 ```
 
 Stop if the registry verification does not return `0.2.0` and an integrity
@@ -78,11 +78,15 @@ hash. Do not publish the CLI against a missing dependency.
 
 ```bash
 npm publish --workspace packages/cli --access public --cache "$TMPDIR/npm-cache"
-npm view @snabbsajt/cli@0.2.0 version dependencies bin dist.integrity --json --cache "$TMPDIR/npm-cache"
+npm view @snabbsajt/cli@0.2.0 version dependencies bin dist.integrity --json --prefer-online --cache "$TMPDIR/npm-cache"
 ```
 
 The response must show the `snabbsajt` binary and the exact Site Kit `0.2.0`
 dependency.
+
+`--prefer-online` matters immediately after the first publication. Without it,
+npm can reuse a cached pre-publication `E404` even though the registry already
+contains the package.
 
 ## Clean-machine verification
 
