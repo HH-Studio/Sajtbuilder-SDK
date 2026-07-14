@@ -23,12 +23,12 @@
     },
     "packages/cli": {
       "name": "@snabbsajt/cli",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "bin": {
         "snabbsajt": "./dist/cli.js",
       },
       "dependencies": {
-        "@snabbsajt/site-kit": "0.1.0",
+        "@snabbsajt/site-kit": "0.2.0",
       },
       "devDependencies": {
         "@types/node": "^24.13.2",
@@ -39,7 +39,7 @@
     },
     "packages/site-kit": {
       "name": "@snabbsajt/site-kit",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "bin": {
         "site-kit": "./dist/cli.js",
       },

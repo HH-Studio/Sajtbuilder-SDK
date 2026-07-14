@@ -1,15 +1,18 @@
 {
   "name": "@snabbsajt/site-kit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Build, validate, and pack editable SnabbSajt site packages.",
   "license": "MIT",
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HH-Studio/Sajtbuilder-SDK.git#v0.1.0"
+    "url": "git+https://github.com/HH-Studio/Sajtbuilder-SDK.git#v0.2.0"
   },
   "homepage": "https://snabbsajt.com/docs/en/developer/site-kit",
   "bugs": "https://github.com/HH-Studio/Sajtbuilder-SDK/issues",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "site-kit": "./dist/cli.js"
   },
@@ -38,6 +41,7 @@
     "test": "vitest run && bun run --cwd packages/cli test",
     "typecheck": "tsc --noEmit && bun run --cwd packages/cli typecheck",
     "contract:check": "bun scripts/sync-contract.ts --check",
+    "release:assets": "bun scripts/package-skill-assets.ts",
     "check": "bun run build && bun run typecheck && bun run test && bun run contract:check",
     "prepare": "npm run build"
   },

@@ -63,8 +63,8 @@ describe("snabbsajt site CLI", () => {
     expect(runJson(["site", "doctor"])).toEqual({
       ok: true,
       command: "site doctor",
-      cli: { package: "@snabbsajt/cli", version: "0.1.0" },
-      siteKit: { package: "@snabbsajt/site-kit", version: "0.1.0" },
+      cli: { package: "@snabbsajt/cli", version: "0.2.0" },
+      siteKit: { package: "@snabbsajt/site-kit", version: "0.2.0" },
       portableFormat: { format: "sajt-site", version: 1 },
       importReport: { format: "snabbsajt-import-report", version: "1" },
       skills: { supportedManifestVersion: 1, installed: false },

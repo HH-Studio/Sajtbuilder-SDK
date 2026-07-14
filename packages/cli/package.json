@@ -1,6 +1,6 @@
 {
   "name": "@snabbsajt/cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Local-first command line tools for SnabbSajt site packages.",
   "license": "MIT",
   "type": "module",
@@ -10,6 +10,9 @@
   },
   "homepage": "https://snabbsajt.com/docs/en/developer/site-kit",
   "bugs": "https://github.com/HH-Studio/Sajtbuilder-SDK/issues",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "snabbsajt": "./dist/cli.js"
   },
@@ -24,7 +27,7 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@snabbsajt/site-kit": "0.1.0"
+    "@snabbsajt/site-kit": "0.2.0"
   },
   "devDependencies": {
     "@types/node": "^24.13.2",
