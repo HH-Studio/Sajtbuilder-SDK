@@ -9,6 +9,16 @@ import { PORTABLE_FORMAT, PORTABLE_VERSION, portableSiteV1 } from "../src/convex
 import { buildImportReportJsonContract } from "../src/import/jsonContract";
 
 const CONTRACT_URL = new URL("../contract/portable-v1.json", import.meta.url);
+const APP_SOURCE_URL = new URL("../contract/app-source.json", import.meta.url);
+const CANONICAL_REPOSITORY = "HH-Studio/simple-site-builder";
+const CANONICAL_PATH = "contract/site-kit-portable-v1.json";
+
+type AppContractSource = {
+  repository: string;
+  commit: string;
+  path: string;
+  sha256: string;
+};
 
 function canonicalize(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(canonicalize);
@@ -54,8 +64,51 @@ export function serializeSdkContract(contract: Awaited<ReturnType<typeof buildSd
   return canonicalJson(contract);
 }
 
+function readAppContractSource(): AppContractSource {
+  const source = JSON.parse(readFileSync(APP_SOURCE_URL, "utf8")) as Partial<AppContractSource>;
+  if (
+    source.repository !== CANONICAL_REPOSITORY ||
+    source.path !== CANONICAL_PATH ||
+    typeof source.commit !== "string" ||
+    !/^[0-9a-f]{40}$/.test(source.commit) ||
+    typeof source.sha256 !== "string" ||
+    !/^[0-9a-f]{64}$/.test(source.sha256)
+  ) {
+    throw new Error("contract/app-source.json has invalid canonical provenance metadata");
+  }
+  return source as AppContractSource;
+}
+
+export function verifyCanonicalAppContract(
+  appRoot: string,
+  sdkContractUrl: URL = CONTRACT_URL,
+): void {
+  const source = readAppContractSource();
+  const canonicalPath = resolve(appRoot, source.path);
+  const canonical = readFileSync(canonicalPath, "utf8");
+  const digest = createHash("sha256").update(canonical).digest("hex");
+  if (digest !== source.sha256) {
+    throw new Error(
+      `Canonical app contract hash mismatch for ${source.repository}@${source.commit}:${source.path}`,
+    );
+  }
+  const checkedIn = readFileSync(sdkContractUrl, "utf8");
+  if (canonical !== checkedIn) {
+    throw new Error(
+      `SDK contract does not match ${source.repository}@${source.commit}:${source.path}`,
+    );
+  }
+}
+
 async function main() {
   const generated = serializeSdkContract(await buildSdkContract());
+  const checkAppIndex = process.argv.indexOf("--check-app-contract");
+  if (checkAppIndex >= 0) {
+    const appRoot = process.argv[checkAppIndex + 1];
+    if (!appRoot) throw new Error("--check-app-contract requires the checked-out app repository path");
+    verifyCanonicalAppContract(appRoot);
+    return;
+  }
   const syncIndex = process.argv.indexOf("--sync-from-app");
   if (syncIndex >= 0) {
     const appRoot = process.argv[syncIndex + 1];

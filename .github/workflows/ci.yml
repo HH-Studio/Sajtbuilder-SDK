@@ -13,8 +13,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Read canonical app contract source
+        id: app_contract
+        run: |
+          commit=$(node -p "require('./contract/app-source.json').commit")
+          [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || { echo "app contract ref must be a full commit SHA" >&2; exit 1; }
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+      - name: Check out pinned canonical app contract
+        uses: actions/checkout@v4
+        with:
+          repository: HH-Studio/simple-site-builder
+          ref: ${{ steps.app_contract.outputs.commit }}
+          path: .canonical-app
+      - name: Verify immutable app checkout
+        run: test "$(git -C .canonical-app rev-parse HEAD)" = "${{ steps.app_contract.outputs.commit }}"
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.10
       - run: bun install --frozen-lockfile
       - run: bun run check
+      - run: bun scripts/sync-contract.ts --check-app-contract .canonical-app

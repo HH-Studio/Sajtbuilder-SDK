@@ -1,6 +1,13 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { buildSdkContract, serializeSdkContract } from "../scripts/sync-contract";
+import { copyFileSync, mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import {
+  buildSdkContract,
+  serializeSdkContract,
+  verifyCanonicalAppContract,
+} from "../scripts/sync-contract";
 
 describe("canonical app contract", () => {
   it("matches the SDK mirror byte-for-byte", async () => {
@@ -22,5 +29,29 @@ describe("canonical app contract", () => {
         summary: { properties: { total: { maximum: Number.MAX_SAFE_INTEGER } } },
       },
     });
+  });
+
+  it("rejects a divergent contract from the pinned app checkout", () => {
+    const appRoot = mkdtempSync(join(tmpdir(), "snabbsajt-contract-"));
+    mkdirSync(join(appRoot, "contract"));
+    writeFileSync(join(appRoot, "contract/site-kit-portable-v1.json"), "{}\n");
+
+    expect(() => verifyCanonicalAppContract(appRoot)).toThrow(/hash mismatch/);
+  });
+
+  it("rejects a divergent SDK mirror even when the pinned app artifact is authentic", () => {
+    const appRoot = mkdtempSync(join(tmpdir(), "snabbsajt-canonical-app-"));
+    const mirrorRoot = mkdtempSync(join(tmpdir(), "snabbsajt-contract-mirror-"));
+    mkdirSync(join(appRoot, "contract"));
+    copyFileSync(
+      new URL("../contract/portable-v1.json", import.meta.url),
+      join(appRoot, "contract/site-kit-portable-v1.json"),
+    );
+    const divergentMirror = join(mirrorRoot, "portable-v1.json");
+    writeFileSync(divergentMirror, "{}\n");
+
+    expect(() => verifyCanonicalAppContract(appRoot, new URL(`file://${divergentMirror}`))).toThrow(
+      /SDK contract does not match/,
+    );
   });
 });

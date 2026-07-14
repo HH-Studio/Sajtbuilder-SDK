@@ -93,6 +93,8 @@ describe("public Site Kit API", () => {
   });
 
   it.each([
+    [[{ fromPath: "", toPath: "contact" }], "redirects[0].fromPath"],
+    [[{ fromPath: "old", toPath: "old" }], "redirects[0].toPath"],
     [[{ fromPath: "news", toPath: "" }], "redirects[0].fromPath"],
     [[{ fromPath: "en/old", toPath: "" }], "redirects[0].fromPath"],
     [[{ fromPath: "old", toPath: "missing" }], "redirects[0].toPath"],
@@ -104,6 +106,24 @@ describe("public Site Kit API", () => {
     const report = validateSitePackage(site);
     expect(report.ok).toBe(false);
     expect(report.issues.some((issue) => issue.path === path)).toBe(true);
+  });
+
+  it("rejects a redirect source that shadows a live page", () => {
+    const site = createStarterSite();
+    site.pages.push({
+      tmpId: "contact",
+      slug: "contact",
+      title: "Contact",
+      order: 1,
+      showInNav: true,
+    });
+    site.redirects = [{ fromPath: "contact", toPath: "" }];
+
+    expect(validateSitePackage(site).issues).toContainEqual({
+      level: "error",
+      path: "redirects[0].fromPath",
+      message: "REDIRECT_FROM_IS_PAGE",
+    });
   });
 
   it("enforces the shared 500 redirect cap", () => {
