@@ -1,0 +1,45 @@
+{
+  "manifestVersion": 1,
+  "releaseVersion": "1.0.0",
+  "minimumCliVersion": "0.1.0",
+  "portableFormat": {
+    "format": "sajt-site",
+    "version": 1
+  },
+  "reportContract": {
+    "format": "snabbsajt-import-report",
+    "version": "1"
+  },
+  "skills": [
+    {
+      "name": "import-website",
+      "version": "1.0.0",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "2ea5cae31026f55659214bd0f9168ddbe60964e4f50ec8ec183aaf5d05aee05c"
+        }
+      ]
+    },
+    {
+      "name": "build-snabbsajt-site",
+      "version": "1.0.0",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "c394ec16cc88c4c7213b0c5addf45b670a27be1ea1fe4fab45232ad3f7ace8e8"
+        }
+      ]
+    },
+    {
+      "name": "review-site-package",
+      "version": "1.0.0",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "86b8f314f724fea754721b36569a1dd069e10eacbd058b5e7ff6ff6e9742808e"
+        }
+      ]
+    }
+  ]
+}

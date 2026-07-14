@@ -30,7 +30,7 @@ function runJson(args: string[], cwd = repoRoot): unknown {
 }
 
 describe("snabbsajt site CLI", () => {
-  it("documents only the local Task 4 commands and their keyless behavior", () => {
+  it("documents local site and Task 5 skill commands without exposing import commands", () => {
     const result = run(["--help"]);
 
     expect(result.status).toBe(0);
@@ -41,7 +41,7 @@ describe("snabbsajt site CLI", () => {
     expect(result.stdout).toContain("snabbsajt site doctor");
     expect(result.stdout).toContain("No API key is required");
     expect(result.stdout).not.toContain("site import");
-    expect(result.stdout).not.toContain("skills install");
+    expect(result.stdout).toContain("skills install");
   });
 
   it("reports stable local compatibility data without making a network request", () => {
@@ -105,9 +105,9 @@ describe("snabbsajt site CLI", () => {
     expect(missing.status).toBe(1);
     expect(missing.stderr).toContain("snabbsajt: ");
 
-    const unsupported = run(["skills", "install"]);
-    expect(unsupported.status).toBe(1);
-    expect(unsupported.stderr).toContain("unknown command");
+    const undetected = run(["skills", "install"]);
+    expect(undetected.status).toBe(1);
+    expect(undetected.stderr).toContain("no project-local agent skill directory found");
   });
 
   it("refuses to overwrite files in an existing target directory", () => {

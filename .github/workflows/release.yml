@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+      - name: Verify release tag matches the skill manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./skills/manifest.json').releaseVersion")
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "manifest releaseVersion must be stable semver" >&2; exit 1; }
+          [[ "$GITHUB_REF_NAME" = "v${version}" ]] || { echo "tag ${GITHUB_REF_NAME} does not match manifest v${version}" >&2; exit 1; }
+      - name: Build versioned skill archives from canonical folders
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./skills/manifest.json').releaseVersion")
+          mkdir -p release-assets
+          for skill in import-website build-snabbsajt-site review-site-package; do
+            archive="snabbsajt-${skill}-${version}.zip"
+            (cd skills && zip -qr "../release-assets/${archive}" "${skill}")
+            (cd release-assets && sha256sum "${archive}" > "${archive}.sha256")
+          done
+          cp skills/manifest.json "release-assets/snabbsajt-skills-${version}.json"
+      - uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
+        with:
+          files: release-assets/*
+          fail_on_unmatched_files: true

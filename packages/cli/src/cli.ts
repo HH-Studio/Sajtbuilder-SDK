@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { runSiteCommand } from "./commands/site";
+import { runSkillsCommand } from "./commands/skills";
 
 function usage(): void {
   console.log(`SnabbSajt CLI
@@ -11,8 +12,12 @@ Usage:
   snabbsajt site validate <site.json|dir> [--json]
   snabbsajt site pack <dir> [-o bundle.zip] [--json]
   snabbsajt site doctor [--json]
+  snabbsajt skills install --agent auto|codex|claude|all [--global] [--force] [--json]
+  snabbsajt skills list --agent auto|codex|claude|all [--global] [--json]
+  snabbsajt skills doctor --agent auto|codex|claude|all [--global] [--json]
 
-No API key is required. These commands run locally.`);
+No API key is required. Commands run locally. Skill installs are project-local
+unless you explicitly pass --global.`);
 }
 
 async function main(): Promise<number> {
@@ -22,7 +27,7 @@ async function main(): Promise<number> {
     return 0;
   }
   const [namespace, ...rest] = args;
-  if (namespace !== "site") {
+  if (namespace !== "site" && namespace !== "skills") {
     console.error(`snabbsajt: unknown command "${namespace}"`);
     return 1;
   }
@@ -30,7 +35,7 @@ async function main(): Promise<number> {
     usage();
     return 0;
   }
-  return runSiteCommand(rest);
+  return namespace === "site" ? runSiteCommand(rest) : runSkillsCommand(rest);
 }
 
 process.exitCode = await main();
