@@ -11,6 +11,9 @@ write access to a customer workspace.
 - Import creates a draft and never publishes automatically.
 - Asset bytes are checksummed, decoded, and screened server-side.
 - Raw HTML, JavaScript, iframes, and custom CSS are not part of the model.
+- WordPress XML is streamed with explicit byte/depth/count limits. DTD and
+  entity declarations are rejected; PHP, plugins, themes, accounts, comments,
+  WooCommerce, and page-builder runtime remain inert source evidence only.
 
 ## Current caps
 

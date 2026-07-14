@@ -52,6 +52,12 @@ snabbsajt site pack ./example-import -o example.zip
 Always read `import-report.md` before approval. Unsupported behavior is reported
 and stays inert; blocked content loss cannot be approved.
 
+WordPress requires the current public site plus a WXR/XML export:
+
+```bash
+snabbsajt site import wordpress --url https://example.com --wxr export.xml --out ./converted
+```
+
 ## Typed authoring
 
 ```ts

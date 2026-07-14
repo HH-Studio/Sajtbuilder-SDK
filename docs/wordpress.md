@@ -22,6 +22,31 @@ const wxr = parseWxr(await Bun.file("export.xml").bytes());
 const media = indexWxrMedia(wxr);
 ```
 
-Parsing alone does not create a SnabbSajt package. Use the WordPress CLI command
-to reconcile WXR with the current public site, review conflicts, and produce a
-validated package.
+## Convert a site
+
+```bash
+snabbsajt site import wordpress \
+  --url https://example.com \
+  --wxr ./export.xml \
+  --out ./example-wordpress
+```
+
+Both inputs are mandatory. The bounded public crawl supplies current URLs,
+visible copy, design signals, behavior, and safe media bytes. WXR supplies the
+authoritative page/post graph. The resulting `import-report.md` lists public vs
+WXR conflicts, missing attachments, taxonomy relationships, old redirects, SEO
+fields, drafts held from publishing, and plugin replacements.
+
+Verified gallery attachment ids become a native gallery. Forms and booking
+shortcodes remain inert review items unless every recipient, field, service,
+duration, price, availability, timezone, and contact fact is sourced. PHP,
+themes, plugins, accounts, comments, scripts, and page-builder runtime never
+execute or enter the package.
+
+Review, approve, validate, and pack exactly like an HTML import:
+
+```bash
+snabbsajt site import approve ./example-wordpress --yes
+snabbsajt site validate ./example-wordpress
+snabbsajt site pack ./example-wordpress -o example-wordpress.zip
+```

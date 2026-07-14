@@ -54,6 +54,17 @@ Checks the versioned envelope, section content, variants, caps, references,
 duplicate ids/slugs, and package file names. Schema validity does not mean an
 HTML import has completed review; check `import-report.md` as well.
 
+## Import WordPress
+
+```bash
+snabbsajt site import wordpress --url https://example.com --wxr export.xml --out ./converted
+```
+
+The public URL and WXR/XML export are both required. The command crawls the
+public origin through the bounded HTML adapter, parses WXR without DTD/entity
+support, reconciles conflicts, downloads safe media, and emits the same review
+artifacts as HTML import. Local conversion needs no API key.
+
 ## Inspect
 
 ```bash

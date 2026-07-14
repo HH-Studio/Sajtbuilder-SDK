@@ -31,6 +31,7 @@ import {
 } from "@snabbsajt/site-kit";
 import { readBoundedLocalFiles } from "@snabbsajt/site-kit/local-files";
 import { importHtmlToDirectory } from "./site/import-html";
+import { importWordpressToDirectory } from "./site/import-wordpress";
 
 type Output = {
   stdout(message: string): void;
@@ -68,6 +69,36 @@ function parseImportHtmlArgs(args: string[]): { input: string; outputDirectory?:
   }
   if (!input) throw new CliError("site import html requires a public URL, .html file, or .zip archive");
   return { input, ...(outputDirectory ? { outputDirectory } : {}) };
+}
+
+function parseImportWordpressArgs(args: string[]): { url: string; wxr: string; outputDirectory: string } {
+  let url: string | undefined;
+  let wxr: string | undefined;
+  let outputDirectory: string | undefined;
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index]!;
+    const value = args[index + 1];
+    if (["--url", "--wxr", "--out", "-o"].includes(argument)) {
+      if (!value || value.startsWith("-")) throw new CliError(`site import wordpress ${argument} requires a value`);
+      index += 1;
+      if (argument === "--url") {
+        if (url) throw new CliError("site import wordpress accepts --url only once");
+        url = value;
+      } else if (argument === "--wxr") {
+        if (wxr) throw new CliError("site import wordpress accepts --wxr only once");
+        wxr = value;
+      } else {
+        if (outputDirectory) throw new CliError("site import wordpress accepts --out only once");
+        outputDirectory = value;
+      }
+      continue;
+    }
+    throw new CliError(argument.startsWith("-") ? `unknown site import wordpress option "${argument}"` : `unexpected site import wordpress argument "${argument}"`);
+  }
+  if (!url || !/^https?:\/\//i.test(url)) throw new CliError("site import wordpress requires --url https://example.com");
+  if (!wxr) throw new CliError("site import wordpress requires --wxr export.xml");
+  if (!outputDirectory) throw new CliError("site import wordpress requires --out package-directory");
+  return { url, wxr, outputDirectory };
 }
 
 function parsePackArgs(args: string[]): { outputPath?: string; reviewDraft: boolean } {
@@ -336,7 +367,7 @@ function approveImport(directoryInput: string, args: string[], asJson: boolean, 
   });
   if (!siteValidation.ok) throw new CliError("reviewed site package is invalid; run site validate and fix every error first");
   const report = importReportFor(loaded.dir, { allowReviewedSiteChanges: true, allowAdditiveAiReport: true });
-  if (!report) throw new CliError("site import approve only works on an HTML import package");
+  if (!report) throw new CliError("site import approve only works on a generated import package");
   if (report.status === "blocked" || report.items.some((item) => item.blocking)) {
     throw new CliError("blocked imports cannot be approved; re-import after resolving the blocking loss");
   }
@@ -411,6 +442,7 @@ export async function runSiteCommand(
     if (command === "import") {
       if (target === "--help" || target === "-h") {
         output.stdout("Usage: snabbsajt site import html <url|file.html|site.zip> [-o package-dir] [--json]");
+        output.stdout("       snabbsajt site import wordpress --url <public-url> --wxr <export.xml> --out <package-dir> [--json]");
         output.stdout("       snabbsajt site import approve <package-dir> --yes [--json]");
         return 0;
       }
@@ -423,6 +455,39 @@ export async function runSiteCommand(
         const directory = rest.shift();
         if (!directory) throw new CliError("site import approve requires a package directory");
         return approveImport(directory, rest, asJson, output);
+      }
+      if (target === "wordpress") {
+        if (rest.includes("--help") || rest.includes("-h")) {
+          output.stdout("Usage: snabbsajt site import wordpress --url <public-url> --wxr <export.xml> --out <package-dir> [--json]");
+          output.stdout("Both the public URL and a WordPress WXR/XML export are required. Nothing from WordPress executes.");
+          return 0;
+        }
+        const parsed = parseImportWordpressArgs(rest);
+        const result = await importWordpressToDirectory(parsed.url, parsed.wxr, parsed.outputDirectory, installedVersions().cli);
+        const counts = reportCounts(result.validation);
+        const response = {
+          ok: result.validation.ok,
+          command: "site import wordpress",
+          directory: result.directory,
+          status: result.report.status,
+          publishReady: result.report.status === "ready" && result.validation.ok,
+          pages: result.site.pages.length,
+          posts: result.site.pages.filter((page) => page.pageType === "post").length,
+          sections: result.site.sections.length,
+          conflicts: result.conflicts.length,
+          ...counts,
+          issues: result.validation.issues,
+        };
+        if (asJson) json(output, response);
+        else {
+          output.stdout(`created ${result.directory}`);
+          output.stdout(`Import status: ${result.report.status}; publish-ready: ${response.publishReady ? "yes" : "no"}`);
+          output.stdout(`Imported: ${response.pages} page/post item(s), ${response.sections} section(s); conflicts: ${response.conflicts}`);
+          output.stdout(`Review: ${join(result.directory, "import-report.md")}`);
+          output.stdout(`Next: snabbsajt site import approve ${shellArg(result.directory)} --yes`);
+          printReport(result.validation, output);
+        }
+        return result.validation.ok ? 0 : 1;
       }
       if (target !== "html") throw new CliError(`unknown site import adapter "${target ?? ""}"`);
       if (rest.includes("--help") || rest.includes("-h")) {

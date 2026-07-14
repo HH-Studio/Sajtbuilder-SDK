@@ -194,6 +194,7 @@ export const portableSiteV1 = v.object({
       firstPublishedAt: v.optional(v.number()),
       contentType: v.optional(contentTypeValidator),
       plannedFor: v.optional(v.number()),
+      excludeFromPublish: v.optional(v.boolean()),
       seo: portableSeo,
     }),
   ),

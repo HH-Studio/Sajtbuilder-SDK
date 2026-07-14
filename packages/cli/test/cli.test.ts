@@ -44,7 +44,19 @@ describe("snabbsajt site CLI", () => {
     expect(result.stdout).toContain("snabbsajt site doctor");
     expect(result.stdout).toContain("No API key is required");
     expect(result.stdout).toContain("site import html");
+    expect(result.stdout).toContain("site import wordpress");
     expect(result.stdout).toContain("skills install");
+  });
+
+  it("documents WordPress URL + WXR requirements without exposing a placeholder", () => {
+    const help = run(["site", "import", "wordpress", "--help"]);
+    expect(help.status).toBe(0);
+    expect(help.stdout).toContain("--url <public-url> --wxr <export.xml>");
+    expect(help.stdout).toContain("Nothing from WordPress executes");
+
+    const missingWxr = run(["site", "import", "wordpress", "--url", "https://example.com", "--out", "out"]);
+    expect(missingWxr.status).toBe(1);
+    expect(missingWxr.stderr).toContain("requires --wxr export.xml");
   });
 
   it("reports stable local compatibility data without making a network request", () => {
