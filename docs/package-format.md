@@ -47,7 +47,7 @@ Themes use allow-listed tokens. Raw colors and CSS are not accepted. Import
 
 ## Bundles
 
-`site-kit pack` creates a zip containing `site.json`, `manifest.json`, and all
+`snabbsajt site pack` creates a zip containing `site.json`, `manifest.json`, and all
 declared blobs. The manifest records SHA-256 and byte length for each file.
 SnabbSajt verifies those checksums before storing any asset.
 

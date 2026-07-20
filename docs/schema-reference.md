@@ -220,7 +220,7 @@ type Font = {
 ```
 
 The CLI matches each bundled asset/font declaration to exactly one file by its
-ID and extension. Run `site-kit validate` before packing; never rely on types
+ID and extension. Run `snabbsajt site validate` before packing; never rely on types
 alone for parsed JSON.
 
 Self-hosted video is intentionally unsupported in Site Kit v0.1 because the

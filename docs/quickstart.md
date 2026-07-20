@@ -1,16 +1,19 @@
 # Quickstart
 
-Until `0.2.0` is published and tagged, install the release candidate from
-`main`:
+`0.2.0` is on npm:
 
 ```bash
-npm install github:HH-Studio/Sajtbuilder-SDK#main
+npm install @snabbsajt/cli
 ```
+
+Every command below also works as `npx @snabbsajt/cli ...` without installing.
+Run it inside a directory that already has a `package.json` — without one, npm
+walks up the tree looking for a project root.
 
 ## 1. Create a package folder
 
 ```bash
-npx site-kit init ./acme-site --template nextjs
+snabbsajt site init ./acme-site --template nextjs
 ```
 
 Use `--template html` when the source is a static HTML site. Both templates
@@ -64,7 +67,7 @@ actual file again and rejects unsafe or mismatched images.
 ## 4. Validate
 
 ```bash
-npx site-kit validate ./acme-site
+snabbsajt site validate ./acme-site
 ```
 
 Errors block packing. Warnings describe safe coercions or suspicious content
@@ -73,7 +76,7 @@ that the importer can still handle.
 ## 5. Pack and import
 
 ```bash
-npx site-kit pack ./acme-site -o acme-site.zip
+snabbsajt site pack ./acme-site -o acme-site.zip
 ```
 
 In SnabbSajt, open **Settings > Backup & move**, choose import, and select the

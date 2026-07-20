@@ -9,18 +9,20 @@ SnabbSajt's typed sections, validate it locally, and pack it as a safe bundle.
 
 ## Status
 
-`0.2` is ready for its first npm beta release. The package format, validator,
-HTML/WordPress converters, CLI, skills, and bundle format match the production
-SnabbSajt importer. The packages are not public until the owner completes the
-two-step npm release in [`docs/publishing.md`](docs/publishing.md).
+`0.2.0` is published. `@snabbsajt/site-kit` and `@snabbsajt/cli` are both on npm.
+The package format, validator, HTML/WordPress converters, CLI, skills, and bundle
+format match the production SnabbSajt importer.
 
-## Install from GitHub before the npm release
+## Install
 
 ```bash
-npm install github:HH-Studio/Sajtbuilder-SDK#main
+npm install @snabbsajt/cli
 ```
 
-Or clone the repository and use Bun:
+Or run it without installing — every example below works with
+`npx @snabbsajt/cli` in place of `snabbsajt`.
+
+To work on the SDK itself, clone and build with Bun:
 
 ```bash
 git clone https://github.com/HH-Studio/Sajtbuilder-SDK.git
@@ -29,12 +31,20 @@ bun install
 bun run build
 ```
 
+Installing straight from git (`npm install github:HH-Studio/Sajtbuilder-SDK#main`)
+is **not** supported: the root `prepare` script builds `packages/cli`, which
+depends on `@snabbsajt/site-kit` before the workspace is linked, so the install
+fails. Use npm — it is the published package, not a preview.
+
 ## Quickstart
 
+Run `init` inside an empty directory that already has a `package.json`; without
+one, npm walks up the tree looking for a project root.
+
 ```bash
-npx site-kit init ./my-site --template nextjs
-npx site-kit validate ./my-site
-npx site-kit pack ./my-site -o my-site.zip
+snabbsajt site init ./my-site --template nextjs
+snabbsajt site validate ./my-site
+snabbsajt site pack ./my-site -o my-site.zip
 ```
 
 Import `my-site.zip` in SnabbSajt under **Settings > Backup & move**. The import
@@ -42,10 +52,9 @@ creates a new unpublished draft. It never overwrites or publishes a site.
 
 No API key is needed. Every command runs locally.
 
-To convert rendered HTML with the newer namespaced CLI:
+To convert rendered HTML:
 
 ```bash
-npx @snabbsajt/cli@0.2.0 site import html https://example.com -o ./example-import
 snabbsajt site import html https://example.com -o ./example-import
 snabbsajt site import approve ./example-import --yes
 snabbsajt site pack ./example-import -o example.zip
@@ -92,7 +101,7 @@ export const site = defineSite({
 ```
 
 `defineSite()` ties each section's outer type to its discriminated content type
-and rejects unknown object-literal fields in TypeScript. `site-kit validate`
+and rejects unknown object-literal fields in TypeScript. `snabbsajt site validate`
 then runs the same runtime validators and caps used by the production importer.
 
 ## Documentation

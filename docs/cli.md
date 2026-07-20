@@ -95,6 +95,7 @@ Reports installed CLI, Site Kit and format versions without a network request.
 
 ## Legacy `site-kit` binary
 
-The root package still provides `site-kit init|inspect|validate|pack` for
-hand-authored packages. New developer workflows should use the namespaced
-`snabbsajt site ...` commands.
+`@snabbsajt/site-kit` also ships a `site-kit init|inspect|validate|pack` binary
+for hand-authored packages. It still works, but it is the older surface and the
+documentation no longer uses it — every workflow here is `snabbsajt site ...`
+from `@snabbsajt/cli`. If you find `npx site-kit ...` in a guide, it is stale.
