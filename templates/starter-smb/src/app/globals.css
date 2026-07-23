@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  SnabbSajt theme tokens -> CSS variables.
+
+  A SnabbSajt site never picks raw hex. It picks a `palette`, `fontPair`,
+  `radius` and `buttonStyle` token (see `site.ts` -> site.theme). We mirror the
+  same choices here as data-attributes on <html> so this Next.js preview looks
+  like the site will look once imported and rendered by SnabbSajt.
+
+  These HSL values are a self-contained, AA-safe approximation of the SnabbSajt
+  palettes. The canonical values live in the SnabbSajt app; treat the imported,
+  SnabbSajt-rendered site as the source of truth for exact colour.
+*/
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222 22% 12%;
+  --muted: 220 20% 96%;
+  --muted-foreground: 220 12% 40%;
+  --border: 220 16% 88%;
+  --primary: 222 47% 20%;
+  --primary-foreground: 0 0% 100%;
+  --radius: 0.6rem;
+  --font-heading: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* ---- Palettes (light) --------------------------------------------------- */
+[data-palette="slate"]   { --primary: 222 47% 24%; }
+[data-palette="ocean"]   { --primary: 210 80% 40%; }
+[data-palette="forest"]  { --primary: 152 45% 30%; }
+[data-palette="clay"]    { --primary: 16 55% 44%; }
+[data-palette="sand"]    { --primary: 32 30% 34%; --muted: 36 34% 94%; --border: 34 26% 86%; }
+[data-palette="mono"]    { --primary: 0 0% 10%; }
+[data-palette="rose"]    { --primary: 342 55% 46%; }
+[data-palette="sage"]    { --primary: 140 22% 36%; }
+[data-palette="plum"]    { --primary: 291 38% 34%; }
+[data-palette="midnight"]{ --primary: 224 55% 28%; }
+[data-palette="amber"]   { --primary: 36 78% 40%; }
+
+/* ---- Dark appearance ---------------------------------------------------- */
+/* Neutrals flip; each palette keeps its own --primary hue from above. */
+.dark {
+  --background: 222 24% 8%;
+  --foreground: 0 0% 98%;
+  --muted: 222 18% 16%;
+  --muted-foreground: 220 12% 66%;
+  --border: 222 16% 22%;
+  --primary-foreground: 0 0% 100%;
+}
+.dark[data-palette="mono"] { --primary: 0 0% 96%; --primary-foreground: 0 0% 8%; }
+
+/* ---- Radius ------------------------------------------------------------- */
+[data-radius="sharp"] { --radius: 0.125rem; --btn-radius: 0.125rem; }
+[data-radius="soft"]  { --radius: 0.6rem;  --btn-radius: 0.6rem; }
+[data-radius="round"] { --radius: 1.25rem; --btn-radius: 1.25rem; }
+
+/* ---- Button style (site.theme.buttonStyle) ------------------------------ */
+:root { --btn-radius: 0.6rem; }
+[data-btn="pill"] { --btn-radius: 9999px; }
+[data-btn="outline"] .btn-primary {
+  background: transparent;
+  color: hsl(var(--primary));
+  border: 1px solid hsl(var(--primary));
+}
+
+/* ---- Font pairs --------------------------------------------------------- */
+/* System stacks keep the template offline-buildable. Swap in next/font for
+   production faithful typography — one edit in layout.tsx. */
+[data-font="modern"]    { --font-heading: ui-sans-serif, system-ui, sans-serif; --font-body: ui-sans-serif, system-ui, sans-serif; }
+[data-font="classic"]   { --font-heading: ui-serif, Georgia, "Times New Roman", serif; --font-body: ui-sans-serif, system-ui, sans-serif; }
+[data-font="friendly"]  { --font-heading: "Segoe UI", ui-rounded, system-ui, sans-serif; --font-body: "Segoe UI", ui-rounded, system-ui, sans-serif; }
+[data-font="premium"]   { --font-heading: ui-serif, "Playfair Display", Georgia, serif; --font-body: ui-sans-serif, system-ui, sans-serif; }
+[data-font="editorial"] { --font-heading: ui-serif, Georgia, serif; --font-body: ui-sans-serif, system-ui, sans-serif; }
+[data-font="grotesk"]   { --font-heading: ui-sans-serif, "Inter", system-ui, sans-serif; --font-body: ui-sans-serif, "Inter", system-ui, sans-serif; }
+
+* { border-color: hsl(var(--border)); }
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 { font-family: var(--font-heading); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

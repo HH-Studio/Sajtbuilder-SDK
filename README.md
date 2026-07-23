@@ -104,10 +104,20 @@ export const site = defineSite({
 and rejects unknown object-literal fields in TypeScript. `snabbsajt site validate`
 then runs the same runtime validators and caps used by the production importer.
 
+## Starter template
+
+Want a real, deployable website instead of a bare `site.ts`?
+[`templates/starter-smb`](templates/starter-smb/) is a **Next.js + shadcn-style**
+small-business site whose content is a single `defineSite()` file. The same file
+renders the website **and** packs into an importable SnabbSajt bundle
+(`npm run build:snabbsajt`) — deploy the site and hand the client an editable
+SnabbSajt draft from one source of truth. See [docs/templates.md](docs/templates.md).
+
 ## Documentation
 
 - [Quickstart](docs/quickstart.md)
 - [Convert a Next.js site](docs/nextjs.md)
+- [Starter template (Next.js + shadcn)](docs/templates.md)
 - [Convert a plain HTML site](docs/html.md)
 - [Convert a WordPress site](docs/wordpress.md)
 - [Package format](docs/package-format.md)
