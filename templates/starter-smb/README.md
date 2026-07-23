@@ -24,6 +24,30 @@ npm run dev            # preview the website at http://localhost:3000
 Edit `src/site.ts` — headlines, services, pricing, pages, theme. The preview
 updates live.
 
+## Presets (themes + verticals)
+
+The template ships six ready presets under `src/presets/`, each with a
+vertical-fitting palette + font pair. Pick one with an env var:
+
+```bash
+NEXT_PUBLIC_SNABBSAJT_PRESET=salon npm run dev
+NEXT_PUBLIC_SNABBSAJT_PRESET=salon npm run build:snabbsajt
+```
+
+| Preset | Vertical | Palette / font | Goal |
+| --- | --- | --- | --- |
+| `consultant` (default) | Consultant / agency | midnight · editorial | Show services |
+| `salon` | Salon / beauty | rose · friendly (pill) | Get bookings |
+| `cleaning` | Cleaning | forest · modern | Get calls |
+| `clinic` | Dental / health | ocean · classic | Get bookings |
+| `restaurant` | Restaurant / café | amber · premium (dark) | Get calls |
+| `fitness` | Gym / coach | mono · grotesk (dark) | Get bookings |
+
+Make your own: copy the closest preset to a new file in `src/presets/`, edit the
+content, add it to `src/presets/index.ts`, and select it. Theme tokens
+(`palette`, `fontPair`, `radius`, `buttonStyle`, `appearance`) are the full set of
+SnabbSajt choices — see `src/app/globals.css` for the token → CSS-variable maps.
+
 ## Import into SnabbSajt
 
 ```bash

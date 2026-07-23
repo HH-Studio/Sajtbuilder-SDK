@@ -31,6 +31,16 @@ npm run build:snabbsajt  # validate + write out/snabbsajt-bundle.zip
 Import the `.zip` in SnabbSajt: **Settings → Backup & move → Import**. It creates a
 new unpublished draft; nothing is overwritten.
 
+## Presets
+
+Six presets ship under `src/presets/`, one per common vertical, each with a
+fitting palette + font pair: `consultant` (default), `salon`, `cleaning`,
+`clinic`, `restaurant`, `fitness`. Select one with
+`NEXT_PUBLIC_SNABBSAJT_PRESET=<key>` for both `dev` and `build:snabbsajt`. They
+exercise every rendered section type and the full range of theme tokens
+(palettes, font pairs, radius, button style, light/dark), so they double as the
+conformance corpus in `test/starter-template.test.ts`.
+
 ## The blessed-vocabulary rule
 
 The round-trip only holds because the template restricts itself:
