@@ -14,7 +14,7 @@
     "maxSingleVideoBytes": 314572800
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:32d098580f4944cae12407397b7175b751185afb4b14e2f14bf416c16d4bf4e0",
+  "hash": "sha256:dfedaed2fd93b6599f320f9240690f237a81f9902952e6e091d07632bee37791",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2647,6 +2647,7 @@
         "accordion",
         "accordion-cta",
         "cards",
+        "split",
         "two-column"
       ],
       "featured-product": [
@@ -2672,6 +2673,7 @@
         "image-right",
         "minimal",
         "overlay",
+        "overlay-full",
         "overlay-left",
         "split"
       ],
@@ -2768,6 +2770,7 @@
         "icon-grid-cta",
         "list",
         "numbered",
+        "numbered-split",
         "split"
       ],
       "social-proof": [
@@ -2778,7 +2781,8 @@
       "statement": [
         "bordered",
         "centered",
-        "framed"
+        "framed",
+        "rule"
       ],
       "team": [
         "cards",
@@ -2790,6 +2794,7 @@
         "cards",
         "logos-quote",
         "marquee",
+        "plain",
         "single"
       ],
       "video": [

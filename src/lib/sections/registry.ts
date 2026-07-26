@@ -104,6 +104,19 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
         key: "gradient",
         label: { sv: "Färgtoning", en: "Gradient", pl: "Przejście kolorów" },
       },
+      {
+        key: "overlay-full",
+        label: {
+          sv: "Helskärm med bild",
+          en: "Full-screen image",
+          pl: "Zdjęcie na pełny ekran",
+        },
+        description: {
+          sv: "Samma bild bakom texten som \"Bild bakom\", men den fyller hela första vyn i stället för en fast bandhöjd.",
+          en: "The same photo-behind-text as \"Image behind\", but it fills the whole first view instead of a fixed band.",
+          pl: "To samo zdjęcie za tekstem co \"Zdjęcie w tle\", ale wypełnia cały pierwszy widok zamiast pasa o stałej wysokości.",
+        },
+      },
     ],
     defaultVariant: "image-right",
     defaultTone: "light",
@@ -177,6 +190,19 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "Ikonrutnätet plus en rad med uppmaningsknappar under.",
           en: "The icon grid plus a call-to-action button row underneath.",
           pl: "Siatka z ikonami plus rząd przycisków zachęty pod spodem.",
+        },
+      },
+      {
+        key: "numbered-split",
+        label: {
+          sv: "Numrerad, delad",
+          en: "Numbered split",
+          pl: "Numerowane, podzielone",
+        },
+        description: {
+          sv: "Rubriken står kvar till vänster medan tjänsterna rullar förbi till höger som numrerade rader med hårfina linjer emellan.",
+          en: "The heading stays on the left while the services scroll past on the right as numbered rows divided by hairlines.",
+          pl: "Nagłówek zostaje po lewej, a usługi przewijają się po prawej jako numerowane wiersze oddzielone cienkimi liniami.",
         },
       },
     ],
@@ -363,6 +389,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           pl: "Przy każdej wypowiedzi widać logo firmy klienta zamiast zdjęcia osoby.",
         },
       },
+      {
+        key: "plain",
+        label: { sv: "Utan kort", en: "No cards", pl: "Bez kart" },
+        description: {
+          sv: "Citaten står i spalter under var sin hårfin linje, utan ram och utan bakgrund.",
+          en: "The quotes stand in columns, each under its own hairline, with no frame and no background.",
+          pl: "Wypowiedzi w kolumnach, każda pod własną cienką linią, bez ramki i bez tła.",
+        },
+      },
     ],
     defaultVariant: "cards",
     defaultTone: "clear",
@@ -546,6 +581,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: 'Hopfällbara frågor plus en uppmaning "Har du fler frågor?" med knapp längst ner.',
           en: 'The accordion plus a "Still have questions?" prompt with a button at the end.',
           pl: 'Rozwijane pytania plus zachęta "Masz więcej pytań?" z przyciskiem na końcu.',
+        },
+      },
+      {
+        key: "split",
+        label: { sv: "Delad", en: "Split", pl: "Podzielone" },
+        description: {
+          sv: "Rubriken står kvar till vänster medan frågorna fälls ut till höger.",
+          en: "The heading stays on the left while the questions expand on the right.",
+          pl: "Nagłówek zostaje po lewej, a pytania rozwijają się po prawej.",
         },
       },
     ],
@@ -1597,6 +1641,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           pl: "Zdanie pokazane jako spokojna karta z cytatem w ramce.",
         },
       },
+      {
+        key: "rule",
+        label: { sv: "Linjerad rad", en: "Ruled row", pl: "Wiersz z linią" },
+        description: {
+          sv: "En smal rad under en hårfin linje: uttalandet till vänster, tillskrivningen till höger. Tar nästan ingen höjd.",
+          en: "A slim row under a hairline: the statement on the left, the attribution on the right. Takes almost no height.",
+          pl: "Wąski wiersz pod cienką linią: zdanie po lewej, przypisanie po prawej. Zajmuje prawie zero wysokości.",
+        },
+      },
     ],
     defaultVariant: "centered",
     defaultTone: "clear",
@@ -1870,7 +1923,14 @@ export const CONVERSION_SECTION_TYPES: ReadonlySet<string> = new Set([
 // New items are validated against the content union on write, like any edit.
 // ---------------------------------------------------------------------------
 
-export const ARRAY_ITEM_MAX = 24;
+/** Ceiling on items an editor may ADD to one section array (convex/sections.ts
+ *  `addItems`, convex/lib/sectionOps.ts). Not an import cap - the portable
+ *  format has no per-array bound, so an imported array can legitimately arrive
+ *  longer than this. It was 24, which left a real client or certification list
+ *  carried in by Site Kit (42 client names on one live import) frozen: already
+ *  over the cap, so the owner could never add row 43 to their own content. 64
+ *  keeps the paste-bomb ceiling meaningful while leaving long lists editable. */
+export const ARRAY_ITEM_MAX = 64;
 
 export const ARRAY_DEFAULTS: Record<string, (lang: Locale) => unknown> = {
   "documents.items": (l) => ({
