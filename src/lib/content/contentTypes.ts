@@ -1,4 +1,4 @@
-import type { Locale } from "../i18n";
+import { pickL, type Locale } from "../i18n";
 
 // ---------------------------------------------------------------------------
 // Content kinds the AI Content Assistant can detect for a post (owner-
@@ -20,19 +20,19 @@ export const CONTENT_TYPES = [
 
 export type ContentType = (typeof CONTENT_TYPES)[number];
 
-const LABELS: Record<ContentType, { sv: string; en: string }> = {
-  news: { sv: "Nyhet", en: "News" },
-  offer: { sv: "Erbjudande", en: "Offer" },
-  "customer-story": { sv: "Kundcase", en: "Customer story" },
-  guide: { sv: "Guide", en: "Guide" },
-  tips: { sv: "Tips", en: "Tips" },
-  "new-service": { sv: "Ny tjänst", en: "New service" },
-  event: { sv: "Evenemang", en: "Event" },
-  seasonal: { sv: "Säsong", en: "Seasonal" },
+const LABELS: Record<ContentType, { sv: string; en: string; pl: string }> = {
+  news: { sv: "Nyhet", en: "News", pl: "Aktualność" },
+  offer: { sv: "Erbjudande", en: "Offer", pl: "Oferta" },
+  "customer-story": { sv: "Kundcase", en: "Customer story", pl: "Historia klienta" },
+  guide: { sv: "Guide", en: "Guide", pl: "Poradnik" },
+  tips: { sv: "Tips", en: "Tips", pl: "Porady" },
+  "new-service": { sv: "Ny tjänst", en: "New service", pl: "Nowa usługa" },
+  event: { sv: "Evenemang", en: "Event", pl: "Wydarzenie" },
+  seasonal: { sv: "Säsong", en: "Seasonal", pl: "Sezon" },
 };
 
 export function contentTypeLabel(type: ContentType, lang: Locale): string {
-  return (LABELS[type] as Record<string, string>)[lang] ?? LABELS[type].en;
+  return pickL(LABELS[type], lang);
 }
 
 export function isContentType(v: unknown): v is ContentType {

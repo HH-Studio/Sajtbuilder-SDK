@@ -9,9 +9,26 @@ SnabbSajt's typed sections, validate it locally, and pack it as a safe bundle.
 
 ## Status
 
-`0.2.0` is published. `@snabbsajt/site-kit` and `@snabbsajt/cli` are both on npm.
-The package format, validator, HTML/WordPress converters, CLI, skills, and bundle
-format match the production SnabbSajt importer.
+`0.3.0` is the current source. `@snabbsajt/site-kit` and `@snabbsajt/cli` are on
+npm. The package format, validator, HTML/WordPress converters, CLI, skills, and
+bundle format match the production SnabbSajt importer.
+
+`0.3.0` catches the mirrored contract up to the app. Everything the importer
+already accepted is now expressible from Site Kit:
+
+- **Your own brand.** `theme.customPalette` carries 13 raw CSS colours per
+  light/dark surface, `customFonts` carries your typefaces, `customBrandHex`
+  records the colour they came from. Use them when the eleven built-in palettes
+  are not your brand.
+- **Re-importable sites.** `externalKey` on pages and sections gives a merge
+  import something stable to match on, so a second import updates a site instead
+  of stacking up another draft.
+- **Redirects.** `redirects[{ fromPath, toPath }]` keeps old URLs alive.
+- **Self-hosted video and PDFs.** Assets take `kind: "video"` and
+  `kind: "document"`; a video section may use `provider: "upload"`, and a hero
+  may set `bgVideo`.
+- **No hand-written order keys.** Section `order` is optional — omit it and the
+  importer orders by array position.
 
 ## Install
 

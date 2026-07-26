@@ -3,17 +3,18 @@
     "maxAssets": 200,
     "maxBundleBytes": 157286400,
     "maxCollections": 20,
-    "maxFolders": 100,
+    "maxFolders": 500,
     "maxFonts": 12,
     "maxJsonBytes": 5242880,
-    "maxPages": 50,
+    "maxPages": 500,
     "maxRedirects": 500,
     "maxSections": 500,
     "maxServices": 100,
-    "maxSingleAssetBytes": 15728640
+    "maxSingleAssetBytes": 15728640,
+    "maxSingleVideoBytes": 314572800
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:a78a62f94124ffeb3a7bed2dc1317461522ce4e8ee9c95143c8e139b68cb4ebe",
+  "hash": "sha256:dfedaed2fd93b6599f320f9240690f237a81f9902952e6e091d07632bee37791",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -452,6 +453,12 @@
                   },
                   "optional": true
                 },
+                "durationSec": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
                 "exportId": {
                   "fieldType": {
                     "type": "string"
@@ -483,6 +490,14 @@
                       {
                         "type": "literal",
                         "value": "og"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "video"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "document"
                       }
                     ]
                   },
@@ -678,6 +693,22 @@
                   },
                   "optional": true
                 },
+                "license": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "literal",
+                        "value": "licensed"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "trial"
+                      }
+                    ]
+                  },
+                  "optional": true
+                },
                 "source": {
                   "fieldType": {
                     "type": "union",
@@ -803,6 +834,12 @@
                 "excludeFromPublish": {
                   "fieldType": {
                     "type": "boolean"
+                  },
+                  "optional": true
+                },
+                "externalKey": {
+                  "fieldType": {
+                    "type": "string"
                   },
                   "optional": true
                 },
@@ -986,6 +1023,12 @@
                   },
                   "optional": false
                 },
+                "externalKey": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
                 "hidden": {
                   "fieldType": {
                     "type": "boolean"
@@ -1062,7 +1105,7 @@
                   "fieldType": {
                     "type": "string"
                   },
-                  "optional": false
+                  "optional": true
                 },
                 "pageTmpId": {
                   "fieldType": {
@@ -1237,6 +1280,18 @@
                       {
                         "type": "literal",
                         "value": "product-grid"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "documents"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "scroll-tabs"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "comparison-slider"
                       }
                     ]
                   },
@@ -1722,6 +1777,12 @@
                       },
                       "optional": true
                     },
+                    "cancellationWindowHours": {
+                      "fieldType": {
+                        "type": "number"
+                      },
+                      "optional": true
+                    },
                     "closedDates": {
                       "fieldType": {
                         "type": "array",
@@ -1738,6 +1799,18 @@
                       "optional": true
                     },
                     "leadTimeHours": {
+                      "fieldType": {
+                        "type": "number"
+                      },
+                      "optional": true
+                    },
+                    "reminderHours": {
+                      "fieldType": {
+                        "type": "number"
+                      },
+                      "optional": true
+                    },
+                    "slotIntervalMin": {
                       "fieldType": {
                         "type": "number"
                       },
@@ -2004,6 +2077,212 @@
                       },
                       "optional": false
                     },
+                    "customBrandHex": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": true
+                    },
+                    "customFonts": {
+                      "fieldType": {
+                        "type": "object",
+                        "value": {
+                          "body": {
+                            "fieldType": {
+                              "type": "string"
+                            },
+                            "optional": false
+                          },
+                          "heading": {
+                            "fieldType": {
+                              "type": "string"
+                            },
+                            "optional": false
+                          }
+                        }
+                      },
+                      "optional": true
+                    },
+                    "customPalette": {
+                      "fieldType": {
+                        "type": "object",
+                        "value": {
+                          "dark": {
+                            "fieldType": {
+                              "type": "object",
+                              "value": {
+                                "accent": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "accentFg": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "bg": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "border": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "card": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "cardBorder": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "cardFg": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "fg": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "muted": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "mutedFg": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "primary": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "primaryFg": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "primaryText": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                }
+                              }
+                            },
+                            "optional": false
+                          },
+                          "light": {
+                            "fieldType": {
+                              "type": "object",
+                              "value": {
+                                "accent": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "accentFg": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "bg": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "border": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "card": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "cardBorder": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "cardFg": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "fg": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "muted": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "mutedFg": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "primary": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "primaryFg": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "primaryText": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                }
+                              }
+                            },
+                            "optional": false
+                          }
+                        }
+                      },
+                      "optional": true
+                    },
                     "density": {
                       "fieldType": {
                         "type": "union",
@@ -2127,6 +2406,22 @@
                         ]
                       },
                       "optional": false
+                    },
+                    "typeScale": {
+                      "fieldType": {
+                        "type": "union",
+                        "value": [
+                          {
+                            "type": "literal",
+                            "value": "normal"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "large"
+                          }
+                        ]
+                      },
+                      "optional": true
                     }
                   }
                 },
@@ -2218,6 +2513,10 @@
                     },
                     {
                       "type": "literal",
+                      "value": "therapist"
+                    },
+                    {
+                      "type": "literal",
                       "value": "freelancer"
                     },
                     {
@@ -2285,7 +2584,10 @@
       "rich-text",
       "image",
       "featured-product",
-      "product-grid"
+      "product-grid",
+      "documents",
+      "scroll-tabs",
+      "comparison-slider"
     ],
     "variants": {
       "about": [
@@ -2323,6 +2625,9 @@
         "features",
         "table"
       ],
+      "comparison-slider": [
+        "default"
+      ],
       "contact": [
         "form-info",
         "info-cards",
@@ -2334,10 +2639,15 @@
         "gradient",
         "split"
       ],
+      "documents": [
+        "grid",
+        "list"
+      ],
       "faq": [
         "accordion",
         "accordion-cta",
         "cards",
+        "split",
         "two-column"
       ],
       "featured-product": [
@@ -2363,6 +2673,8 @@
         "image-right",
         "minimal",
         "overlay",
+        "overlay-full",
+        "overlay-left",
         "split"
       ],
       "highlights": [
@@ -2436,6 +2748,11 @@
         "paper",
         "prose"
       ],
+      "scroll-tabs": [
+        "pinned",
+        "stacked",
+        "tabs"
+      ],
       "service-areas": [
         "cards",
         "chips",
@@ -2453,6 +2770,7 @@
         "icon-grid-cta",
         "list",
         "numbered",
+        "numbered-split",
         "split"
       ],
       "social-proof": [
@@ -2463,7 +2781,8 @@
       "statement": [
         "bordered",
         "centered",
-        "framed"
+        "framed",
+        "rule"
       ],
       "team": [
         "cards",
@@ -2475,6 +2794,7 @@
         "cards",
         "logos-quote",
         "marquee",
+        "plain",
         "single"
       ],
       "video": [

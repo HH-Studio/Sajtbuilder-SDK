@@ -11,7 +11,7 @@ import {
   priceModelValidator,
   serviceActionKind,
 } from "./content";
-import { fontSource, fontStyle } from "./fonts";
+import { fontSource, fontStyle, fontLicense } from "./fonts";
 import { verticalValidator, goalValidator, localeValidator } from "./business";
 import { CONTENT_TYPES } from "../../lib/content/contentTypes";
 
@@ -57,6 +57,15 @@ const portableAssetKind = v.union(
   // backup / move / duplicate keeps the site's own share card instead of
   // silently falling back to the auto-generated one on import.
   v.literal("og"),
+  // Self-hosted video (video section upload / hero bgVideo). Carried so a
+  // backup/move/import keeps the clip instead of silently dropping the ref.
+  // Import re-validates bytes (magic-byte sniff) and enforces the target
+  // workspace's per-plan video + storage caps - an oversized clip is skipped,
+  // never a hard failure.
+  v.literal("video"),
+  // Downloadable PDF (documents section, backlog 0817). Import sniffs the
+  // %PDF- magic bytes; same per-asset byte ceiling as images.
+  v.literal("document"),
 );
 
 /** Canonical service data carried separately from section projections. The
@@ -169,6 +178,10 @@ export const portableSiteV1 = v.object({
   pages: v.array(
     v.object({
       tmpId: v.string(),
+      // Incremental import: the author's stable key for this page (e.g.
+      // "home", "business"). Written to pages.externalKey on import; merge
+      // imports match on it. Optional - a create import works without it.
+      externalKey: v.optional(v.string()),
       slug: v.string(),
       title: v.string(),
       order: v.number(),
@@ -194,11 +207,15 @@ export const portableSiteV1 = v.object({
       firstPublishedAt: v.optional(v.number()),
       contentType: v.optional(contentTypeValidator),
       plannedFor: v.optional(v.number()),
+      // Draft/held pages must survive agency migrations without becoming live
+      // on the customer's first "publish all" operation.
       excludeFromPublish: v.optional(v.boolean()),
       seo: portableSeo,
     }),
   ),
 
+  // SEO-safe old URL mappings. Optional keeps every pre-redirect V1 bundle
+  // valid; the importer validates the complete graph after pages exist.
   redirects: v.optional(
     v.array(
       v.object({
@@ -211,11 +228,18 @@ export const portableSiteV1 = v.object({
   sections: v.array(
     v.object({
       pageTmpId: v.string(),
+      // Incremental import: stable per-section key, unique within the bundle
+      // (e.g. "home/hero"). Required for a section to be UPDATABLE by a later
+      // merge import; without it a merge treats the row as insert-only.
+      externalKey: v.optional(v.string()),
       type: sectionTypeLiteral,
       variant: v.string(),
       tone: v.optional(sectionToneValidator),
       layout: v.optional(sectionLayoutValidator),
-      order: v.string(), // LexoRank, preserved verbatim
+      // Fractional-indexing key, preserved verbatim when present. OPTIONAL
+      // (SDK feedback #4): hand-authoring these keys is a footgun — omit it
+      // and the import assigns valid keys in array position.
+      order: v.optional(v.string()),
       hidden: v.optional(v.boolean()),
       anchorId: v.optional(v.string()),
       content: v.any(), // validated on insert (see header note)
@@ -229,6 +253,10 @@ export const portableSiteV1 = v.object({
       family: v.string(),
       googleUrl: v.optional(v.string()),
       adobeKitId: v.optional(v.string()),
+      // upload only. "trial" (or a family/file name that looks like a trial
+      // cut - auto-flagged on import) keeps working in the draft but blocks
+      // publish until licensed files replace it.
+      license: v.optional(fontLicense),
       files: v.optional(
         v.array(
           v.object({
@@ -252,6 +280,9 @@ export const portableSiteV1 = v.object({
       mimeType: v.string(),
       kind: portableAssetKind,
       alt: v.optional(v.string()),
+      // kind:"video" only - best-effort declared duration (browsers can't
+      // always read it; the server can't decode it). Gated per-plan on import.
+      durationSec: v.optional(v.number()),
     }),
   ),
 });

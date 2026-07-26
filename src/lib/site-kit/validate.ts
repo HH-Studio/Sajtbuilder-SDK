@@ -211,7 +211,10 @@ export function validateSitePackage(
     if (!pageIds.has(s.pageTmpId)) {
       err(issues, `sections[${i}].pageTmpId`, `unknown page "${s.pageTmpId}"`);
     }
-    if (!isValidOrderKey(s.order)) {
+    // `order` is optional. Omit it and the importer assigns valid keys from
+    // array position - hand-authoring fractional keys is a footgun. A key that
+    // IS supplied still has to be well-formed, because it is preserved verbatim.
+    if (s.order !== undefined && !isValidOrderKey(s.order)) {
       err(issues, `sections[${i}].order`, "invalid fractional order key");
     }
     try {
@@ -229,13 +232,17 @@ export function validateSitePackage(
     } else if (!isValidVariant(s.type, s.variant)) {
       warn(issues, `sections[${i}].variant`, `unknown variant "${s.variant}" for "${s.type}" — import coerces it to the default`);
     }
-    if (contentType === "hero" && "bgVideo" in (s.content as object)) {
-      err(issues, `sections[${i}].content.bgVideo`, "self-hosted video is not portable in Site Kit v0.1");
-    }
+    // Self-hosted video is portable: the bundle carries a kind:"video" asset
+    // and the section points at it. What is NOT allowed is claiming an upload
+    // without the clip, which would import as a video section that plays
+    // nothing.
     if (contentType === "video") {
-      const video = s.content as { provider: string; video?: unknown; poster?: unknown };
-      if (video.provider === "upload" || video.video !== undefined || video.poster !== undefined) {
-        err(issues, `sections[${i}].content`, "self-hosted video is not portable in Site Kit v0.1; use YouTube or Vimeo");
+      const video = s.content as { provider: string; video?: { assetId?: string } };
+      if (video.provider === "upload" && video.video?.assetId === undefined) {
+        err(issues, `sections[${i}].content.video`, 'provider "upload" requires a video assetRef');
+      }
+      if (video.provider !== "upload" && video.video !== undefined) {
+        err(issues, `sections[${i}].content.video`, 'a video assetRef is only valid with provider "upload"');
       }
     }
   });

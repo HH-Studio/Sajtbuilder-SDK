@@ -32,18 +32,47 @@ The importer creates fresh database ids and remaps references.
 The home page has an empty slug. Slugs are language-independent paths without
 the leading slash. `showInNav` controls navigation visibility.
 
+`externalKey` is your own stable identifier for the page (`"home"`,
+`"tjanster"`). It is optional and unused by a first import, but a later merge
+import matches on it — without one, re-importing inserts rather than updates.
+
 ## Sections
 
 Every section has matching `type` and `content.type` values. `variant` must be
-allowed for that section type. `order` must be a valid `fractional-indexing`
-key; `a0`, `a1`, `a2` is sufficient for a hand-authored package. Validation
-rejects lookalike strings such as `a000` because the editor cannot insert a
-section after them safely.
+allowed for that section type.
+
+`order` is optional. Leave it out and the importer assigns valid keys from the
+order the sections appear in the array — that is the recommended way to
+hand-author a package. If you do supply one it is preserved verbatim, so it has
+to be a valid `fractional-indexing` key; validation rejects lookalike strings
+such as `a000` because the editor cannot insert a section after them safely.
+
+Sections take an `externalKey` too, with the same merge-import meaning as pages.
 
 ## Theme
 
-Themes use allow-listed tokens. Raw colors and CSS are not accepted. Import
-`DEFAULT_THEME` or inspect `ThemeTokens` for the current keys.
+Themes normally use allow-listed tokens: `palette`, `fontPair`, `density`,
+`radius`, `buttonStyle`, `appearance`, `typeScale`. Import `DEFAULT_THEME` or
+inspect `ThemeTokens` for the current keys. Owners pick from these in the
+editor, and the constrained set is what keeps an off-palette or low-contrast
+result unreachable.
+
+A developer building a site outside SnabbSajt can go further. Three optional
+fields carry a brand verbatim instead of snapping to the nearest built-in:
+
+| Field | Shape |
+| --- | --- |
+| `customPalette` | `{ light: SurfaceTokens, dark: SurfaceTokens }` — 13 raw CSS colours per mode (`bg`, `fg`, `muted`, `mutedFg`, `primary`, `primaryFg`, `primaryText?`, `accent`, `accentFg`, `border`, `card`, `cardFg`, `cardBorder`) |
+| `customFonts` | `{ heading: string, body: string }` |
+| `customBrandHex` | The single brand colour the palette was derived from |
+
+Set `palette` and `fontPair` to the nearest built-in values anyway. They are
+what the editor falls back to if the owner clears the custom look, so pick a
+close match rather than an arbitrary one.
+
+Unlike the built-in palettes, a custom palette is **not** gated by the authored
+contrast test. Check your own colour pairs — the importer will not catch an
+unreadable combination for you.
 
 ## Bundles
 

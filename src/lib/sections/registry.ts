@@ -13,7 +13,7 @@ import type {
 // in convex/sections.ts so a tampered client can't store an unknown variant.
 // ---------------------------------------------------------------------------
 
-type L = { sv: string; en: string };
+type L = { sv: string; en: string; pl: string };
 
 export type VariantDef = {
   key: string;
@@ -49,6 +49,14 @@ export type SectionDef = {
   /** Optional capability gate - the add-section picker hides this block unless
    *  the website has the capability active (e.g. commerce "sell"). */
   requiresCapability?: "sell";
+  /** Who can ADD this block (Sophic import plan phase 4). Absent/"core" =
+   *  everyone. "restricted" = a client-specific / specialist block: it renders
+   *  everywhere it already exists (published sites, preview, imported drafts)
+   *  but only appears in the add-section picker + AI planning for users
+   *  holding the advanced-editor capability, so one client's custom sections
+   *  never clutter every owner's picker. Server-enforced in
+   *  sections.addSection (assertSectionTypeAddable). */
+  availability?: "core" | "restricted";
 };
 
 const pick = (lang: Locale, sv: string, en: string, pl: string) =>
@@ -57,21 +65,58 @@ const pick = (lang: Locale, sv: string, en: string, pl: string) =>
 export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
   hero: {
     type: "hero",
-    label: { sv: "Introduktion", en: "Introduction" },
+    label: { sv: "Introduktion", en: "Introduction", pl: "Wprowadzenie" },
     whenToUse: {
       sv: "Längst upp på sidan – det första besökaren ser. Använd en gång per sida för att säga vilka ni är och vad besökaren ska göra.",
       en: "Top of the page – the first thing visitors see. Use once per page to say who you are and the main action to take.",
+      pl: "Na samej górze strony – pierwsza rzecz, którą widzi odwiedzający. Użyj raz na stronę, żeby powiedzieć, kim jesteście i co gość ma zrobić.",
     },
     category: "intro",
     icon: "PanelTop",
     variants: [
-      { key: "image-right", label: { sv: "Bild höger", en: "Image right" } },
-      { key: "image-left", label: { sv: "Bild vänster", en: "Image left" } },
-      { key: "centered", label: { sv: "Centrerad", en: "Centered" } },
-      { key: "split", label: { sv: "Delad", en: "Split" } },
-      { key: "minimal", label: { sv: "Enkel", en: "Minimal" } },
-      { key: "overlay", label: { sv: "Bild bakom", en: "Image behind" } },
-      { key: "gradient", label: { sv: "Färgtoning", en: "Gradient" } },
+      {
+        key: "image-right",
+        label: { sv: "Bild höger", en: "Image right", pl: "Zdjęcie po prawej" },
+      },
+      {
+        key: "image-left",
+        label: { sv: "Bild vänster", en: "Image left", pl: "Zdjęcie po lewej" },
+      },
+      {
+        key: "centered",
+        label: { sv: "Centrerad", en: "Centered", pl: "Wyśrodkowane" },
+      },
+      { key: "split", label: { sv: "Delad", en: "Split", pl: "Podzielone" } },
+      { key: "minimal", label: { sv: "Enkel", en: "Minimal", pl: "Proste" } },
+      {
+        key: "overlay",
+        label: { sv: "Bild bakom", en: "Image behind", pl: "Zdjęcie w tle" },
+      },
+      {
+        key: "overlay-left",
+        label: {
+          sv: "Bild bakom, vänster",
+          en: "Image behind, left",
+          pl: "Zdjęcie w tle, po lewej",
+        },
+      },
+      {
+        key: "gradient",
+        label: { sv: "Färgtoning", en: "Gradient", pl: "Przejście kolorów" },
+      },
+      {
+        key: "overlay-full",
+        label: {
+          sv: "Helskärm med bild",
+          en: "Full-screen image",
+          pl: "Zdjęcie na pełny ekran",
+        },
+        description: {
+          sv: "Samma bild bakom texten som \"Bild bakom\", men den fyller hela första vyn i stället för en fast bandhöjd.",
+          en: "The same photo-behind-text as \"Image behind\", but it fills the whole first view instead of a fixed band.",
+          pl: "To samo zdjęcie za tekstem co \"Zdjęcie w tle\", ale wypełnia cały pierwszy widok zamiast pasa o stałej wysokości.",
+        },
+      },
     ],
     defaultVariant: "image-right",
     defaultTone: "light",
@@ -99,33 +144,65 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   services: {
     type: "services",
-    label: { sv: "Tjänster", en: "Services" },
+    label: { sv: "Tjänster", en: "Services", pl: "Usługi" },
     whenToUse: {
       sv: "Visa vad ni erbjuder som 2–6 kort. Använd på startsidan så besökaren direkt ser vad ni gör.",
       en: "List what you offer as 2–6 cards. Use on the home page so visitors instantly see what you do.",
+      pl: "Pokaż, co oferujecie, jako 2–6 kart. Użyj na stronie głównej, żeby gość od razu widział, czym się zajmujecie.",
     },
     category: "services",
     icon: "LayoutGrid",
     variants: [
-      { key: "grid-3", label: { sv: "Tre kort", en: "Three cards" } },
-      { key: "grid-2", label: { sv: "Två kort", en: "Two cards" } },
-      { key: "list", label: { sv: "Lista", en: "List" } },
+      {
+        key: "grid-3",
+        label: { sv: "Tre kort", en: "Three cards", pl: "Trzy karty" },
+      },
+      {
+        key: "grid-2",
+        label: { sv: "Två kort", en: "Two cards", pl: "Dwie karty" },
+      },
+      { key: "list", label: { sv: "Lista", en: "List", pl: "Lista" } },
       {
         key: "split",
-        label: { sv: "Delad", en: "Split" },
+        label: { sv: "Delad", en: "Split", pl: "Podzielone" },
         description: {
           sv: "Rubrik till vänster, tjänsterna som avdelad lista till höger.",
           en: "Heading on the left, services as a divided list on the right.",
+          pl: "Nagłówek po lewej, usługi jako lista z liniami po prawej.",
         },
       },
-      { key: "icon-grid", label: { sv: "Ikonrutnät", en: "Icon grid" } },
-      { key: "numbered", label: { sv: "Numrerad", en: "Numbered" } },
+      {
+        key: "icon-grid",
+        label: { sv: "Ikonrutnät", en: "Icon grid", pl: "Siatka z ikonami" },
+      },
+      {
+        key: "numbered",
+        label: { sv: "Numrerad", en: "Numbered", pl: "Numerowane" },
+      },
       {
         key: "icon-grid-cta",
-        label: { sv: "Ikonrutnät med knapp", en: "Icon grid with button" },
+        label: {
+          sv: "Ikonrutnät med knapp",
+          en: "Icon grid with button",
+          pl: "Siatka z ikonami i przyciskiem",
+        },
         description: {
           sv: "Ikonrutnätet plus en rad med uppmaningsknappar under.",
           en: "The icon grid plus a call-to-action button row underneath.",
+          pl: "Siatka z ikonami plus rząd przycisków zachęty pod spodem.",
+        },
+      },
+      {
+        key: "numbered-split",
+        label: {
+          sv: "Numrerad, delad",
+          en: "Numbered split",
+          pl: "Numerowane, podzielone",
+        },
+        description: {
+          sv: "Rubriken står kvar till vänster medan tjänsterna rullar förbi till höger som numrerade rader med hårfina linjer emellan.",
+          en: "The heading stays on the left while the services scroll past on the right as numbered rows divided by hairlines.",
+          pl: "Nagłówek zostaje po lewej, a usługi przewijają się po prawej jako numerowane wiersze oddzielone cienkimi liniami.",
         },
       },
     ],
@@ -149,17 +226,27 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   "service-detail": {
     type: "service-detail",
-    label: { sv: "Tjänst i detalj", en: "Service detail" },
+    label: { sv: "Tjänst i detalj", en: "Service detail", pl: "Usługa w szczegółach" },
     whenToUse: {
       sv: "Förklara en enskild tjänst på djupet med punkter och bild. Använd på en egen tjänstesida.",
       en: "Explain one service in depth with bullet points and an image. Use on a dedicated service page.",
+      pl: "Opisz jedną usługę dokładnie, w punktach i ze zdjęciem. Użyj na osobnej stronie usługi.",
     },
     category: "services",
     icon: "FileText",
     variants: [
-      { key: "media-right", label: { sv: "Bild höger", en: "Image right" } },
-      { key: "media-left", label: { sv: "Bild vänster", en: "Image left" } },
-      { key: "stacked", label: { sv: "Staplad", en: "Stacked" } },
+      {
+        key: "media-right",
+        label: { sv: "Bild höger", en: "Image right", pl: "Zdjęcie po prawej" },
+      },
+      {
+        key: "media-left",
+        label: { sv: "Bild vänster", en: "Image left", pl: "Zdjęcie po lewej" },
+      },
+      {
+        key: "stacked",
+        label: { sv: "Staplad", en: "Stacked", pl: "Jedno pod drugim" },
+      },
     ],
     defaultVariant: "media-right",
     defaultTone: "light",
@@ -182,23 +269,34 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   about: {
     type: "about",
-    label: { sv: "Om oss", en: "About" },
+    label: { sv: "Om oss", en: "About", pl: "O nas" },
     whenToUse: {
       sv: "Berätta er historia och skapa förtroende. Använd när besökaren vill veta vilka som står bakom företaget.",
       en: "Tell your story and build trust. Use when visitors want to know who is behind the business.",
+      pl: "Opowiedz swoją historię i zbuduj zaufanie. Użyj, gdy gość chce wiedzieć, kto stoi za firmą.",
     },
     category: "trust",
     icon: "Users",
     variants: [
-      { key: "text-image", label: { sv: "Text och bild", en: "Text & image" } },
-      { key: "text-only", label: { sv: "Bara text", en: "Text only" } },
-      { key: "image-left", label: { sv: "Bild vänster", en: "Image left" } },
+      {
+        key: "text-image",
+        label: { sv: "Text och bild", en: "Text & image", pl: "Tekst i zdjęcie" },
+      },
+      {
+        key: "text-only",
+        label: { sv: "Bara text", en: "Text only", pl: "Tylko tekst" },
+      },
+      {
+        key: "image-left",
+        label: { sv: "Bild vänster", en: "Image left", pl: "Zdjęcie po lewej" },
+      },
       {
         key: "wide",
-        label: { sv: "Bred", en: "Wide" },
+        label: { sv: "Bred", en: "Wide", pl: "Szerokie" },
         description: {
           sv: "Ett bredare textblock utan bild vid sidan – redaktionell känsla.",
           en: "A wider, editorial-style text block – no side image.",
+          pl: "Szerszy blok tekstu bez zdjęcia z boku – wygląd jak w gazecie.",
         },
       },
     ],
@@ -219,23 +317,29 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   team: {
     type: "team",
-    label: { sv: "Medarbetare", en: "Team" },
+    label: { sv: "Medarbetare", en: "Team", pl: "Zespół" },
     whenToUse: {
       sv: "Visa personerna bakom företaget med foton. Använd när personligt förtroende är viktigt (kliniker, salonger, byråer).",
       en: "Show the people behind the business with photos. Use when personal trust matters (clinics, salons, agencies).",
+      pl: "Pokaż ze zdjęciami ludzi, którzy tworzą firmę. Użyj, gdy liczy się osobiste zaufanie (przychodnie, salony, agencje).",
     },
     category: "trust",
     icon: "UserRound",
     variants: [
-      { key: "grid", label: { sv: "Rutnät", en: "Grid" } },
-      { key: "list", label: { sv: "Lista", en: "List" } },
-      { key: "cards", label: { sv: "Kort", en: "Cards" } },
+      { key: "grid", label: { sv: "Rutnät", en: "Grid", pl: "Siatka" } },
+      { key: "list", label: { sv: "Lista", en: "List", pl: "Lista" } },
+      { key: "cards", label: { sv: "Kort", en: "Cards", pl: "Karty" } },
       {
         key: "grid-cta",
-        label: { sv: "Rutnät med rekrytering", en: "Grid with hiring CTA" },
+        label: {
+          sv: "Rutnät med rekrytering",
+          en: "Grid with hiring CTA",
+          pl: "Siatka z ogłoszeniem o pracy",
+        },
         description: {
           sv: 'Teamrutnätet plus en "vi anställer"-banner längst ner.',
           en: 'The team grid plus a "We\'re hiring" banner at the end.',
+          pl: 'Siatka zespołu plus pasek "Szukamy pracowników" na końcu.',
         },
       },
     ],
@@ -254,65 +358,96 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   testimonials: {
     type: "testimonials",
-    label: { sv: "Recensioner", en: "Reviews" },
+    label: { sv: "Recensioner", en: "Reviews", pl: "Opinie" },
     whenToUse: {
       sv: "Visa vad kunder säger. Använd för att bygga förtroende innan du ber besökaren kontakta eller boka.",
       en: "Show customer reviews. Use to build trust before asking visitors to contact or book.",
+      pl: "Pokaż, co mówią klienci. Użyj, żeby zbudować zaufanie, zanim poprosisz gościa o kontakt lub rezerwację.",
     },
     category: "trust",
     icon: "Quote",
     variants: [
-      { key: "cards", label: { sv: "Kort", en: "Cards" } },
-      { key: "single", label: { sv: "Ett citat", en: "Single quote" } },
-      { key: "marquee", label: { sv: "Löpande band", en: "Marquee" } },
+      { key: "cards", label: { sv: "Kort", en: "Cards", pl: "Karty" } },
+      {
+        key: "single",
+        label: { sv: "Ett citat", en: "Single quote", pl: "Jedna wypowiedź" },
+      },
+      {
+        key: "marquee",
+        label: { sv: "Löpande band", en: "Marquee", pl: "Przesuwający się pasek" },
+      },
       {
         key: "logos-quote",
-        label: { sv: "Citat med logotyp", en: "Quote with logo" },
+        label: {
+          sv: "Citat med logotyp",
+          en: "Quote with logo",
+          pl: "Wypowiedź z logo",
+        },
         description: {
           sv: "Varje citat visas ihop med kundens företagslogotyp istället för ett foto.",
           en: "Pairs each quote with the customer’s company logo instead of a headshot.",
+          pl: "Przy każdej wypowiedzi widać logo firmy klienta zamiast zdjęcia osoby.",
+        },
+      },
+      {
+        key: "plain",
+        label: { sv: "Utan kort", en: "No cards", pl: "Bez kart" },
+        description: {
+          sv: "Citaten står i spalter under var sin hårfin linje, utan ram och utan bakgrund.",
+          en: "The quotes stand in columns, each under its own hairline, with no frame and no background.",
+          pl: "Wypowiedzi w kolumnach, każda pod własną cienką linią, bez ramki i bez tła.",
         },
       },
     ],
     defaultVariant: "cards",
     defaultTone: "clear",
     allowedTones: ["light", "clear", "dark"],
+    // Ships EMPTY on purpose (backlog 0478): the old default was two
+    // fabricated 5-star reviews, which is a publishable lie once the author
+    // is renamed. The editor renders a neutral "add a review" state instead,
+    // and the public site renders nothing until a real review exists.
     defaultContent: (lang) => ({
       type: "testimonials",
       heading: pick(lang, "Vad kunderna säger", "What customers say", "Co mówią klienci"),
-      quotes: [1, 2].map((i) => ({
-        text: pick(
-          lang,
-          "Riktigt nöjd med jobbet – rekommenderas varmt!",
-          "Really happy with the work – highly recommended!",
-          "Bardzo zadowolony z pracy – gorąco polecam!",
-        ),
-        author: pick(lang, `Kund ${i}`, `Customer ${i}`, `Klient ${i}`),
-        rating: 5,
-      })),
+      quotes: [],
     }),
   },
 
   gallery: {
     type: "gallery",
-    label: { sv: "Bildgalleri", en: "Gallery" },
+    label: { sv: "Bildgalleri", en: "Gallery", pl: "Galeria zdjęć" },
     whenToUse: {
       sv: "Visa foton på ert arbete eller er lokal. Använd för visuella verksamheter (restauranger, salonger, hantverkare).",
       en: "Show photos of your work or space. Use for visual businesses (restaurants, salons, builders).",
+      pl: "Pokaż zdjęcia swojej pracy albo lokalu. Użyj tam, gdzie liczy się wygląd (restauracje, salony, wykonawcy).",
     },
     category: "content",
     icon: "Images",
     variants: [
-      { key: "grid-3", label: { sv: "Tre i bredd", en: "Three wide" } },
-      { key: "grid-4", label: { sv: "Fyra i bredd", en: "Four wide" } },
-      { key: "masonry", label: { sv: "Tegel", en: "Masonry" } },
-      { key: "carousel", label: { sv: "Karusell", en: "Carousel" } },
+      {
+        key: "grid-3",
+        label: { sv: "Tre i bredd", en: "Three wide", pl: "Trzy w rzędzie" },
+      },
+      {
+        key: "grid-4",
+        label: { sv: "Fyra i bredd", en: "Four wide", pl: "Cztery w rzędzie" },
+      },
+      { key: "masonry", label: { sv: "Tegel", en: "Masonry", pl: "Mozaika" } },
+      {
+        key: "carousel",
+        label: { sv: "Karusell", en: "Carousel", pl: "Karuzela" },
+      },
       {
         key: "full-bleed",
-        label: { sv: "Kant till kant", en: "Full bleed" },
+        label: {
+          sv: "Kant till kant",
+          en: "Full bleed",
+          pl: "Od krawędzi do krawędzi",
+        },
         description: {
           sv: "Bilderna går kant till kant utan marginal – ett djärvt, galleriliknande utseende.",
           en: "Photos run edge-to-edge with no side padding – a bold, gallery-style look.",
+          pl: "Zdjęcia sięgają od krawędzi do krawędzi, bez marginesów – odważny wygląd jak w galerii.",
         },
       },
     ],
@@ -328,22 +463,30 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   "before-after": {
     type: "before-after",
-    label: { sv: "Före och efter", en: "Before & after" },
+    label: { sv: "Före och efter", en: "Before & after", pl: "Przed i po" },
     whenToUse: {
       sv: "Jämför resultat sida vid sida. Använd när arbetet har en tydlig visuell förändring (städ, renovering, tandvård).",
       en: "Compare results side by side. Use when your work has a clear visual transformation (cleaning, renovation, dental).",
+      pl: "Porównaj efekty obok siebie. Użyj, gdy praca daje wyraźnie widoczną zmianę (sprzątanie, remonty, stomatologia).",
     },
     category: "content",
     icon: "GitCompareArrows",
     variants: [
-      { key: "side-by-side", label: { sv: "Sida vid sida", en: "Side by side" } },
-      { key: "stacked", label: { sv: "Staplad", en: "Stacked" } },
+      {
+        key: "side-by-side",
+        label: { sv: "Sida vid sida", en: "Side by side", pl: "Obok siebie" },
+      },
+      {
+        key: "stacked",
+        label: { sv: "Staplad", en: "Stacked", pl: "Jedno pod drugim" },
+      },
       {
         key: "wide",
-        label: { sv: "Bred", en: "Wide" },
+        label: { sv: "Bred", en: "Wide", pl: "Szerokie" },
         description: {
           sv: "Varje före- och efterpar får hela radens bredd för tydligare resultat.",
           en: "Each before-and-after pair uses the full row for a clearer result.",
+          pl: "Każda para przed i po zajmuje cały rząd, żeby efekt był wyraźniejszy.",
         },
       },
     ],
@@ -359,23 +502,34 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   pricing: {
     type: "pricing",
-    label: { sv: "Priser", en: "Pricing" },
+    label: { sv: "Priser", en: "Pricing", pl: "Cennik" },
     whenToUse: {
       sv: "Visa priser eller paket. Använd när tydliga priser hjälper besökaren att bestämma sig (gym, salonger, tjänster).",
       en: "Show prices or packages. Use when clear pricing helps visitors decide (gyms, salons, service businesses).",
+      pl: "Pokaż ceny albo pakiety. Użyj, gdy jasne ceny pomagają gościowi podjąć decyzję (siłownie, salony, usługi).",
     },
     category: "services",
     icon: "Tag",
     variants: [
-      { key: "tiers-3", label: { sv: "Tre nivåer", en: "Three tiers" } },
-      { key: "simple-list", label: { sv: "Prislista", en: "Price list" } },
-      { key: "two-col", label: { sv: "Två nivåer", en: "Two tiers" } },
+      {
+        key: "tiers-3",
+        label: { sv: "Tre nivåer", en: "Three tiers", pl: "Trzy pakiety" },
+      },
+      {
+        key: "simple-list",
+        label: { sv: "Prislista", en: "Price list", pl: "Lista cen" },
+      },
+      {
+        key: "two-col",
+        label: { sv: "Två nivåer", en: "Two tiers", pl: "Dwa pakiety" },
+      },
       {
         key: "single",
-        label: { sv: "Ett paket", en: "Single plan" },
+        label: { sv: "Ett paket", en: "Single plan", pl: "Jeden pakiet" },
         description: {
           sv: "Ett paket visas stort och centrerat – för företag med ett fast pris.",
           en: "One plan shown large and centered – for businesses with one flat price.",
+          pl: "Jeden pakiet pokazany duży i wyśrodkowany – dla firm z jedną stałą ceną.",
         },
       },
     ],
@@ -398,23 +552,44 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   faq: {
     type: "faq",
-    label: { sv: "Vanliga frågor", en: "FAQ" },
+    label: { sv: "Vanliga frågor", en: "FAQ", pl: "Częste pytania" },
     whenToUse: {
       sv: "Svara på vanliga frågor. Använd för att ta bort tveksamheter och minska upprepade samtal och mejl.",
       en: "Answer common questions. Use to remove doubts and cut down on repetitive calls and emails.",
+      pl: "Odpowiedz na częste pytania. Użyj, żeby rozwiać wątpliwości i ograniczyć powtarzające się telefony i maile.",
     },
     category: "content",
     icon: "MessageCircleQuestion",
     variants: [
-      { key: "accordion", label: { sv: "Hopfällbar", en: "Accordion" } },
-      { key: "two-column", label: { sv: "Två kolumner", en: "Two columns" } },
-      { key: "cards", label: { sv: "Kort", en: "Cards" } },
+      {
+        key: "accordion",
+        label: { sv: "Hopfällbar", en: "Accordion", pl: "Rozwijane" },
+      },
+      {
+        key: "two-column",
+        label: { sv: "Två kolumner", en: "Two columns", pl: "Dwie kolumny" },
+      },
+      { key: "cards", label: { sv: "Kort", en: "Cards", pl: "Karty" } },
       {
         key: "accordion-cta",
-        label: { sv: "Hopfällbar med fråga", en: "Accordion with CTA" },
+        label: {
+          sv: "Hopfällbar med fråga",
+          en: "Accordion with CTA",
+          pl: "Rozwijane z zachętą",
+        },
         description: {
           sv: 'Hopfällbara frågor plus en uppmaning "Har du fler frågor?" med knapp längst ner.',
           en: 'The accordion plus a "Still have questions?" prompt with a button at the end.',
+          pl: 'Rozwijane pytania plus zachęta "Masz więcej pytań?" z przyciskiem na końcu.',
+        },
+      },
+      {
+        key: "split",
+        label: { sv: "Delad", en: "Split", pl: "Podzielone" },
+        description: {
+          sv: "Rubriken står kvar till vänster medan frågorna fälls ut till höger.",
+          en: "The heading stays on the left while the questions expand on the right.",
+          pl: "Nagłówek zostaje po lewej, a pytania rozwijają się po prawej.",
         },
       },
     ],
@@ -440,23 +615,39 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   process: {
     type: "process",
-    label: { sv: "Så går det till", en: "How it works" },
+    label: { sv: "Så går det till", en: "How it works", pl: "Jak to działa" },
     whenToUse: {
       sv: "Visa hur det går till att jobba med er, steg för steg. Använd för att få nya kunder att känna sig trygga.",
       en: "Show how working with you works, step by step. Use to make first-time customers feel safe.",
+      pl: "Pokaż krok po kroku, jak wygląda współpraca z wami. Użyj, żeby nowi klienci poczuli się pewnie.",
     },
     category: "content",
     icon: "ListOrdered",
     variants: [
-      { key: "steps-horizontal", label: { sv: "Steg i rad", en: "Steps in a row" } },
-      { key: "steps-vertical", label: { sv: "Steg under varandra", en: "Vertical steps" } },
-      { key: "timeline", label: { sv: "Tidslinje", en: "Timeline" } },
+      {
+        key: "steps-horizontal",
+        label: { sv: "Steg i rad", en: "Steps in a row", pl: "Kroki w rzędzie" },
+      },
+      {
+        key: "steps-vertical",
+        label: {
+          sv: "Steg under varandra",
+          en: "Vertical steps",
+          pl: "Kroki jeden pod drugim",
+        },
+      },
+      { key: "timeline", label: { sv: "Tidslinje", en: "Timeline", pl: "Oś czasu" } },
       {
         key: "numbered-cards",
-        label: { sv: "Numrerade kort", en: "Numbered cards" },
+        label: {
+          sv: "Numrerade kort",
+          en: "Numbered cards",
+          pl: "Numerowane karty",
+        },
         description: {
           sv: "Varje steg får ett eget kort med en stor stegsiffra.",
           en: "Each step gets its own card with a large step number.",
+          pl: "Każdy krok dostaje własną kartę z dużym numerem.",
         },
       },
     ],
@@ -475,22 +666,24 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   "service-areas": {
     type: "service-areas",
-    label: { sv: "Områden", en: "Service areas" },
+    label: { sv: "Områden", en: "Service areas", pl: "Obszar działania" },
     whenToUse: {
       sv: "Lista orterna ni jobbar i. Använd för lokala företag som åker ut till kunderna (städ, hantverkare).",
       en: "List the places you serve. Use for local businesses that travel to customers (cleaning, handyman).",
+      pl: "Wypisz miejscowości, w których pracujecie. Użyj, jeśli dojeżdżacie do klientów (sprzątanie, złota rączka).",
     },
     category: "services",
     icon: "MapPinned",
     variants: [
-      { key: "chips", label: { sv: "Etiketter", en: "Chips" } },
-      { key: "list", label: { sv: "Lista", en: "List" } },
+      { key: "chips", label: { sv: "Etiketter", en: "Chips", pl: "Etykiety" } },
+      { key: "list", label: { sv: "Lista", en: "List", pl: "Lista" } },
       {
         key: "cards",
-        label: { sv: "Områdeskort", en: "Area cards" },
+        label: { sv: "Områdeskort", en: "Area cards", pl: "Karty obszarów" },
         description: {
           sv: "Varje område får ett eget tydligt kort med kartnål.",
           en: "Each service area gets its own clear card with a map pin.",
+          pl: "Każdy obszar dostaje własną wyraźną kartę z pinezką na mapie.",
         },
       },
     ],
@@ -511,22 +704,34 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   contact: {
     type: "contact",
-    label: { sv: "Kontakt", en: "Contact" },
+    label: { sv: "Kontakt", en: "Contact", pl: "Kontakt" },
     whenToUse: {
       sv: "Kontaktformulär plus era uppgifter. Använd så besökaren kan nå er – oftast långt ner eller på en egen kontaktsida.",
       en: "Contact form plus your details. Use so visitors can reach you – usually near the bottom or on a contact page.",
+      pl: "Formularz kontaktowy plus wasze dane. Użyj, żeby gość mógł się z wami skontaktować – zwykle na dole strony albo na osobnej stronie kontaktu.",
     },
     category: "contact",
     icon: "Mail",
     variants: [
-      { key: "form-info", label: { sv: "Formulär och info", en: "Form & info" } },
-      { key: "info-only", label: { sv: "Bara info", en: "Info only" } },
+      {
+        key: "form-info",
+        label: {
+          sv: "Formulär och info",
+          en: "Form & info",
+          pl: "Formularz i dane",
+        },
+      },
+      {
+        key: "info-only",
+        label: { sv: "Bara info", en: "Info only", pl: "Tylko dane" },
+      },
       {
         key: "info-cards",
-        label: { sv: "Infokort", en: "Info cards" },
+        label: { sv: "Infokort", en: "Info cards", pl: "Karty z danymi" },
         description: {
           sv: "E-post, telefon och adress visas som tre ikonkort istället för ett formulär.",
           en: "Email, phone and address shown as three icon cards instead of a form.",
+          pl: "E-mail, telefon i adres pokazane jako trzy karty z ikonami zamiast formularza.",
         },
       },
     ],
@@ -571,22 +776,24 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   "opening-hours": {
     type: "opening-hours",
-    label: { sv: "Öppettider", en: "Opening hours" },
+    label: { sv: "Öppettider", en: "Opening hours", pl: "Godziny otwarcia" },
     whenToUse: {
       sv: "Visa veckans öppettider. Använd för platser folk besöker (butiker, kliniker, restauranger).",
       en: "Show your weekly opening hours. Use for places people visit (shops, clinics, restaurants).",
+      pl: "Pokaż godziny otwarcia na cały tydzień. Użyj tam, gdzie ludzie przychodzą osobiście (sklepy, przychodnie, restauracje).",
     },
     category: "contact",
     icon: "Clock",
     variants: [
-      { key: "table", label: { sv: "Tabell", en: "Table" } },
-      { key: "compact", label: { sv: "Kompakt", en: "Compact" } },
+      { key: "table", label: { sv: "Tabell", en: "Table", pl: "Tabela" } },
+      { key: "compact", label: { sv: "Kompakt", en: "Compact", pl: "Zwarte" } },
       {
         key: "cards",
-        label: { sv: "Dagskort", en: "Day cards" },
+        label: { sv: "Dagskort", en: "Day cards", pl: "Karty dni" },
         description: {
           sv: "Varje dag visas som ett eget kort i ett luftigt rutnät.",
           en: "Each day appears in its own card in an airy grid.",
+          pl: "Każdy dzień to osobna karta w przestronnej siatce.",
         },
       },
     ],
@@ -609,22 +816,30 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   location: {
     type: "location",
-    label: { sv: "Hitta hit", en: "Location" },
+    label: { sv: "Hitta hit", en: "Location", pl: "Jak dojechać" },
     whenToUse: {
       sv: "Karta och adress. Använd när besökaren behöver hitta er fysiska plats.",
       en: "Map and address. Use when visitors need to find your physical place.",
+      pl: "Mapa i adres. Użyj, gdy gość musi trafić do waszego lokalu.",
     },
     category: "contact",
     icon: "MapPin",
     variants: [
-      { key: "map-card", label: { sv: "Karta och adress", en: "Map & address" } },
-      { key: "address-only", label: { sv: "Bara adress", en: "Address only" } },
+      {
+        key: "map-card",
+        label: { sv: "Karta och adress", en: "Map & address", pl: "Mapa i adres" },
+      },
+      {
+        key: "address-only",
+        label: { sv: "Bara adress", en: "Address only", pl: "Tylko adres" },
+      },
       {
         key: "map-first",
-        label: { sv: "Karta först", en: "Map first" },
+        label: { sv: "Karta först", en: "Map first", pl: "Najpierw mapa" },
         description: {
           sv: "Kartan ligger överst med adressen samlad i en kort rad under.",
           en: "The map leads, with the address collected in a short row below.",
+          pl: "Mapa jest na górze, a adres zebrany w krótkim wierszu pod nią.",
         },
       },
     ],
@@ -640,22 +855,24 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   certifications: {
     type: "certifications",
-    label: { sv: "Certifieringar", en: "Certifications" },
+    label: { sv: "Certifieringar", en: "Certifications", pl: "Certyfikaty" },
     whenToUse: {
       sv: "Lista behörigheter, licenser eller utmärkelser. Använd för att bevisa trovärdighet (hantverk, vård, ekonomi).",
       en: "List qualifications, licences or awards. Use to prove credibility (trades, health, finance).",
+      pl: "Wypisz uprawnienia, licencje albo wyróżnienia. Użyj, żeby potwierdzić wiarygodność (rzemiosło, zdrowie, finanse).",
     },
     category: "trust",
     icon: "BadgeCheck",
     variants: [
-      { key: "list", label: { sv: "Lista", en: "List" } },
-      { key: "grid", label: { sv: "Rutnät", en: "Grid" } },
+      { key: "list", label: { sv: "Lista", en: "List", pl: "Lista" } },
+      { key: "grid", label: { sv: "Rutnät", en: "Grid", pl: "Siatka" } },
       {
         key: "badges",
-        label: { sv: "Emblem", en: "Badges" },
+        label: { sv: "Emblem", en: "Badges", pl: "Odznaki" },
         description: {
           sv: "Certifieringarna visas som en enkel rad med emblem.",
           en: "Certifications shown as a simple row of badges.",
+          pl: "Certyfikaty pokazane jako prosty rząd odznak.",
         },
       },
     ],
@@ -671,22 +888,24 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   "social-proof": {
     type: "social-proof",
-    label: { sv: "Siffror", en: "Stats" },
+    label: { sv: "Siffror", en: "Stats", pl: "Liczby" },
     whenToUse: {
       sv: "Lyft fram nyckeltal (kunder, år, projekt). Använd för att bygga omedelbar trovärdighet.",
       en: "Headline numbers (customers, years, projects). Use to build instant credibility.",
+      pl: "Wyróżnij najważniejsze liczby (klienci, lata, realizacje). Użyj, żeby od razu zbudować wiarygodność.",
     },
     category: "trust",
     icon: "TrendingUp",
     variants: [
-      { key: "stats", label: { sv: "Siffror", en: "Stats" } },
-      { key: "cards", label: { sv: "Kort", en: "Cards" } },
+      { key: "stats", label: { sv: "Siffror", en: "Stats", pl: "Liczby" } },
+      { key: "cards", label: { sv: "Kort", en: "Cards", pl: "Karty" } },
       {
         key: "inline",
-        label: { sv: "Rad", en: "Inline" },
+        label: { sv: "Rad", en: "Inline", pl: "W jednym rzędzie" },
         description: {
           sv: "Siffrorna visas som en kompakt rad istället för rutor.",
           en: "Numbers shown as one compact line instead of boxed stat cards.",
+          pl: "Liczby pokazane w jednym zwartym rzędzie zamiast w kartach.",
         },
       },
     ],
@@ -714,22 +933,24 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   instagram: {
     type: "instagram",
-    label: { sv: "Instagram", en: "Instagram" },
+    label: { sv: "Instagram", en: "Instagram", pl: "Instagram" },
     whenToUse: {
       sv: "Visa ett rutnät av senaste Instagram-bilderna. Använd för att visa att ni är aktiva och visa riktigt arbete.",
       en: "Show a grid of recent Instagram photos. Use to prove you’re active and show real work.",
+      pl: "Pokaż siatkę najnowszych zdjęć z Instagrama. Użyj, żeby pokazać, że jesteście aktywni i widać prawdziwą pracę.",
     },
     category: "content",
     icon: "Instagram",
     variants: [
-      { key: "grid", label: { sv: "Rutnät", en: "Grid" } },
-      { key: "row", label: { sv: "Rad", en: "Row" } },
+      { key: "grid", label: { sv: "Rutnät", en: "Grid", pl: "Siatka" } },
+      { key: "row", label: { sv: "Rad", en: "Row", pl: "Rząd" } },
       {
         key: "collage",
-        label: { sv: "Kollage", en: "Collage" },
+        label: { sv: "Kollage", en: "Collage", pl: "Kolaż" },
         description: {
           sv: "Ett större foto får sällskap av mindre bilder i ett redaktionellt rutnät.",
           en: "One larger photo is paired with smaller images in an editorial grid.",
+          pl: "Jedno większe zdjęcie w towarzystwie mniejszych, w siatce jak w magazynie.",
         },
       },
     ],
@@ -741,23 +962,31 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   "cta-band": {
     type: "cta-band",
-    label: { sv: "Uppmaning", en: "Call to action" },
+    label: { sv: "Uppmaning", en: "Call to action", pl: "Zachęta do działania" },
     whenToUse: {
       sv: "En tydlig uppmaningsremsa. Använd mellan sektioner för att putta besökaren till handling.",
       en: "A bold call-to-action strip. Use between sections to nudge visitors to act.",
+      pl: "Wyraźny pasek z zachętą. Użyj między sekcjami, żeby popchnąć gościa do działania.",
     },
     category: "intro",
     icon: "Megaphone",
     variants: [
-      { key: "centered", label: { sv: "Centrerad", en: "Centered" } },
-      { key: "split", label: { sv: "Delad", en: "Split" } },
-      { key: "gradient", label: { sv: "Färgtoning", en: "Gradient" } },
+      {
+        key: "centered",
+        label: { sv: "Centrerad", en: "Centered", pl: "Wyśrodkowane" },
+      },
+      { key: "split", label: { sv: "Delad", en: "Split", pl: "Podzielone" } },
+      {
+        key: "gradient",
+        label: { sv: "Färgtoning", en: "Gradient", pl: "Przejście kolorów" },
+      },
       {
         key: "boxed",
-        label: { sv: "I ram", en: "Boxed" },
+        label: { sv: "I ram", en: "Boxed", pl: "W ramce" },
         description: {
           sv: "Uppmaningen ligger i en inramad ruta istället för en bred remsa.",
           en: "The call to action sits inside a bordered card instead of a full-width band.",
+          pl: "Zachęta znajduje się w karcie z obramowaniem zamiast na pasku przez całą szerokość.",
         },
       },
     ],
@@ -776,16 +1005,20 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   booking: {
     type: "booking",
-    label: { sv: "Boka tid", en: "Booking" },
+    label: { sv: "Boka tid", en: "Booking", pl: "Rezerwacja wizyt" },
     whenToUse: {
       sv: "Låt kunder boka tid. Klistra in din bokningslänk (Calendly, Cal.com, Bokadirekt …) eller bygg en enkel egen bokning. Använd när kunder bokar besök (kliniker, salonger).",
       en: "Let customers book a time. Paste your booking link (Calendly, Cal.com, Bokadirekt …) or build a simple native booking. Use when customers book appointments (clinics, salons).",
+      pl: "Pozwól klientom rezerwować termin. Wklej swój link do rezerwacji (Calendly, Cal.com, Bokadirekt …) albo zbuduj prostą własną rezerwację. Użyj, gdy klienci umawiają się na wizyty (przychodnie, salony).",
     },
     category: "contact",
     icon: "CalendarCheck",
     variants: [
-      { key: "button", label: { sv: "Knapp", en: "Button" } },
-      { key: "inline", label: { sv: "Inbäddad", en: "Inline" } },
+      { key: "button", label: { sv: "Knapp", en: "Button", pl: "Przycisk" } },
+      {
+        key: "inline",
+        label: { sv: "Inbäddad", en: "Inline", pl: "Osadzone na stronie" },
+      },
     ],
     defaultVariant: "inline",
     defaultTone: "clear",
@@ -805,22 +1038,34 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   "lead-form": {
     type: "lead-form",
-    label: { sv: "Offertförfrågan", en: "Lead form" },
+    label: { sv: "Offertförfrågan", en: "Lead form", pl: "Zapytanie o wycenę" },
     whenToUse: {
       sv: "Formulär för att begära offert. Använd när jobb prissätts individuellt (städ, hantverkare, B2B).",
       en: "Request-a-quote form. Use when jobs are custom-priced (cleaning, handyman, B2B).",
+      pl: "Formularz do zapytania o wycenę. Użyj, gdy cenę ustalacie indywidualnie (sprzątanie, złota rączka, firmy).",
     },
     category: "contact",
     icon: "ClipboardList",
     variants: [
-      { key: "stacked", label: { sv: "Staplad", en: "Stacked" } },
-      { key: "two-column", label: { sv: "Två kolumner", en: "Two columns" } },
+      {
+        key: "stacked",
+        label: { sv: "Staplad", en: "Stacked", pl: "Jedno pod drugim" },
+      },
+      {
+        key: "two-column",
+        label: { sv: "Två kolumner", en: "Two columns", pl: "Dwie kolumny" },
+      },
       {
         key: "card",
-        label: { sv: "Formulär i ruta", en: "Form card" },
+        label: {
+          sv: "Formulär i ruta",
+          en: "Form card",
+          pl: "Formularz w ramce",
+        },
         description: {
           sv: "Rubriken ligger fritt medan formuläret får en tydlig inramad ruta.",
           en: "The heading stays open while the form sits in a clear bordered card.",
+          pl: "Nagłówek zostaje swobodny, a formularz trafia do wyraźnej karty z obramowaniem.",
         },
       },
     ],
@@ -866,28 +1111,37 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
   },
   "quote-flow": {
     type: "quote-flow",
-    label: { sv: "Offertguide", en: "Smart quote flow" },
+    label: { sv: "Offertguide", en: "Smart quote flow", pl: "Kreator wyceny" },
     whenToUse: {
       sv: "Guidad fråga-för-fråga som ger besökaren ett prisförslag direkt och fångar en färdig förfrågan. Använd istället för ett långt formulär när jobb prissätts på storlek/typ (städ, hantverkare).",
       en: "A step-by-step wizard that gives the visitor an instant price estimate and captures a structured request. Use instead of a long form when jobs are priced by size/type (cleaning, handyman).",
+      pl: "Krok po kroku, pytanie po pytaniu – gość od razu dostaje szacunkową cenę, a Ty gotowe zapytanie. Użyj zamiast długiego formularza, gdy cena zależy od wielkości lub rodzaju zlecenia (sprzątanie, złota rączka).",
     },
     category: "contact",
     icon: "Calculator",
     variants: [
-      { key: "card", label: { sv: "Kort", en: "Card" } },
-      { key: "inline", label: { sv: "Inbäddad", en: "Inline" } },
+      { key: "card", label: { sv: "Kort", en: "Card", pl: "Karta" } },
+      {
+        key: "inline",
+        label: { sv: "Inbäddad", en: "Inline", pl: "Osadzone na stronie" },
+      },
     ],
     defaultVariant: "card",
     defaultTone: "clear",
     allowedTones: ["light", "clear", "dark"],
     defaultContent: (lang) => ({
       type: "quote-flow",
-      heading: pick(lang, "Få ett prisförslag", "Get a price estimate", "Otrzymaj wycenę"),
+      // The default ships `pricing: "none"`, so heading + intro must not promise
+      // an instant price - and no default may assert a response time the owner
+      // never gave (prd.md §4.11/§9). Same rule as the generated templates in
+      // convex/generation/quoteFlows.ts. The owner turns pricing on, and writes
+      // their own SLA, in the editor.
+      heading: pick(lang, "Begär en offert", "Request a quote", "Poproś o wycenę"),
       intro: pick(
         lang,
-        "Svara på några snabba frågor så ger vi dig en uppskattning direkt.",
-        "Answer a few quick questions and we’ll give you an instant estimate.",
-        "Odpowiedz na kilka szybkich pytań, a od razu podamy szacunkową cenę.",
+        "Svara på några snabba frågor så återkommer vi med en offert.",
+        "Answer a few quick questions and we’ll get back to you with a quote.",
+        "Odpowiedz na kilka szybkich pytań, a wrócimy z wyceną.",
       ),
       steps: [
         {
@@ -917,9 +1171,14 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       currency: "kr",
       estimateNote: pick(
         lang,
-        "Kostnadsfri offert · svar inom 24 h",
-        "Free quote · reply within 24 h",
-        "Bezpłatna wycena · odpowiedź w 24 h",
+        // No response-time promise: "svar inom 24 h" asserted an SLA on the
+        // owner's behalf that they never agreed to (audit 2026-07-25, F2). The
+        // same invented promise was removed from the generated templates in
+        // convex/generation/quoteFlows.ts. An owner who genuinely answers within
+        // a day can add that themselves; we may not say it for them.
+        "Kostnadsfri offert",
+        "Free quote",
+        "Bezpłatna wycena",
       ),
       insufficientMessage: pick(
         lang,
@@ -940,23 +1199,28 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   footer: {
     type: "footer",
-    label: { sv: "Sidfot", en: "Footer" },
+    label: { sv: "Sidfot", en: "Footer", pl: "Stopka" },
     whenToUse: {
       sv: "Längst ner på varje sida – kontakt, länkar, juridik. Använd en gång, alltid allra längst ner.",
       en: "Bottom of every page – contact, links, legal. Use once, always at the very bottom.",
+      pl: "Na dole każdej strony – kontakt, odnośniki, informacje prawne. Użyj raz, zawsze na samym dole.",
     },
     category: "structure",
     icon: "PanelBottom",
     variants: [
-      { key: "simple", label: { sv: "Enkel", en: "Simple" } },
-      { key: "columns", label: { sv: "Kolumner", en: "Columns" } },
-      { key: "centered", label: { sv: "Centrerad", en: "Centered" } },
+      { key: "simple", label: { sv: "Enkel", en: "Simple", pl: "Prosta" } },
+      { key: "columns", label: { sv: "Kolumner", en: "Columns", pl: "Kolumny" } },
+      {
+        key: "centered",
+        label: { sv: "Centrerad", en: "Centered", pl: "Wyśrodkowana" },
+      },
       {
         key: "contact",
-        label: { sv: "Kontakt", en: "Contact" },
+        label: { sv: "Kontakt", en: "Contact", pl: "Kontakt" },
         description: {
           sv: "Lägger till en rad med kontaktuppgifter (adress, telefon, e-post) ovanför länkarna.",
           en: "Adds one line of contact details (address, phone, email) above the links.",
+          pl: "Dodaje wiersz z danymi kontaktowymi (adres, telefon, e-mail) nad odnośnikami.",
         },
       },
     ],
@@ -971,22 +1235,27 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   legal: {
     type: "legal",
-    label: { sv: "Juridisk text", en: "Legal text" },
+    label: { sv: "Juridisk text", en: "Legal text", pl: "Tekst prawny" },
     whenToUse: {
       sv: "Lång juridisk text (integritetspolicy, villkor). Använd på en egen sida – oftast genererad automatiskt.",
       en: "Long-form legal text (privacy policy, terms). Use on its own page – usually auto-generated.",
+      pl: "Długi tekst prawny (polityka prywatności, regulamin). Użyj na osobnej stronie – zwykle tworzony automatycznie.",
     },
     category: "structure",
     icon: "FileText",
     variants: [
-      { key: "document", label: { sv: "Dokument", en: "Document" } },
-      { key: "centered", label: { sv: "Centrerad", en: "Centered" } },
+      { key: "document", label: { sv: "Dokument", en: "Document", pl: "Dokument" } },
+      {
+        key: "centered",
+        label: { sv: "Centrerad", en: "Centered", pl: "Wyśrodkowany" },
+      },
       {
         key: "paper",
-        label: { sv: "Dokumentark", en: "Paper" },
+        label: { sv: "Dokumentark", en: "Paper", pl: "Kartka dokumentu" },
         description: {
           sv: "Texten samlas på ett avgränsat dokumentark för tydligare fokus.",
           en: "The copy sits on a contained document sheet for clearer focus.",
+          pl: "Tekst leży na wydzielonej kartce dokumentu, żeby łatwiej się skupić.",
         },
       },
     ],
@@ -1009,22 +1278,24 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   logos: {
     type: "logos",
-    label: { sv: "Logotyper", en: "Logos" },
+    label: { sv: "Logotyper", en: "Logos", pl: "Logotypy" },
     whenToUse: {
       sv: "Visa logotyper för kunder, partners eller varumärken ni säljer. Använd för att låna trovärdighet (”de litar på oss”).",
       en: "Show logos of clients, partners or brands you stock. Use to borrow credibility (“trusted by”).",
+      pl: "Pokaż logotypy klientów, partnerów albo marek, które sprzedajecie. Użyj, żeby pożyczyć wiarygodność („zaufali nam”).",
     },
     category: "trust",
     icon: "Building2",
     variants: [
-      { key: "row", label: { sv: "Rad", en: "Row" } },
-      { key: "grid", label: { sv: "Rutnät", en: "Grid" } },
+      { key: "row", label: { sv: "Rad", en: "Row", pl: "Rząd" } },
+      { key: "grid", label: { sv: "Rutnät", en: "Grid", pl: "Siatka" } },
       {
         key: "marquee",
-        label: { sv: "Löpande band", en: "Marquee" },
+        label: { sv: "Löpande band", en: "Marquee", pl: "Przesuwający się pasek" },
         description: {
           sv: "Logotyperna rullar kontinuerligt i en rad – bra när det är fler logotyper än vad som får plats.",
           en: "Logos scroll continuously in a row – good for more logos than fit on one screen.",
+          pl: "Logotypy przesuwają się bez przerwy w jednym rzędzie – dobre, gdy jest ich więcej, niż mieści się na ekranie.",
         },
       },
     ],
@@ -1042,24 +1313,38 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   highlights: {
     type: "highlights",
-    label: { sv: "Fördelar", en: "Highlights" },
+    label: { sv: "Fördelar", en: "Highlights", pl: "Zalety" },
     whenToUse: {
       sv: "Lyft fram skälen att välja er (snabbt, tryggt, personligt). Använd nära tjänsterna – fördelar, inte priser.",
       en: "Highlight the reasons to choose you (fast, safe, personal). Use near your services – benefits, not prices.",
+      pl: "Wypunktuj powody, żeby wybrać właśnie was (szybko, bezpiecznie, osobiście). Użyj blisko usług – zalety, nie ceny.",
     },
     category: "trust",
     icon: "Sparkles",
     variants: [
-      { key: "grid-3", label: { sv: "Tre kort", en: "Three cards" } },
-      { key: "grid-2", label: { sv: "Två kort", en: "Two cards" } },
-      { key: "alternating", label: { sv: "Varannan rad", en: "Alternating" } },
-      { key: "icon-list", label: { sv: "Ikonlista", en: "Icon list" } },
+      {
+        key: "grid-3",
+        label: { sv: "Tre kort", en: "Three cards", pl: "Trzy karty" },
+      },
+      {
+        key: "grid-2",
+        label: { sv: "Två kort", en: "Two cards", pl: "Dwie karty" },
+      },
+      {
+        key: "alternating",
+        label: { sv: "Varannan rad", en: "Alternating", pl: "Naprzemiennie" },
+      },
+      {
+        key: "icon-list",
+        label: { sv: "Ikonlista", en: "Icon list", pl: "Lista z ikonami" },
+      },
       {
         key: "plain",
-        label: { sv: "Ren", en: "Plain" },
+        label: { sv: "Ren", en: "Plain", pl: "Bez ozdób" },
         description: {
           sv: "Bara text i luftiga kolumner med tunn linje ovanför — inga kort eller ikoner.",
           en: "Text-only airy columns with a thin rule above — no cards or icons.",
+          pl: "Sam tekst w przestronnych kolumnach z cienką linią nad nimi — bez kart i ikon.",
         },
       },
     ],
@@ -1081,12 +1366,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           icon: "shield",
         },
         {
-          title: pick(lang, "Erfaren", "Experienced", "Doświadczeni"),
+          // Data honesty: never pre-fill claims the owner hasn't made
+          // ("många nöjda kunder") - the default must be editable framing,
+          // not invented proof.
+          title: pick(lang, "Noggrann", "Thorough", "Dokładność"),
           description: pick(
             lang,
-            "Många nöjda kunder genom åren.",
-            "Many happy customers over the years.",
-            "Wielu zadowolonych klientów przez lata.",
+            "Vi är inte klara förrän du är nöjd.",
+            "We are not done until you are happy.",
+            "Kończymy dopiero, gdy jesteś zadowolony.",
           ),
           icon: "star",
         },
@@ -1106,22 +1394,24 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   bento: {
     type: "bento",
-    label: { sv: "Bildmosaik", en: "Bento grid" },
+    label: { sv: "Bildmosaik", en: "Bento grid", pl: "Mozaika kart" },
     whenToUse: {
       sv: "Ett visuellt rutnät med olika stora kort. Använd för att visa flera höjdpunkter snyggt (studior, byråer, restauranger).",
       en: "A visual grid of mixed-size cards. Use to show several highlights with style (studios, agencies, restaurants).",
+      pl: "Efektowna siatka kart o różnych rozmiarach. Użyj, żeby ładnie pokazać kilka najważniejszych rzeczy (studia, agencje, restauracje).",
     },
     category: "content",
     icon: "LayoutDashboard",
     variants: [
-      { key: "bento", label: { sv: "Bento", en: "Bento" } },
-      { key: "uniform", label: { sv: "Jämn", en: "Uniform" } },
+      { key: "bento", label: { sv: "Bento", en: "Bento", pl: "Mozaika" } },
+      { key: "uniform", label: { sv: "Jämn", en: "Uniform", pl: "Równe karty" } },
       {
         key: "list",
-        label: { sv: "Stora rader", en: "Large rows" },
+        label: { sv: "Stora rader", en: "Large rows", pl: "Duże rzędy" },
         description: {
           sv: "Höjdpunkterna visas som en lugn vertikal följd av stora kort.",
           en: "Highlights appear as a calm vertical sequence of large cards.",
+          pl: "Najważniejsze rzeczy pokazane jako spokojny pionowy ciąg dużych kart.",
         },
       },
     ],
@@ -1156,22 +1446,24 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   banner: {
     type: "banner",
-    label: { sv: "Meddelande", en: "Banner" },
+    label: { sv: "Meddelande", en: "Banner", pl: "Komunikat" },
     whenToUse: {
       sv: "En smal remsa med ett meddelande (rea, helgöppet, ”bokar nu”). Använd för en tillfällig notis högt upp.",
       en: "A thin strip with one message (a sale, holiday hours, “now booking”). Use for a temporary notice near the top.",
+      pl: "Wąski pasek z jedną wiadomością (wyprzedaż, godziny świąteczne, „przyjmujemy zapisy”). Użyj na tymczasowe ogłoszenie u góry strony.",
     },
     category: "intro",
     icon: "Flag",
     variants: [
-      { key: "bar", label: { sv: "Remsa", en: "Bar" } },
-      { key: "card", label: { sv: "Ruta", en: "Card" } },
+      { key: "bar", label: { sv: "Remsa", en: "Bar", pl: "Pasek" } },
+      { key: "card", label: { sv: "Ruta", en: "Card", pl: "Karta" } },
       {
         key: "split",
-        label: { sv: "Delad", en: "Split" },
+        label: { sv: "Delad", en: "Split", pl: "Podzielone" },
         description: {
           sv: "Meddelandet står till vänster och uppmaningen till höger på större skärmar.",
           en: "The message sits left and the action right on larger screens.",
+          pl: "Na większych ekranach wiadomość jest po lewej, a przycisk po prawej.",
         },
       },
     ],
@@ -1195,22 +1487,30 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   video: {
     type: "video",
-    label: { sv: "Video", en: "Video" },
+    label: { sv: "Video", en: "Video", pl: "Film" },
     whenToUse: {
       sv: "Bädda in en film från YouTube eller Vimeo. Använd för en presentation, rundtur eller videorecension.",
       en: "Embed a video from YouTube or Vimeo. Use for an intro, a tour, or a video testimonial.",
+      pl: "Osadź film z YouTube albo Vimeo. Użyj na przedstawienie firmy, spacer po lokalu albo opinię klienta na wideo.",
     },
     category: "content",
     icon: "Video",
     variants: [
-      { key: "full", label: { sv: "Hel bredd", en: "Full width" } },
-      { key: "side", label: { sv: "Bredvid text", en: "Beside text" } },
+      {
+        key: "full",
+        label: { sv: "Hel bredd", en: "Full width", pl: "Cała szerokość" },
+      },
+      {
+        key: "side",
+        label: { sv: "Bredvid text", en: "Beside text", pl: "Obok tekstu" },
+      },
       {
         key: "cinema",
-        label: { sv: "Biobredd", en: "Cinema" },
+        label: { sv: "Biobredd", en: "Cinema", pl: "Szerokość kinowa" },
         description: {
           sv: "Videon får en extra bred yta med rubrik och text som en redaktionell introduktion.",
           en: "Video gets an extra-wide stage with an editorial heading and caption.",
+          pl: "Film dostaje wyjątkowo szerokie miejsce z nagłówkiem i podpisem jak w magazynie.",
         },
       },
     ],
@@ -1227,22 +1527,24 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   comparison: {
     type: "comparison",
-    label: { sv: "Jämförelse", en: "Comparison" },
+    label: { sv: "Jämförelse", en: "Comparison", pl: "Porównanie" },
     whenToUse: {
       sv: "En jämförelsetabell (ni mot alternativet, eller paket). Använd för att visa varför ni är ett bättre val.",
       en: "A comparison table (you vs. the alternative, or packages). Use to show why you’re the better choice.",
+      pl: "Tabela porównawcza (wy kontra inne rozwiązanie albo pakiety). Użyj, żeby pokazać, dlaczego jesteście lepszym wyborem.",
     },
     category: "services",
     icon: "Table2",
     variants: [
-      { key: "table", label: { sv: "Tabell", en: "Table" } },
-      { key: "cards", label: { sv: "Kort", en: "Cards" } },
+      { key: "table", label: { sv: "Tabell", en: "Table", pl: "Tabela" } },
+      { key: "cards", label: { sv: "Kort", en: "Cards", pl: "Karty" } },
       {
         key: "features",
-        label: { sv: "Fördelar", en: "Features" },
+        label: { sv: "Fördelar", en: "Features", pl: "Cechy" },
         description: {
           sv: "Varje fördel får en egen rad med alternativen bredvid varandra.",
           en: "Each feature gets its own row with the options side by side.",
+          pl: "Każda cecha dostaje własny wiersz, a opcje stoją obok siebie.",
         },
       },
     ],
@@ -1269,22 +1571,27 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   newsletter: {
     type: "newsletter",
-    label: { sv: "Nyhetsbrev", en: "Newsletter" },
+    label: { sv: "Nyhetsbrev", en: "Newsletter", pl: "Newsletter" },
     whenToUse: {
       sv: "Ett fält för att samla e-postadresser. Använd om ni skickar nyheter eller erbjudanden då och då.",
       en: "A field to collect email addresses. Use if you send news or offers now and then.",
+      pl: "Pole do zbierania adresów e-mail. Użyj, jeśli od czasu do czasu wysyłacie nowości albo oferty.",
     },
     category: "contact",
     icon: "Send",
     variants: [
-      { key: "boxed", label: { sv: "Ruta", en: "Boxed" } },
-      { key: "inline", label: { sv: "Inbäddad", en: "Inline" } },
+      { key: "boxed", label: { sv: "Ruta", en: "Boxed", pl: "W ramce" } },
+      {
+        key: "inline",
+        label: { sv: "Inbäddad", en: "Inline", pl: "Osadzone na stronie" },
+      },
       {
         key: "centered",
-        label: { sv: "Enkel", en: "Simple" },
+        label: { sv: "Enkel", en: "Simple", pl: "Proste" },
         description: {
           sv: "En avskalad, centrerad prenumeration utan kort eller delad rad.",
           en: "A stripped-back centered signup without a card or split row.",
+          pl: "Skromny, wyśrodkowany zapis bez karty i bez dzielonego rzędu.",
         },
       },
     ],
@@ -1308,22 +1615,39 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   statement: {
     type: "statement",
-    label: { sv: "Citat", en: "Statement" },
+    label: { sv: "Citat", en: "Statement", pl: "Motto" },
     whenToUse: {
       sv: "Ett stort, kort uttalande eller löfte. Använd som en kraftfull paus mellan sektioner.",
       en: "One large, short statement or promise. Use as a powerful pause between sections.",
+      pl: "Jedno duże, krótkie zdanie albo obietnica. Użyj jako mocnej przerwy między sekcjami.",
     },
     category: "content",
     icon: "Quote",
     variants: [
-      { key: "centered", label: { sv: "Centrerad", en: "Centered" } },
-      { key: "bordered", label: { sv: "Med kantlinje", en: "Bordered" } },
+      {
+        key: "centered",
+        label: { sv: "Centrerad", en: "Centered", pl: "Wyśrodkowane" },
+      },
+      {
+        key: "bordered",
+        label: { sv: "Med kantlinje", en: "Bordered", pl: "Z linią przy krawędzi" },
+      },
       {
         key: "framed",
-        label: { sv: "Inramad", en: "Framed" },
+        label: { sv: "Inramad", en: "Framed", pl: "W ramce" },
         description: {
           sv: "Uttalandet visas som ett lugnt, inramat citatkort.",
           en: "The statement appears as a calm framed quote card.",
+          pl: "Zdanie pokazane jako spokojna karta z cytatem w ramce.",
+        },
+      },
+      {
+        key: "rule",
+        label: { sv: "Linjerad rad", en: "Ruled row", pl: "Wiersz z linią" },
+        description: {
+          sv: "En smal rad under en hårfin linje: uttalandet till vänster, tillskrivningen till höger. Tar nästan ingen höjd.",
+          en: "A slim row under a hairline: the statement on the left, the attribution on the right. Takes almost no height.",
+          pl: "Wąski wiersz pod cienką linią: zdanie po lewej, przypisanie po prawej. Zajmuje prawie zero wysokości.",
         },
       },
     ],
@@ -1343,22 +1667,24 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   "rich-text": {
     type: "rich-text",
-    label: { sv: "Textavsnitt", en: "Text block" },
+    label: { sv: "Textavsnitt", en: "Text block", pl: "Blok tekstu" },
     whenToUse: {
       sv: "Brödtext med rubriker och punktlistor. Används för artiklar och längre innehåll – skriv stycke för stycke.",
       en: "Body text with headings and bullet lists. Use for articles and longer content – write paragraph by paragraph.",
+      pl: "Zwykły tekst z nagłówkami i listami punktowanymi. Użyj do artykułów i dłuższych treści – pisz akapit po akapicie.",
     },
     category: "content",
     icon: "Text",
     variants: [
-      { key: "prose", label: { sv: "Text", en: "Prose" } },
-      { key: "narrow", label: { sv: "Smal", en: "Narrow" } },
+      { key: "prose", label: { sv: "Text", en: "Prose", pl: "Tekst" } },
+      { key: "narrow", label: { sv: "Smal", en: "Narrow", pl: "Wąskie" } },
       {
         key: "paper",
-        label: { sv: "Dokumentark", en: "Paper" },
+        label: { sv: "Dokumentark", en: "Paper", pl: "Kartka dokumentu" },
         description: {
           sv: "Texten ligger på ett avgränsat dokumentark för bättre fokus.",
           en: "The copy sits on a contained document sheet for better focus.",
+          pl: "Tekst leży na wydzielonej kartce dokumentu, żeby łatwiej się skupić.",
         },
       },
     ],
@@ -1379,17 +1705,21 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   image: {
     type: "image",
-    label: { sv: "Bild", en: "Image" },
+    label: { sv: "Bild", en: "Image", pl: "Zdjęcie" },
     whenToUse: {
       sv: "En enskild bild med valfri bildtext. Används för att bryta av text i en artikel eller visa ett foto.",
       en: "A single image with an optional caption. Use to break up text in an article or show one photo.",
+      pl: "Jedno zdjęcie z podpisem, jeśli chcesz. Użyj, żeby przerwać tekst w artykule albo pokazać pojedynczą fotografię.",
     },
     category: "content",
     icon: "Image",
     variants: [
-      { key: "wide", label: { sv: "Bred", en: "Wide" } },
-      { key: "full", label: { sv: "Hel bredd", en: "Full width" } },
-      { key: "inset", label: { sv: "Smal", en: "Inset" } },
+      { key: "wide", label: { sv: "Bred", en: "Wide", pl: "Szerokie" } },
+      {
+        key: "full",
+        label: { sv: "Hel bredd", en: "Full width", pl: "Cała szerokość" },
+      },
+      { key: "inset", label: { sv: "Smal", en: "Inset", pl: "Wąskie" } },
     ],
     defaultVariant: "wide",
     defaultTone: "light",
@@ -1401,15 +1731,21 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
   },
   "featured-product": {
     type: "featured-product",
-    label: { sv: "Utvald produkt", en: "Featured product" },
+    label: { sv: "Utvald produkt", en: "Featured product", pl: "Wyróżniony produkt" },
     whenToUse: {
       sv: "Visa en eller några produkter du säljer, med pris och köpknapp. Kräver att Sälj är aktiverat.",
-      en: "Show one or a few products you sell, with price and a buy button. Requires Sälj to be on.",
+      en: "Show one or a few products you sell, with price and a buy button. Requires Sell to be on.",
+      pl: "Pokaż jeden lub kilka produktów, które sprzedajesz, z ceną i przyciskiem kupna. Wymaga włączonej Sprzedaży.",
     },
     category: "services",
     icon: "Store",
     requiresCapability: "sell",
-    variants: [{ key: "default", label: { sv: "Standard", en: "Default" } }],
+    variants: [
+      {
+        key: "default",
+        label: { sv: "Standard", en: "Default", pl: "Standardowy" },
+      },
+    ],
     defaultVariant: "default",
     defaultTone: "light",
     allowedTones: ["light", "clear", "dark"],
@@ -1420,15 +1756,21 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
   },
   "product-grid": {
     type: "product-grid",
-    label: { sv: "Alla produkter", en: "All products" },
+    label: { sv: "Alla produkter", en: "All products", pl: "Wszystkie produkty" },
     whenToUse: {
       sv: "Visa alla dina produkter i ett rutnät – en liten butik. Kräver att Sälj är aktiverat.",
-      en: "Show all your products in a grid – a little shop. Requires Sälj to be on.",
+      en: "Show all your products in a grid – a little shop. Requires Sell to be on.",
+      pl: "Pokaż wszystkie swoje produkty w siatce – mały sklep. Wymaga włączonej Sprzedaży.",
     },
     category: "services",
     icon: "Store",
     requiresCapability: "sell",
-    variants: [{ key: "default", label: { sv: "Standard", en: "Default" } }],
+    variants: [
+      {
+        key: "default",
+        label: { sv: "Standard", en: "Default", pl: "Standardowy" },
+      },
+    ],
     defaultVariant: "default",
     defaultTone: "light",
     allowedTones: ["light", "clear", "dark"],
@@ -1437,6 +1779,125 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       heading: pick(lang, "Produkter", "Products", "Produkty"),
     }),
   },
+
+  "documents": {
+    type: "documents",
+    label: { sv: "Dokument", en: "Documents", pl: "Dokumenty" },
+    whenToUse: {
+      sv: "Nedladdningsbara filer (PDF): meny, prislista, villkor, blanketter eller policydokument.",
+      en: "Downloadable files (PDF): a menu, price list, terms, forms, or policy documents.",
+      pl: "Pliki do pobrania (PDF): menu, cennik, regulaminy, formularze albo dokumenty polityk.",
+    },
+    category: "content",
+    icon: "FileText",
+    variants: [
+      {
+        key: "list",
+        label: { sv: "Lista", en: "List", pl: "Lista" },
+        description: {
+          sv: "Enkel lista med en rad per dokument.",
+          en: "A simple list with one row per document.",
+          pl: "Prosta lista, jeden wiersz na dokument.",
+        },
+      },
+      {
+        key: "grid",
+        label: { sv: "Rutnät", en: "Grid", pl: "Siatka" },
+        description: {
+          sv: "Kort i rutnät – passar många dokument.",
+          en: "Cards in a grid – suits many documents.",
+          pl: "Karty w siatce – dla wielu dokumentów.",
+        },
+      },
+    ],
+    defaultVariant: "list",
+    defaultTone: "light",
+    allowedTones: ["light", "clear", "dark"],
+    defaultContent: (lang) => ({
+      type: "documents",
+      heading: pick(lang, "Dokument", "Documents", "Dokumenty"),
+      items: [],
+    }),
+  },
+
+  "scroll-tabs": {
+    type: "scroll-tabs",
+    label: { sv: "Stegvisning", en: "Tab showcase", pl: "Pokaz kart" },
+    whenToUse: {
+      sv: "Flera steg eller funktioner där bilden eller filmen byts när besökaren bläddrar eller klickar. Passar produktgenomgångar.",
+      en: "Several steps or features where the image or clip swaps as the visitor scrolls or clicks. Suits product walkthroughs.",
+      pl: "Kilka kroków lub funkcji, gdzie obraz albo film zmienia się podczas przewijania lub klikania. Pasuje do prezentacji produktu.",
+    },
+    category: "content",
+    icon: "LayoutDashboard",
+    variants: [
+      {
+        key: "pinned",
+        label: { sv: "Fäst vid skroll", en: "Pinned scroll", pl: "Przypięte przy przewijaniu" },
+        description: {
+          sv: "Panelen står stilla medan stegen byts när du skrollar. På mobil visas stegen staplade.",
+          en: "The panel stays put while steps advance as you scroll. Stacked on mobile.",
+          pl: "Panel stoi w miejscu, a kroki zmieniają się podczas przewijania. Na telefonie ułożone jedno pod drugim.",
+        },
+      },
+      {
+        key: "tabs",
+        label: { sv: "Klickbara flikar", en: "Clickable tabs", pl: "Klikane karty" },
+        description: {
+          sv: "Besökaren klickar på en flik för att byta innehåll.",
+          en: "The visitor clicks a tab to switch content.",
+          pl: "Odwiedzający klika kartę, aby zmienić treść.",
+        },
+      },
+      {
+        key: "stacked",
+        label: { sv: "Staplad", en: "Stacked", pl: "Ułożone" },
+        description: {
+          sv: "Alla steg visas under varandra utan animation.",
+          en: "All steps shown one after another, no animation.",
+          pl: "Wszystkie kroki jeden pod drugim, bez animacji.",
+        },
+      },
+    ],
+    defaultVariant: "pinned",
+    defaultTone: "light",
+    allowedTones: ["light", "clear", "dark"],
+    defaultContent: (lang) => ({
+      type: "scroll-tabs",
+      heading: pick(lang, "Så fungerar det", "How it works", "Jak to działa"),
+      tabs: [],
+    }),
+  },
+
+  "comparison-slider": {
+    type: "comparison-slider",
+    label: { sv: "Jämförelse med reglage", en: "Comparison slider", pl: "Porównanie z suwakiem" },
+    whenToUse: {
+      sv: "Låt besökaren dra i ett reglage och se hur siffror jämförs, till exempel avkastning per belopp.",
+      en: "Let the visitor drag a slider and compare figures, for example returns per amount.",
+      pl: "Pozwól odwiedzającemu przeciągnąć suwak i porównać liczby, np. zwrot dla kwoty.",
+    },
+    category: "content",
+    icon: "Table2",
+    variants: [
+      { key: "default", label: { sv: "Standard", en: "Default", pl: "Standard" } },
+    ],
+    defaultVariant: "default",
+    defaultTone: "light",
+    allowedTones: ["light", "clear", "dark"],
+    availability: "restricted",
+    defaultContent: (lang) => ({
+      type: "comparison-slider",
+      heading: pick(lang, "Jämför", "Compare", "Porównaj"),
+      minValue: 0,
+      maxValue: 100000,
+      defaultValue: 10000,
+      columns: [],
+    }),
+  },
+
+  // section:new-registry-anchor — `bun run section:new <type>` inserts
+  // registry entries above. Do not remove or rename this comment.
 };
 
 export const SECTION_DEFS = Object.values(SECTION_REGISTRY);
@@ -1462,9 +1923,27 @@ export const CONVERSION_SECTION_TYPES: ReadonlySet<string> = new Set([
 // New items are validated against the content union on write, like any edit.
 // ---------------------------------------------------------------------------
 
-export const ARRAY_ITEM_MAX = 24;
+/** Ceiling on items an editor may ADD to one section array (convex/sections.ts
+ *  `addItems`, convex/lib/sectionOps.ts). Not an import cap - the portable
+ *  format has no per-array bound, so an imported array can legitimately arrive
+ *  longer than this. It was 24, which left a real client or certification list
+ *  carried in by Site Kit (42 client names on one live import) frozen: already
+ *  over the cap, so the owner could never add row 43 to their own content. 64
+ *  keeps the paste-bomb ceiling meaningful while leaving long lists editable. */
+export const ARRAY_ITEM_MAX = 64;
 
 export const ARRAY_DEFAULTS: Record<string, (lang: Locale) => unknown> = {
+  "documents.items": (l) => ({
+    title: pick(l, "Nytt dokument", "New document", "Nowy dokument"),
+  }),
+  "scroll-tabs.tabs": (l) => ({
+    label: pick(l, "Nytt steg", "New step", "Nowy krok"),
+    description: pick(l, "Beskriv steget här.", "Describe the step here.", "Opisz krok tutaj."),
+  }),
+  "comparison-slider.columns": (l) => ({
+    label: pick(l, "Nytt alternativ", "New option", "Nowa opcja"),
+    ratePct: 1,
+  }),
   "services.items": (l) => ({
     title: pick(l, "Ny tjänst", "New service", "Nowa usługa"),
     description: pick(
