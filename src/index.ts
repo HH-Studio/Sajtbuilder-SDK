@@ -82,19 +82,13 @@ export type PortableValue<T> = T extends GenericId<string>
       ? { [K in keyof T]: PortableValue<T[K]> }
       : T;
 
-/** Section content accepted by portable packages, keyed by section type. */
-type PortableizedSectionContent = PortableValue<SectionContent>;
-type PortableHeroContent = Extract<PortableizedSectionContent, { type: "hero" }>;
-type PortableVideoContent = Extract<PortableizedSectionContent, { type: "video" }>;
-
-export type PortableSectionContent =
-  | (Omit<PortableHeroContent, "bgVideo"> & { bgVideo?: never })
-  | (Omit<PortableVideoContent, "provider" | "video" | "poster"> & {
-      provider: "youtube" | "vimeo";
-      video?: never;
-      poster?: never;
-    })
-  | Exclude<PortableizedSectionContent, { type: "hero" | "video" }>;
+/** Section content accepted by portable packages, keyed by section type.
+ *
+ *  Self-hosted video and hero background video are portable: declare the clip
+ *  as a `kind: "video"` asset in the bundle and point the section at it.
+ *  `validateSitePackage` checks that an `upload` provider actually carries a
+ *  video assetRef. */
+export type PortableSectionContent = PortableValue<SectionContent>;
 
 export type SiteKitSection = {
   [K in PortableSectionContent["type"]]: SectionBase & {

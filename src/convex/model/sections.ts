@@ -53,6 +53,12 @@ export const sectionContent = v.union(
         // Phase S: optional link to a canonical `services` row. Additive - manual
         // items omit it; the editor/publish use it to keep one source of truth.
         serviceId: v.optional(v.id("services")),
+        // Optional grouping label ("Förrätter", "Take away", "Catering"),
+        // mirrored from `services.category`. The renderer prints a subheading
+        // before each contiguous run that shares one - which is how a restaurant
+        // separates a menu from its catering, or eat-in prices from takeaway,
+        // without a second content model. Absent => no subheading.
+        category: v.optional(v.string()),
       }),
     ),
     // Phase S: where the published items come from. Absent or `manual` = author
@@ -116,6 +122,11 @@ export const sectionContent = v.union(
         role: v.optional(v.string()),
         rating: v.optional(v.number()), // 1..5
         avatar: v.optional(assetRef),
+        // Set ONLY when the quote arrived through the public /recension
+        // submission path (convex/reviews.ts publishReview). Owner-typed
+        // quotes never carry it. Structured-data review markup is gated on
+        // this - see lib/seo/jsonld.ts collectReviews (backlog 0536).
+        verifiedAt: v.optional(v.number()),
       }),
     ),
   }),
@@ -550,6 +561,72 @@ export const sectionContent = v.union(
       ),
     ),
   }),
+
+  // Downloadable documents (backlog 0817): legal PDFs, price lists, forms.
+  // `document` is an assetRef to a kind:"document" asset (application/pdf,
+  // byte-sniffed on upload/import); the renderer links its resolved URL. The
+  // ref is optional so a freshly added item validates before any upload.
+  v.object({
+    type: v.literal("documents"),
+    heading: v.optional(v.string()),
+    intro: v.optional(v.string()),
+    items: v.array(
+      v.object({
+        title: v.string(),
+        description: v.optional(v.string()),
+        document: v.optional(assetRef),
+      }),
+    ),
+  }),
+
+  // Pinned tab showcase (Sophic conversion): a set of steps/features where the
+  // media panel swaps as the visitor scrolls (pinned variant) or clicks (tabs
+  // variant). `video` is a muted looping clip (kind:"video" asset) with
+  // `media` as its poster + reduced-motion fallback - same contract as the
+  // hero's bgVideo.
+  v.object({
+    type: v.literal("scroll-tabs"),
+    heading: v.optional(v.string()),
+    intro: v.optional(v.string()),
+    tabs: v.array(
+      v.object({
+        label: v.string(),
+        title: v.optional(v.string()),
+        description: v.string(),
+        media: v.optional(assetRef),
+        video: v.optional(assetRef),
+      }),
+    ),
+  }),
+
+  // Restricted (client-specific): an interactive what-if comparison. The
+  // visitor drags one value (e.g. an amount) and each column shows
+  // value * ratePct / 100, formatted with the prefix/suffix. All figures are
+  // client-side arithmetic over typed numbers - no scripts, no formulas.
+  v.object({
+    type: v.literal("comparison-slider"),
+    heading: v.optional(v.string()),
+    intro: v.optional(v.string()),
+    minValue: v.number(),
+    maxValue: v.number(),
+    defaultValue: v.number(),
+    step: v.optional(v.number()),
+    valuePrefix: v.optional(v.string()),
+    valueSuffix: v.optional(v.string()),
+    valueLabel: v.optional(v.string()),
+    columns: v.array(
+      v.object({
+        label: v.string(),
+        ratePct: v.number(),
+        note: v.optional(v.string()),
+        highlighted: v.optional(v.boolean()),
+      }),
+    ),
+    footnote: v.optional(v.string()),
+  }),
+
+  // section:new-content-anchor — `bun run section:new <type>` inserts new
+  // content shapes ABOVE this line. Do not remove or rename this comment.
 );
 
 export type SectionContent = Infer<typeof sectionContent>;
@@ -596,6 +673,10 @@ export const SECTION_TYPES = [
   "image",
   "featured-product",
   "product-grid",
+  "documents",
+  "scroll-tabs",
+  "comparison-slider",
+  // section:new-type-anchor — the scaffolder inserts new type literals above.
 ] as const;
 
 export const sectionTypesExhaustiveCheck: [

@@ -20,6 +20,30 @@ export const fontSource = v.union(
 );
 export type FontSource = Infer<typeof fontSource>;
 
+// License state for UPLOADED families. Absent = "licensed" (every pre-existing
+// row, and the normal owner upload). "trial" marks an evaluation cut (e.g. a
+// *-TRIAL.woff2 from a foundry) - fine to design with in the draft/preview,
+// but publishing is hard-blocked until licensed files replace it
+// (lib/publish/checks.ts `trial_font_in_use`). Google/Adobe sources are
+// licensed by construction and never carry this flag.
+export const FONT_LICENSES = ["licensed", "trial"] as const;
+export const fontLicense = v.union(
+  ...FONT_LICENSES.map((s) => v.literal(s)),
+);
+export type FontLicense = Infer<typeof fontLicense>;
+
+/** Heuristic used by import paths to auto-flag evaluation fonts: a family name
+ *  or any face file name carrying a standalone "trial" token. Pure so the
+ *  Site Kit validator warns on the same rule the import applies. */
+export function looksLikeTrialFont(
+  family: string,
+  fileNames: readonly string[] = [],
+): boolean {
+  const re = /(^|[^a-z])trial([^a-z]|$)/i;
+  if (re.test(family)) return true;
+  return fileNames.some((name) => re.test(name));
+}
+
 export const FONT_FORMATS = ["woff2", "woff", "truetype", "opentype"] as const;
 export type FontFormat = (typeof FONT_FORMATS)[number];
 

@@ -149,15 +149,45 @@ describe("public Site Kit API", () => {
     });
   });
 
-  it("rejects self-hosted video that the v1 importer cannot preserve", () => {
+  it("carries self-hosted video when the clip is declared in the bundle", () => {
+    const site = createStarterSite();
+    site.assets.push({
+      exportId: "clip",
+      url: "bundle://clip",
+      width: 1920,
+      height: 1080,
+      mimeType: "video/mp4",
+      kind: "video",
+      alt: "Background clip",
+    });
+    site.sections[0].content = {
+      type: "hero",
+      headline: "Video hero",
+      bgVideo: { assetId: "clip", alt: "Background clip" },
+    };
+    expect(validateSitePackage(site)).toMatchObject({ ok: true });
+  });
+
+  it("rejects a video reference the bundle never declares", () => {
     const site = createStarterSite();
     site.sections[0].content = {
       type: "hero",
       headline: "Video hero",
       bgVideo: { assetId: "clip", alt: "Background clip" },
     };
-    expect(validateSitePackage(site)).toMatchObject({ ok: false });
-    expect(validateSitePackage(site).issues.some((issue) => issue.message.includes("not portable"))).toBe(true);
+    const report = validateSitePackage(site);
+    expect(report.ok).toBe(false);
+    expect(report.issues.some((issue) => issue.message.includes("unknown asset"))).toBe(true);
+  });
+
+  it('rejects provider "upload" without the clip', () => {
+    const site = createStarterSite();
+    site.sections[0].type = "video";
+    site.sections[0].variant = "wide";
+    site.sections[0].content = { type: "video", provider: "upload" };
+    const report = validateSitePackage(site);
+    expect(report.ok).toBe(false);
+    expect(report.issues.some((issue) => issue.message.includes("requires a video assetRef"))).toBe(true);
   });
 
   it("refuses to pack a symlinked asset", () => {

@@ -16,9 +16,10 @@ rejected. Fields marked `?` are optional; every other field is required.
 | `folders` | `Folder[]` | Optional page hierarchy. Use `[]` when unused. |
 | `contentCollections?` | `ContentCollection[]` | Blog or news collections. |
 | `pages` | `Page[]` | Pages and posts. |
+| `redirects?` | `{ fromPath: string; toPath: string }[]` | SEO-safe old-URL mappings. Validated against the page graph after pages exist. |
 | `sections` | `Section[]` | Ordered, typed content sections. |
 | `fonts` | `Font[]` | Google, Adobe, or bundled custom fonts. |
-| `assets` | `Asset[]` | Bundled image/logo/favicon/OG declarations. |
+| `assets` | `Asset[]` | Bundled image/logo/favicon/OG/video/document declarations. |
 
 ## Site
 
@@ -31,6 +32,20 @@ rejected. Fields marked `?` are optional; every other field is required.
 - asset ID fields: an `assets[].exportId`, never a Convex/database ID
 - `theme`: use `DEFAULT_THEME` or a valid `ThemeTokens` object
 - runtime enums and nested settings are available through `portableSiteV1`
+
+### Theme tokens
+
+`palette`, `fontPair`, `density`, `radius`, `buttonStyle` are required;
+`appearance` and `typeScale` are optional. Those are the values the owner picks
+between in the editor.
+
+Three optional fields let a developer carry a brand verbatim instead of snapping
+to the nearest built-in: `customPalette` (`{ light: SurfaceTokens, dark:
+SurfaceTokens }`, 13 raw CSS colours per mode), `customFonts`
+(`{ heading, body }`), and `customBrandHex`. Set `palette`/`fontPair` to the
+closest built-in anyway — they are the fallback if the owner clears the custom
+look. Custom palettes skip the authored-contrast gate, so check your own pairs.
+See [package format](package-format.md#theme) for the surface token list.
 
 ## Pages, folders, and collections
 
@@ -56,6 +71,7 @@ type Page = {
   slug: string;             // "" is the home page
   title: string;
   order: number;
+  externalKey?: string;     // your stable key; a merge import matches on it
   folderTmpId?: string;
   showInNav: boolean;
   pageType?: "page" | "post";
@@ -88,7 +104,8 @@ type Section = {
   variant: string;
   tone?: "light" | "clear" | "dark";
   layout?: unknown;
-  order: string;
+  order?: string;           // omit it; the importer orders by array position
+  externalKey?: string;     // your stable key; a merge import matches on it
   hidden?: boolean;
   anchorId?: string;
   content: PortableSectionContent;
@@ -99,9 +116,10 @@ type Section = {
 `SECTION_REGISTRY[type].variants` for valid variant names and
 `SECTION_REGISTRY[type].defaultContent` as a complete starter. In the catalogue
 below, fields before `?` are required. Nested item fields are shown in braces.
-Section `order` values must use the `fractional-indexing` key grammar; use `a0`,
-`a1`, `a2` for simple hand-authored packages and let Site Kit validation catch
-invalid keys before import.
+Leave `order` out of a hand-authored package. The importer derives keys from
+array position, which is what you want. A key you do supply is preserved
+verbatim and must use the `fractional-indexing` grammar — validation rejects
+lookalikes such as `a000`.
 
 | Type | Content fields after `type` |
 | --- | --- |
@@ -200,7 +218,8 @@ type Asset = {
   height: number;
   blurhash?: string;
   mimeType: string;
-  kind: "image" | "logo" | "favicon" | "og";
+  kind: "image" | "logo" | "favicon" | "og" | "video" | "document";
+  durationSec?: number;     // kind:"video" only, best-effort
   alt?: string;
 };
 
@@ -223,7 +242,12 @@ The CLI matches each bundled asset/font declaration to exactly one file by its
 ID and extension. Run `snabbsajt site validate` before packing; never rely on types
 alone for parsed JSON.
 
-Self-hosted video is intentionally unsupported in Site Kit v0.1 because the
-production portable importer only preserves image assets. Use a YouTube or
-Vimeo video section. The validator rejects `hero.bgVideo`, `provider: "upload"`,
-and video-file references instead of creating a package that imports partially.
+Self-hosted video is supported. Declare the clip as a `kind: "video"` asset and
+point at it from a `video` section with `provider: "upload"`, or from a hero's
+`bgVideo`. The validator rejects `provider: "upload"` without a clip, and a clip
+on a YouTube/Vimeo section, so a package cannot import as a player with nothing
+to play. The importer re-checks the bytes and enforces the target workspace's
+per-plan video and storage caps; an oversized clip is skipped, not fatal.
+
+Fonts carry an optional `license` (`"licensed"` or `"trial"`). A trial face keeps
+working in the draft but blocks publishing until a licensed file replaces it.

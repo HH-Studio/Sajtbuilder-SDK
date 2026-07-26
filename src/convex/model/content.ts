@@ -161,6 +161,11 @@ export const bookingService = v.object({
   leadTimeHours: v.optional(v.number()),
   windowDays: v.optional(v.number()),
   bufferMin: v.optional(v.number()),
+  // Cadence between offered start times. Absent => `durationMin + bufferMin`
+  // (the original behaviour). Set it to offer clean :00/:30 starts for a service
+  // whose duration doesn't divide the hour (a 45-min service otherwise walks
+  // 09:00 → 09:45 → 10:30 and never lands on the half hour).
+  slotIntervalMin: v.optional(v.number()),
   closedDates: v.optional(v.array(v.string())), // per-service holidays override
   // Questions asked at booking time - reuses the constrained lead-form allow-list.
   intake: v.optional(v.array(formField)),
@@ -200,6 +205,18 @@ export const bookingConfigValidator = v.object({
   bufferMin: v.optional(v.number()),
   leadTimeHours: v.optional(v.number()),
   windowDays: v.optional(v.number()),
+  // Cadence between offered start times (see bookingService.slotIntervalMin).
+  slotIntervalMin: v.optional(v.number()),
+  // How long BEFORE the appointment the customer reminder goes out. Absent => 24h;
+  // 0 turns reminders off. A salon usually wants 2 - the no-show it prevents is
+  // the same-day one - while a consultant may want 48.
+  reminderHours: v.optional(v.number()),
+  // How close to the appointment a customer may still cancel themselves. Absent
+  // => 0 (any time before it starts). Inside the window the self-service page
+  // refuses and points them at the business; outside it, a prepaid booking is
+  // auto-refunded. Makes `cancellationPolicy` prose enforceable instead of
+  // decorative.
+  cancellationWindowHours: v.optional(v.number()),
   cancellationPolicy: v.optional(v.string()),
   confirmationMessage: v.optional(v.string()),
 });
@@ -239,6 +256,18 @@ export const bookingSource = v.union(
     leadTimeHours: v.optional(v.number()), // earliest bookable lead time
     windowDays: v.optional(v.number()), // how far ahead bookings open
     bufferMin: v.optional(v.number()), // gap enforced between bookings
+    slotIntervalMin: v.optional(v.number()), // cadence between offered starts
+    cancellationWindowHours: v.optional(v.number()), // self-cancel cutoff
+    // Where the appointment happens, materialised from the site's address at
+    // publish. Shown on the confirmation page and written into the calendar
+    // invite's LOCATION so the customer's calendar can navigate there.
+    locationText: v.optional(v.string()),
+    // How to reach the business when the calendar can't help — every slot taken,
+    // or a week with no opening hours at all. Without these the widget's only
+    // answer is "no open times", which turns a customer away at the exact moment
+    // they were most ready to book. Materialised from the site's contact block.
+    contactPhone: v.optional(v.string()),
+    contactEmail: v.optional(v.string()),
     // Resolved shared holiday/closed dates ("YYYY-MM-DD"), materialised from
     // websites.bookingConfig at publish. Optional → old snapshots have none.
     closedDates: v.optional(v.array(v.string())),
