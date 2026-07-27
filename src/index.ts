@@ -20,6 +20,36 @@ export type {
 export { sectionContent, SECTION_TYPES } from "./convex/model/sections";
 export { DEFAULT_THEME } from "./convex/model/theme";
 export type { ThemeTokens } from "./convex/model/theme";
+// The published SNAPSHOT — what a headless site renders. Distinct from
+// PortableSiteV1 above, which is the AUTHORING format you pack and import:
+// portable goes in, snapshot comes out.
+export {
+  resolvedAsset,
+  siteSnapshot,
+  snapshotPage,
+  snapshotSection,
+} from "./convex/model/snapshot";
+export type {
+  ResolvedAsset,
+  SiteSnapshot,
+  SnapshotPage,
+  SnapshotSection,
+} from "./convex/model/snapshot";
+// Headless delivery: read one site's published content from your own app, on
+// your own host.
+export {
+  createDeliveryClient,
+  DeliveryError,
+  DEFAULT_DELIVERY_BASE_URL,
+} from "./lib/delivery/client";
+export type {
+  DeliveryClient,
+  DeliveryClientOptions,
+  DeliveryErrorReason,
+  DeliveryLocale,
+  GetPublishedSiteOptions,
+  PublishedSite,
+} from "./lib/delivery/client";
 export { SECTION_REGISTRY, isValidVariant } from "./lib/sections/registry";
 export { PORTABLE_CAPS, checkCaps } from "./lib/portability/caps";
 export type { SiteKitIssue, SiteKitReport } from "./lib/site-kit/validate";

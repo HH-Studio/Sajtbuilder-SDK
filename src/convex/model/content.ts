@@ -23,6 +23,19 @@ export const sectionToneValidator = v.union(
 );
 export type SectionToneValue = Infer<typeof sectionToneValidator>;
 
+/** How much a section animates as it enters. Frozen into the published
+ *  snapshot alongside tone and layout, so a published site moves exactly like
+ *  the draft did. "inherit" defers to the site theme's own motion setting.
+ *  A renderer must still honour `prefers-reduced-motion` whatever this says —
+ *  the value expresses intent, never permission. */
+export const sectionMotionValidator = v.union(
+  v.literal("inherit"),
+  v.literal("none"),
+  v.literal("subtle"),
+  v.literal("full"),
+);
+export type SectionMotionValue = Infer<typeof sectionMotionValidator>;
+
 // ---------------------------------------------------------------------------
 // Shared content building blocks. No raw HTML, no raw URLs, no executable
 // content is ever stored. Links are typed `target` unions; icons are an

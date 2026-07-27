@@ -130,6 +130,53 @@ renders the website **and** packs into an importable SnabbSajt bundle
 (`npm run build:snabbsajt`) — deploy the site and hand the client an editable
 SnabbSajt draft from one source of truth. See [docs/templates.md](docs/templates.md).
 
+## Headless delivery — you host, your client edits
+
+Site Kit packs content **in**. Headless delivery reads it back **out**, so the
+site can live on your own infrastructure while the person who owns the words
+keeps editing it in SnabbSajt.
+
+```ts
+import { createDeliveryClient } from "@snabbsajt/site-kit";
+
+const sajt = createDeliveryClient({
+  siteId: process.env.SNABBSAJT_SITE_ID!,
+  token: process.env.SNABBSAJT_DELIVERY_TOKEN!,
+});
+
+const { snapshot, versionId } = await sajt.getPublishedSite();
+// snapshot.pages[].sections[] — every asset already resolved to a URL.
+```
+
+The response is a `SiteSnapshot`: one immutable, fully denormalised document
+describing the whole renderable site at the moment it was published. Assets are
+already resolved to URLs with dimensions, so rendering needs no second request
+and no database of your own.
+
+`SiteSnapshot` is **not** `PortableSiteV1`. Portable is the authoring format you
+build and pack; a snapshot is the frozen output of a publish and carries nothing
+editable. Portable goes in, snapshot comes out.
+
+**The token.** Read-only, scoped to one single site, and revocable from
+SnabbSajt. It cannot read drafts, cannot reach another site in the same
+workspace, and cannot write anything. It is still a credential — it grants one
+site's published content to whoever holds it, so keep it in your CI secret store
+and off the client bundle.
+
+**Failures you can act on**, as `DeliveryError.reason`:
+
+| reason | what it means |
+| --- | --- |
+| `unauthorized` | Wrong, revoked, or issued for a different site. Not retried — a wrong token does not become right. Deliberately indistinguishable from a deleted or suspended site, so nobody can probe which site ids exist. |
+| `not_published` | Your wiring is correct; this site has simply never been published. Publish it once and the call starts returning content. |
+| `rate_limited` | Too many reads. Retried automatically with backoff; if you see it in a build, cache between builds instead of fetching per request. |
+| `network` / `malformed` | Could not reach the host, or the answer was not a snapshot. |
+
+Build-time use is the intended shape. A published snapshot changes only when
+someone publishes, and publishing can fire your deploy hook — so refetching per
+request buys nothing. Point `baseUrl` (or `SNABBSAJT_API_URL`) at another
+deployment for staging.
+
 ## Documentation
 
 - [Quickstart](docs/quickstart.md)
