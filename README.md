@@ -136,6 +136,27 @@ Site Kit packs content **in**. Headless delivery reads it back **out**, so the
 site can live on your own infrastructure while the person who owns the words
 keeps editing it in SnabbSajt.
 
+Two commands wire a project up. No API key to create first:
+
+```bash
+snabbsajt connect     # prints a code, you approve it in the browser
+snabbsajt pull        # writes the published content to snabbsajt/published.json
+```
+
+`connect` writes two files, split by secrecy so a token cannot ride into a
+public repo by accident:
+
+| File | Contains | Commit it? |
+| --- | --- | --- |
+| `.snabbsajt.json` | `siteId`, `apiUrl`, site name | **Yes.** A teammate who clones then only needs their own token. |
+| `.env.local` | `SNABBSAJT_DELIVERY_TOKEN` | **No.** `connect` checks your `.gitignore` and warns loudly on stderr if it is not covered. |
+
+In CI, skip `connect` entirely: commit `.snabbsajt.json` and set
+`SNABBSAJT_DELIVERY_TOKEN` from your secret store. The environment always wins
+over `.env.local`.
+
+Or read it in code, which is what a framework's data layer usually wants:
+
 ```ts
 import { createDeliveryClient } from "@snabbsajt/site-kit";
 

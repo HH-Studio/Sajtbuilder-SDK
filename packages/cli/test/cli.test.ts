@@ -42,7 +42,12 @@ describe("snabbsajt site CLI", () => {
     expect(result.stdout).toContain("snabbsajt site validate");
     expect(result.stdout).toContain("snabbsajt site pack");
     expect(result.stdout).toContain("snabbsajt site doctor");
-    expect(result.stdout).toContain("No API key is required");
+    expect(result.stdout).toContain("snabbsajt connect");
+    expect(result.stdout).toContain("snabbsajt pull");
+    // The old text promised "No API key is required" of the whole CLI. That
+    // stopped being true when connect/pull arrived, so the help now scopes the
+    // promise to the commands it still holds for — which is every other one.
+    expect(result.stdout).toContain("runs entirely\nlocally and needs no credentials");
     expect(result.stdout).toContain("site import html");
     expect(result.stdout).toContain("site import wordpress");
     expect(result.stdout).toContain("skills install");
@@ -60,11 +65,17 @@ describe("snabbsajt site CLI", () => {
   });
 
   it("reports stable local compatibility data without making a network request", () => {
+    // Read the versions rather than hardcoding them. The literal "0.2.0" that
+    // used to sit here went stale at the 0.3.0 bump and nobody noticed, because
+    // this whole file was failing to load at the time (see vitest.config.ts).
+    const versionOf = (path: string): string =>
+      JSON.parse(readFileSync(join(repoRoot, path), "utf8")).version;
+
     expect(runJson(["site", "doctor"])).toEqual({
       ok: true,
       command: "site doctor",
-      cli: { package: "@snabbsajt/cli", version: "0.2.0" },
-      siteKit: { package: "@snabbsajt/site-kit", version: "0.2.0" },
+      cli: { package: "@snabbsajt/cli", version: versionOf("packages/cli/package.json") },
+      siteKit: { package: "@snabbsajt/site-kit", version: versionOf("package.json") },
       portableFormat: { format: "sajt-site", version: 1 },
       importReport: { format: "snabbsajt-import-report", version: "1" },
       skills: { supportedManifestVersion: 1, installed: false },
