@@ -50,6 +50,33 @@ export type {
   GetPublishedSiteOptions,
   PublishedSite,
 } from "./lib/delivery/client";
+// Visual editing: render your own site inside the SnabbSajt editor's canvas.
+export {
+  connectVisualEditing,
+  fieldRefFromEventTarget,
+  sajtField,
+} from "./lib/visual-editing/connect";
+export type {
+  ConnectVisualEditingOptions,
+  VisualEditingBridge,
+} from "./lib/visual-editing/connect";
+export {
+  originMatches,
+  parseEditorMessage,
+  parseSiteMessage,
+  VISUAL_EDITING_CHANNEL,
+  VISUAL_EDITING_PROTOCOL_VERSION,
+} from "./lib/visual-editing/protocol";
+export type {
+  EditIntentMessage,
+  EditorMessage,
+  FieldRef,
+  HighlightMessage,
+  ReadyMessage,
+  RenderMessage,
+  ResizeMessage,
+  SiteMessage,
+} from "./lib/visual-editing/protocol";
 export { SECTION_REGISTRY, isValidVariant } from "./lib/sections/registry";
 export { PORTABLE_CAPS, checkCaps } from "./lib/portability/caps";
 export type { SiteKitIssue, SiteKitReport } from "./lib/site-kit/validate";
