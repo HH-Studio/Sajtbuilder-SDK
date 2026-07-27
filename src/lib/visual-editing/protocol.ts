@@ -167,7 +167,10 @@ export function parseEditorMessage(data: unknown): EditorMessage | undefined {
 
   switch (data.type) {
     case "render": {
-      if (!isRecord(data.snapshot)) return undefined;
+      // An array passes a bare `typeof === "object"` check and would be cast to
+      // a fully-populated snapshot, handing the builder's renderer nonsense
+      // that TypeScript swears is a site.
+      if (!isRecord(data.snapshot) || Array.isArray(data.snapshot)) return undefined;
       if (typeof data.pageSlug !== "string") return undefined;
       return {
         channel: VISUAL_EDITING_CHANNEL,

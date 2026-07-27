@@ -69,10 +69,16 @@ export function envFileIsGitIgnored(cwd: string): boolean {
   } catch {
     return false;
   }
-  return contents
+  const lines = contents
     .split(/\r?\n/)
     .map((line) => line.trim())
-    .filter((line) => line && !line.startsWith("#"))
+    .filter((line) => line && !line.startsWith("#"));
+  // A negation anywhere means we cannot reason about this file with literal
+  // matching: `.env*` followed by `!.env.local` re-includes the very file we
+  // are protecting. Give up and report NOT ignored — a false warning costs a
+  // moment, a false all-clear costs a leaked token.
+  if (lines.some((line) => line.startsWith("!"))) return false;
+  return lines
     .some(
       (line) =>
         line === ENV_FILE ||

@@ -88,11 +88,34 @@ export type GetPublishedSiteOptions = {
   signal?: AbortSignal;
 };
 
+/** Resolve and VET the host we will send the token to.
+ *
+ *  This is a credential-bearing request, and the base URL can arrive from
+ *  `.snabbsajt.json` — a file the CLI tells you to commit, so a pull request
+ *  can change it. A plain `http://` host would put a live delivery token on the
+ *  wire in clear text, addressed wherever that PR said. https is therefore not
+ *  a nicety here, it is the whole protection, and an insecure base URL is
+ *  refused rather than downgraded. */
 function resolveBaseUrl(explicit?: string): string {
-  if (explicit) return explicit.replace(/\/+$/, "");
   const fromEnv =
     typeof process !== "undefined" ? process.env?.SNABBSAJT_API_URL : undefined;
-  return (fromEnv || DEFAULT_DELIVERY_BASE_URL).replace(/\/+$/, "");
+  const raw = explicit || fromEnv || DEFAULT_DELIVERY_BASE_URL;
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    throw new DeliveryError(
+      "unauthorized",
+      `Delivery base URL is not a valid URL: ${raw}`,
+    );
+  }
+  if (parsed.protocol !== "https:") {
+    throw new DeliveryError(
+      "unauthorized",
+      `Delivery base URL must use https — refusing to send a token to ${raw}.`,
+    );
+  }
+  return raw.replace(/\/+$/, "");
 }
 
 function isRetryable(status: number): boolean {
@@ -138,13 +161,20 @@ function errorForStatus(status: number, body: unknown): DeliveryError {
 }
 
 function assertPublishedSite(value: unknown): asserts value is PublishedSite {
+  const body = value as Partial<PublishedSite> | null | undefined;
   if (
-    !value ||
-    typeof value !== "object" ||
-    !("snapshot" in value) ||
-    !("versionId" in value) ||
-    typeof (value as PublishedSite).snapshot !== "object" ||
-    (value as PublishedSite).snapshot === null
+    !body ||
+    typeof body !== "object" ||
+    Array.isArray(body) ||
+    typeof body.snapshot !== "object" ||
+    body.snapshot === null ||
+    Array.isArray(body.snapshot) ||
+    // Checked because callers print and cache these. A `versionId` that is not
+    // a string reaches a build log as "[object Object]" and a cache key as
+    // nonsense, which is a worse failure than refusing the response.
+    typeof body.versionId !== "string" ||
+    typeof body.siteId !== "string" ||
+    typeof body.publishedAt !== "number"
   ) {
     throw new DeliveryError(
       "malformed",
@@ -187,7 +217,13 @@ export function createDeliveryClient(
 
     let lastError: DeliveryError | undefined;
     for (let attempt = 0; attempt <= retries; attempt++) {
-      if (attempt > 0) await sleep(retryDelayMs * 2 ** (attempt - 1));
+      if (attempt > 0) {
+        // Check before sleeping AND after: an abort during backoff should not
+        // have to wait out the full delay before anyone notices.
+        if (call.signal?.aborted) throw new DeliveryError("network", "Aborted.");
+        await sleep(retryDelayMs * 2 ** (attempt - 1));
+        if (call.signal?.aborted) throw new DeliveryError("network", "Aborted.");
+      }
 
       let response: Response;
       try {

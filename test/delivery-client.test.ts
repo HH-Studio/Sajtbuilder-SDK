@@ -173,6 +173,42 @@ describe("delivery client — failures a developer must be able to tell apart", 
   });
 });
 
+describe("delivery client — the base URL is a security boundary", () => {
+  it("refuses a plaintext base URL instead of sending a token over http", () => {
+    // .snabbsajt.json is documented as safe to commit, so a pull request can
+    // change apiUrl. Without this, CI would mail a live token to whatever host
+    // that PR named, in clear text.
+    expect(() =>
+      createDeliveryClient({
+        siteId: SITE_ID,
+        token: TOKEN,
+        baseUrl: "http://collector.evil.test",
+      }),
+    ).toThrow(/https/);
+  });
+
+  it("refuses a base URL that is not a URL at all", () => {
+    expect(() =>
+      createDeliveryClient({ siteId: SITE_ID, token: TOKEN, baseUrl: "evil.test" }),
+    ).toThrow(DeliveryError);
+  });
+});
+
+describe("delivery client — response validation", () => {
+  it.each([
+    ["a non-string versionId", { versionId: { nested: true } }],
+    ["a missing siteId", { siteId: undefined }],
+    ["a non-numeric publishedAt", { publishedAt: "yesterday" }],
+    ["an array snapshot", { snapshot: [] }],
+  ])("rejects %s rather than typing it as a site", async (_label, override) => {
+    const body = { ...publishedBody(), ...override };
+    const fetchImpl = vi.fn(async () => jsonResponse(body));
+    await expect(
+      client(fetchImpl as unknown as typeof globalThis.fetch).getPublishedSite(),
+    ).rejects.toMatchObject({ reason: "malformed" });
+  });
+});
+
 describe("delivery client — construction", () => {
   it("refuses to be built without a site id or a token", () => {
     expect(() =>

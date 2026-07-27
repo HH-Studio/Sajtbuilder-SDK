@@ -109,6 +109,10 @@ export function connectVisualEditing(
 
   const onMessage = (event: MessageEvent): void => {
     if (!originMatches(event.origin, expectedOrigin)) return;
+    // Origin alone is not enough. ANY window on the editor's origin — a widget
+    // this site embeds, a popup it opened — can post to us and would pass the
+    // origin check. Only our actual embedder may drive this page.
+    if (event.source !== win.parent) return;
     const message = parseEditorMessage(event.data);
     if (!message) return;
     if (message.type === "render") {

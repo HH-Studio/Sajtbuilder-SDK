@@ -49,8 +49,14 @@ function fakeWindow(opts: { framed?: boolean } = {}) {
     win: self,
     posted,
     listenerCount: () => listeners.length,
+    /** Deliver as the real embedder would: right origin, source === parent. */
     deliver(data: unknown, origin: string) {
-      for (const fn of [...listeners]) fn({ data, origin } as MessageEvent);
+      for (const fn of [...listeners])
+        fn({ data, origin, source: self.parent } as unknown as MessageEvent);
+    },
+    /** Deliver a fully hand-built event, for testing the source check. */
+    deliverRaw(event: MessageEvent) {
+      for (const fn of [...listeners]) fn(event);
     },
   };
 }
@@ -214,6 +220,31 @@ describe("connectVisualEditing", () => {
       envelope({ type: "render", snapshot: { businessName: "evil" }, pageSlug: "" }),
       "https://evil.test",
     );
+    expect(onRender).not.toHaveBeenCalled();
+  });
+
+  it("IGNORES a render from another window on the editor's own origin", () => {
+    // Origin alone is not enough: a widget this site embeds, or a popup it
+    // opened, served from the editor's origin would otherwise be able to swap
+    // the content the site displays.
+    const { win, deliverRaw } = fakeWindow();
+    const onRender = vi.fn();
+    connectVisualEditing({ editorOrigin: EDITOR, onRender, window: win });
+
+    // Right origin, wrong window.
+    deliverRaw({
+      data: envelope({ type: "render", snapshot: {}, pageSlug: "" }),
+      origin: EDITOR,
+      source: { notOurParent: true },
+    } as unknown as MessageEvent);
+    expect(onRender).not.toHaveBeenCalled();
+  });
+
+  it("rejects an ARRAY masquerading as a snapshot", () => {
+    const { win, deliver } = fakeWindow();
+    const onRender = vi.fn();
+    connectVisualEditing({ editorOrigin: EDITOR, onRender, window: win });
+    deliver(envelope({ type: "render", snapshot: [], pageSlug: "" }), EDITOR);
     expect(onRender).not.toHaveBeenCalled();
   });
 

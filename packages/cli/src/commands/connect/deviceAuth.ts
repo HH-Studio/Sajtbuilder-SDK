@@ -41,6 +41,17 @@ export type DevicePoll =
 
 export class ConnectError extends Error {}
 
+/** Keep a server-supplied number inside a range we are willing to wait for. */
+function clampNumber(
+  value: unknown,
+  fallback: number,
+  min: number,
+  max: number,
+): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) return fallback;
+  return Math.min(Math.max(value, min), max);
+}
+
 export type DeviceAuthOptions = {
   apiUrl?: string;
   fetch?: typeof globalThis.fetch;
@@ -50,11 +61,23 @@ export type DeviceAuthOptions = {
   client?: string;
 };
 
+/** The pairing exchange ends with a live credential crossing the wire, so the
+ *  host is vetted rather than accepted. `apiUrl` can come from a file the CLI
+ *  tells you to commit, which means a pull request can change it. */
 function baseUrl(apiUrl?: string): string {
-  return (apiUrl || process.env.SNABBSAJT_API_URL || DEFAULT_API_URL).replace(
-    /\/+$/,
-    "",
-  );
+  const raw = apiUrl || process.env.SNABBSAJT_API_URL || DEFAULT_API_URL;
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    throw new ConnectError(`${raw} is not a valid URL.`);
+  }
+  if (parsed.protocol !== "https:") {
+    throw new ConnectError(
+      `Refusing to pair over ${parsed.protocol}// — the API URL must use https (${raw}).`,
+    );
+  }
+  return raw.replace(/\/+$/, "");
 }
 
 function resolveFetch(injected?: typeof globalThis.fetch): typeof globalThis.fetch {
@@ -124,8 +147,12 @@ export async function startDeviceAuth(
     deviceCode: value.deviceCode,
     userCode: value.userCode,
     verificationUrl: value.verificationUrl,
-    expiresIn: typeof value.expiresIn === "number" ? value.expiresIn : 600,
-    interval: typeof value.interval === "number" && value.interval > 0 ? value.interval : 2,
+    // Both are server-supplied numbers that drive how long we wait, so both are
+    // bounded here. Without a ceiling a hostile or broken `start` response
+    // ("interval": 100000) turns the pairing into a sleep that never usefully
+    // polls, and the developer just sees a hung terminal.
+    expiresIn: clampNumber(value.expiresIn, 600, 30, 1800),
+    interval: clampNumber(value.interval, 2, 1, 30),
   };
 }
 
@@ -170,6 +197,13 @@ export async function waitForApproval(
     const result = await pollDeviceAuth(start.deviceCode, options);
     switch (result.status) {
       case "approved":
+        // "Approved" without a token is not an approval. Accepting it writes
+        // the literal string "undefined" into .env.local and reports success.
+        if (!result.token || !result.websiteId) {
+          throw new ConnectError(
+            "The server approved the pairing but returned no token. Run `snabbsajt connect` again.",
+          );
+        }
         return result;
       case "denied":
         throw new ConnectError(
