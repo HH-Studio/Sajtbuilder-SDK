@@ -35,6 +35,33 @@ installed agent skill adds proposals, approval also proves the deterministic
 baseline is unchanged and accepts only additive, unresolved `ai_proposed`
 findings with valid evidence citations.
 
+## Connect an existing repository
+
+```bash
+snabbsajt connect [--api-url <url>] [--json]
+snabbsajt pull [-o <file>] [--locale sv|en|pl] [--json]
+```
+
+These are the only two commands that talk to SnabbSajt. Everything else in this
+reference runs entirely locally.
+
+`connect` pairs the current directory with **one** site: it prints a code, you
+approve it in the browser, and it writes `.snabbsajt.json` (safe to commit) plus
+`SNABBSAJT_DELIVERY_TOKEN` into `.env.local` (a secret — gitignore it). If
+`.env.local` is not ignored, it warns on stderr in both output modes, because a
+token in a tracked file is the one mistake worth interrupting for.
+
+`pull` fetches that site's published content to `snabbsajt/published.json`.
+Use `-o` for a different path and `--locale` for a translation.
+
+**The token is read-only and scoped to one site**, so neither command can change
+or publish anything. To read the site from application code instead of a file,
+use `createDeliveryClient` from `@snabbsajt/site-kit` — see
+[headless delivery](https://snabbsajt.com/docs/en/developer/site-kit/headless-delivery).
+
+Do not confuse `connect` with `snabbsajt site init`, which scaffolds a site
+*package* and touches no network.
+
 ## Create a package
 
 ```bash
@@ -92,6 +119,25 @@ snabbsajt site doctor [--json]
 ```
 
 Reports installed CLI, Site Kit and format versions without a network request.
+`snabbsajt --version` prints the CLI version alone, for scripts that only need
+that.
+
+## Agent skills
+
+```bash
+snabbsajt skills install --agent auto|codex|claude|all [--global] [--force] [--json]
+snabbsajt skills list    --agent auto|codex|claude|all [--global] [--json]
+snabbsajt skills doctor  --agent auto|codex|claude|all [--global] [--json]
+```
+
+Installs the conversion skills (`import-website`, `build-snabbsajt-site`,
+`review-site-package`) into a coding agent's skill directory. `auto` detects
+which agents the repository already uses.
+
+Installation is **project-local unless you pass `--global`**. A skill file you
+have modified is preserved unless `--force` is explicit, and a backup is written
+before any replacement. `doctor` reports drift between installed skills and the
+versions this CLI ships.
 
 ## Legacy `site-kit` binary
 

@@ -141,9 +141,15 @@ function findPackageVersion(start: string, expectedName: string): string {
   throw new CliError(`could not resolve ${expectedName} package version`);
 }
 
+/** The CLI's own version. Resolved on its own so that `--version` cannot fail
+ *  because of an unrelated problem resolving the Site Kit peer. */
+export function cliVersion(): string {
+  return findPackageVersion(dirname(fileURLToPath(import.meta.url)), "@snabbsajt/cli");
+}
+
 function installedVersions() {
   return {
-    cli: findPackageVersion(dirname(fileURLToPath(import.meta.url)), "@snabbsajt/cli"),
+    cli: cliVersion(),
     siteKit: findPackageVersion(
       dirname(fileURLToPath(import.meta.resolve("@snabbsajt/site-kit"))),
       "@snabbsajt/site-kit",

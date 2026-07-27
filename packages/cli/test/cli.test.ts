@@ -64,6 +64,17 @@ describe("snabbsajt site CLI", () => {
     expect(missingWxr.stderr).toContain("requires --wxr export.xml");
   });
 
+  it("prints its own version for --version, -v and version", () => {
+    const expected = JSON.parse(
+      readFileSync(join(repoRoot, "packages/cli/package.json"), "utf8"),
+    ).version as string;
+    for (const flag of ["--version", "-v", "version"]) {
+      const result = run([flag]);
+      expect(result.status, `${flag} should exit 0`).toBe(0);
+      expect(result.stdout.trim(), `${flag} should print the CLI version`).toBe(expected);
+    }
+  });
+
   it("reports stable local compatibility data without making a network request", () => {
     // Read the versions rather than hardcoding them. The literal "0.2.0" that
     // used to sit here went stale at the 0.3.0 bump and nobody noticed, because

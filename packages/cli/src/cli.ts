@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 
 import { runConnectCommand } from "./commands/connect";
-import { runSiteCommand } from "./commands/site";
+import { cliVersion, runSiteCommand } from "./commands/site";
 import { runSkillsCommand } from "./commands/skills";
 
 function usage(): void {
   console.log(`SnabbSajt CLI
 
 Usage:
+  snabbsajt --version
   snabbsajt connect [--api-url <url>] [--json]
   snabbsajt pull [-o <file>] [--locale sv|en|pl] [--json]
   snabbsajt site init <dir> [--template nextjs|html] [--json]
@@ -37,6 +38,18 @@ async function main(): Promise<number> {
   const args = process.argv.slice(2);
   if (args.length === 0 || ["help", "--help", "-h"].includes(args[0])) {
     usage();
+    return 0;
+  }
+  // clig.dev expects --version to exist even though `site doctor` reports more.
+  // Only the CLI's own version is needed here, so a missing peer install must
+  // not turn a version check into an error.
+  if (["--version", "-v", "version"].includes(args[0]!)) {
+    try {
+      console.log(cliVersion());
+    } catch {
+      console.error("snabbsajt: could not resolve the installed CLI version");
+      return 1;
+    }
     return 0;
   }
   const [namespace, ...rest] = args;

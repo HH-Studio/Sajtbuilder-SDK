@@ -1,7 +1,38 @@
 # Publishing the npm packages
 
+## Preferred path: tag it and let CI publish
+
+Since 2026-07-27 the `Release` workflow publishes both packages with
+**npm provenance** (`npm publish --provenance`), in the correct order, after
+`bun run check` passes. Provenance is only possible from CI — the attestation is
+signed with the workflow's OIDC identity, so a package published by hand from a
+laptop can never carry one. Prefer this path.
+
+```bash
+# versions in package.json + packages/cli/package.json + skills/manifest.json
+# must already agree, and the CLI must depend on the exact Site Kit version
+git tag -a v0.3.0 -m "SnabbSajt Site Kit and CLI 0.3.0"
+git push origin v0.3.0
+```
+
+The workflow verifies the tag against both package versions and the CLI's
+dependency range, builds the skill archives, creates the GitHub release, then
+publishes site-kit followed by cli. **It needs the `NPM_TOKEN` repository secret**
+(an `@snabbsajt` automation token). Without it the npm job is skipped with a
+warning and only the GitHub release ships.
+
+Afterwards, confirm the provenance badge is present on both package pages.
+
+## Fallback: publishing by hand
+
+Use this only when CI cannot run. **A hand-published version has no provenance.**
+
 Publish `@snabbsajt/site-kit` first. The CLI has an exact dependency on the
 same Site Kit version, so reversing the order creates a broken install window.
+
+The version numbers below are written as `0.2.0` throughout because that was the
+release this runbook was written for. Substitute the version you are actually
+publishing.
 
 ## One-time npm setup
 

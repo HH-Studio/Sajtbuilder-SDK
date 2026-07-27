@@ -9,12 +9,18 @@ SnabbSajt's typed sections, validate it locally, and pack it as a safe bundle.
 
 ## Status
 
-`0.3.0` is the current source. `@snabbsajt/site-kit` and `@snabbsajt/cli` are on
-npm. The package format, validator, HTML/WordPress converters, CLI, skills, and
+| | Version |
+| --- | --- |
+| **Published on npm** (what `npm install` gives you) | **`0.2.0`** |
+| This source tree | `0.3.0` — not yet published |
+
+The package format, validator, HTML/WordPress converters, CLI, skills, and
 bundle format match the production SnabbSajt importer.
 
-`0.3.0` catches the mirrored contract up to the app. Everything the importer
-already accepted is now expressible from Site Kit:
+**The features listed next are `0.3.0` and are therefore not on npm yet.** To use
+them today, build from this tree (see [Install](#install)); `npm install` still
+resolves `0.2.0`. `0.3.0` catches the mirrored contract up to the app, so that
+everything the importer already accepted becomes expressible from Site Kit:
 
 - **Your own brand.** `theme.customPalette` carries 13 raw CSS colours per
   light/dark surface, `customFonts` carries your typefaces, `customBrandHex`
@@ -85,6 +91,12 @@ WordPress requires the current public site plus a WXR/XML export:
 ```bash
 snabbsajt site import wordpress --url https://example.com --wxr export.xml --out ./converted
 ```
+
+Already have a repository and want your team editing content in SnabbSajt while
+the site keeps deploying from your own git and host? That is
+[Headless delivery](#headless-delivery--you-host-your-client-edits) below —
+`snabbsajt connect` then `snabbsajt pull`. Do not confuse it with
+`snabbsajt site init`, which scaffolds a site *package* and touches no network.
 
 ## Typed authoring
 
@@ -201,6 +213,8 @@ deployment for staging.
 ## Documentation
 
 - [Quickstart](docs/quickstart.md)
+- [CHANGELOG](CHANGELOG.md)
+- [Headless delivery — connect your own repo/host](https://snabbsajt.com/docs/en/developer/site-kit/headless-delivery)
 - [Convert a Next.js site](docs/nextjs.md)
 - [Starter template (Next.js + shadcn)](docs/templates.md)
 - [Convert a plain HTML site](docs/html.md)

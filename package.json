@@ -6,7 +6,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HH-Studio/Sajtbuilder-SDK.git#v0.2.0"
+    "url": "git+https://github.com/HH-Studio/Sajtbuilder-SDK.git"
   },
   "homepage": "https://snabbsajt.com/docs/en/developer/site-kit",
   "bugs": "https://github.com/HH-Studio/Sajtbuilder-SDK/issues",
@@ -30,6 +30,7 @@
     "dist",
     "contract",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "workspaces": [
