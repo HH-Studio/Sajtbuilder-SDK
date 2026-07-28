@@ -167,6 +167,28 @@ In CI, skip `connect` entirely: commit `.snabbsajt.json` and set
 `SNABBSAJT_DELIVERY_TOKEN` from your secret store. The environment always wins
 over `.env.local`.
 
+### Writing back — the `admin` namespace
+
+`pull` reads. When you need to *change* a site from a terminal or a script, that
+lives behind its own noun and its own credential:
+
+```bash
+snabbsajt admin pair    # approve the scopes in the browser
+snabbsajt admin tools   # what this grant actually allows
+snabbsajt admin run update_section_text --args '{"sectionId":"…","text":"…"}'
+```
+
+`admin pair` mints a **capability-scoped** token into `SNABBSAJT_ADMIN_TOKEN` — a
+different variable from the read-only one, so pairing for write access cannot
+escalate what `pull` holds. `snabbsajt site *` stays keyless and never sees either
+token. `tools` and `run` speak MCP to the same endpoint an AI assistant uses, so
+every capability the app gains is reachable with no CLI upgrade.
+
+Publishing, emailing a customer a document, and granting site access still need
+the owner to approve them **in the browser at the moment they happen**, so a
+paired terminal cannot do them unattended. Details in
+[docs/cli.md](docs/cli.md#edit-a-site-from-the-terminal--the-admin-namespace).
+
 Or read it in code, which is what a framework's data layer usually wants:
 
 ```ts

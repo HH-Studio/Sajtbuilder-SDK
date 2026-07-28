@@ -97,12 +97,20 @@ export type TokenWriteResult = {
   unignored: boolean;
 };
 
-/** Put the delivery token in `.env.local`, replacing any previous value of the
- *  same key rather than stacking duplicates (the last assignment wins in every
- *  dotenv loader, so a stale first line is a confusing no-op). */
-export function writeDeliveryToken(cwd: string, token: string): TokenWriteResult {
+/** Put one variable in `.env.local`, replacing any previous value of the same key
+ *  rather than stacking duplicates (the last assignment wins in every dotenv
+ *  loader, so a stale first line is a confusing no-op).
+ *
+ *  Key-agnostic on purpose: the read-only delivery token and the `admin`
+ *  namespace's separate write token are different credentials in different
+ *  variables, and dotenv line editing is not a thing to keep two copies of. */
+export function writeEnvVar(
+  cwd: string,
+  key: string,
+  value: string,
+): TokenWriteResult {
   const path = join(cwd, ENV_FILE);
-  const line = `${TOKEN_ENV_VAR}=${token}`;
+  const line = `${key}=${value}`;
   const unignored = !envFileIsGitIgnored(cwd);
 
   if (!existsSync(path)) {
@@ -112,7 +120,7 @@ export function writeDeliveryToken(cwd: string, token: string): TokenWriteResult
 
   const existing = readFileSync(path, "utf8");
   const lines = existing.split(/\r?\n/);
-  const index = lines.findIndex((l) => l.trimStart().startsWith(`${TOKEN_ENV_VAR}=`));
+  const index = lines.findIndex((l) => l.trimStart().startsWith(`${key}=`));
   if (index >= 0) {
     lines[index] = line;
     writeFileSync(path, `${lines.join("\n").replace(/\n*$/, "")}\n`, "utf8");
@@ -124,10 +132,10 @@ export function writeDeliveryToken(cwd: string, token: string): TokenWriteResult
   return { action: "appended", unignored };
 }
 
-/** The token for the current project: the environment first (CI sets it there
+/** One variable for the current project: the environment first (CI sets it there
  *  and must win), then `.env.local` as the local-development convenience. */
-export function readDeliveryToken(cwd: string): string | undefined {
-  const fromEnv = process.env[TOKEN_ENV_VAR];
+export function readEnvVar(cwd: string, key: string): string | undefined {
+  const fromEnv = process.env[key];
   if (fromEnv) return fromEnv;
   const path = join(cwd, ENV_FILE);
   if (!existsSync(path)) return undefined;
@@ -135,11 +143,19 @@ export function readDeliveryToken(cwd: string): string | undefined {
     const line = readFileSync(path, "utf8")
       .split(/\r?\n/)
       .reverse() // last assignment wins, matching dotenv
-      .find((l) => l.trimStart().startsWith(`${TOKEN_ENV_VAR}=`));
+      .find((l) => l.trimStart().startsWith(`${key}=`));
     if (!line) return undefined;
     const value = line.slice(line.indexOf("=") + 1).trim();
     return value.replace(/^["']|["']$/g, "") || undefined;
   } catch {
     return undefined;
   }
+}
+
+export function writeDeliveryToken(cwd: string, token: string): TokenWriteResult {
+  return writeEnvVar(cwd, TOKEN_ENV_VAR, token);
+}
+
+export function readDeliveryToken(cwd: string): string | undefined {
+  return readEnvVar(cwd, TOKEN_ENV_VAR);
 }

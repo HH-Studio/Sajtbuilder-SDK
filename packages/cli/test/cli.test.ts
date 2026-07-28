@@ -44,10 +44,14 @@ describe("snabbsajt site CLI", () => {
     expect(result.stdout).toContain("snabbsajt site doctor");
     expect(result.stdout).toContain("snabbsajt connect");
     expect(result.stdout).toContain("snabbsajt pull");
+    expect(result.stdout).toContain("snabbsajt admin pair");
     // The old text promised "No API key is required" of the whole CLI. That
-    // stopped being true when connect/pull arrived, so the help now scopes the
-    // promise to the commands it still holds for — which is every other one.
-    expect(result.stdout).toContain("runs entirely\nlocally and needs no credentials");
+    // stopped being true when connect/pull arrived, and "every OTHER command is
+    // keyless" stopped being true when the admin namespace arrived, so the
+    // promise is now scoped by name to the two namespaces that still keep it.
+    expect(result.stdout).toContain(
+      "site and skills command runs entirely locally and needs no credentials",
+    );
     expect(result.stdout).toContain("site import html");
     expect(result.stdout).toContain("site import wordpress");
     expect(result.stdout).toContain("skills install");

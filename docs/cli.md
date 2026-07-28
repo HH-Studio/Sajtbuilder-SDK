@@ -1,7 +1,16 @@
 # CLI reference
 
-The `snabbsajt` CLI is local-first. It does not need an API key and does not
-upload or publish anything by itself.
+The `snabbsajt` CLI is local-first. There is no API key to create, and no command
+uploads or publishes anything as a side effect.
+
+Credentials are split by namespace, and which is which matters more than anything
+else on this page:
+
+| Namespace | Credential | Can it change a site? |
+| --- | --- | --- |
+| `site *`, `skills *` | **None.** Runs entirely on your machine. | No |
+| `connect`, `pull` | `SNABBSAJT_DELIVERY_TOKEN` — read-only, one site | No |
+| `admin *` | `SNABBSAJT_ADMIN_TOKEN` — capability-scoped | Yes, within the scopes the owner granted |
 
 ## Import rendered HTML
 
@@ -42,8 +51,9 @@ snabbsajt connect [--api-url <url>] [--json]
 snabbsajt pull [-o <file>] [--locale sv|en|pl] [--json]
 ```
 
-These are the only two commands that talk to SnabbSajt. Everything else in this
-reference runs entirely locally.
+These two and the [`admin` namespace](#edit-a-site-from-the-terminal--the-admin-namespace)
+are the only commands that talk to SnabbSajt. Everything else in this reference
+runs entirely locally.
 
 `connect` pairs the current directory with **one** site: it prints a code, you
 approve it in the browser, and it writes `.snabbsajt.json` (safe to commit) plus
@@ -61,6 +71,82 @@ use `createDeliveryClient` from `@snabbsajt/site-kit` — see
 
 Do not confuse `connect` with `snabbsajt site init`, which scaffolds a site
 *package* and touches no network.
+
+## Edit a site from the terminal — the `admin` namespace
+
+```bash
+snabbsajt admin pair  [--scopes a,b,c] [--api-url <url>] [--json]
+snabbsajt admin tools [--app-url <url>] [--json]
+snabbsajt admin run <tool> [--args '<json>'] [--app-url <url>] [--json]
+```
+
+`admin` is the **only** namespace in this CLI that holds a credential able to
+change a site. `snabbsajt site ...` stays local-first and keyless — it is never
+given a token, and that is a boundary, not an accident. Read-only `pull` keeps its
+own separate variable, so pairing for write access cannot silently escalate what
+`pull` holds.
+
+### `admin pair`
+
+Device-code pairing, the same shape as `connect`: it prints a short code and a
+URL, you approve it in a browser you are already signed in to, and the terminal
+receives a capability-scoped token exactly once. It writes:
+
+| File | Contains | Commit it? |
+| --- | --- | --- |
+| `.snabbsajt-admin.json` | app URL, site id, the granted scopes | **Yes.** Not a secret. |
+| `.env.local` | `SNABBSAJT_ADMIN_TOKEN` | **No.** `pair` checks your `.gitignore` and warns on stderr in both output modes if it is not covered. |
+
+`--scopes` defaults to `site:read,content:write` — enough to read a site and edit
+its draft, and nothing that publishes, spends AI credits, or reads customer data.
+Ask for more only when you need it (`--scopes site:read,content:write,publish`).
+
+**The owner decides, not the flag.** The approval page shows every requested
+scope and the owner can untick any of them, so what you receive can be narrower
+than what you asked for. `pair` prints the **granted** set for exactly that
+reason; a developer who believes they hold `publish` and does not will otherwise
+read the resulting refusal as a bug.
+
+In CI, skip `pair`: commit `.snabbsajt-admin.json` and set `SNABBSAJT_ADMIN_TOKEN`
+from your secret store. The environment always wins over `.env.local`. The token
+is never printed — not by `--json`, not in an error — because `--json` output
+lands in CI logs.
+
+### `admin tools` and `admin run`
+
+Both speak ordinary MCP JSON-RPC to `<appOrigin>/api/mcp`, the **same endpoint an
+AI assistant connects to**. There is no REST-per-verb API.
+
+```bash
+snabbsajt admin tools                    # what this grant actually allows
+snabbsajt admin run list_pages
+snabbsajt admin run update_section_text --args '{"sectionId":"...","text":"..."}'
+```
+
+`run` is generic on purpose: `--args` is passed through as the tool's arguments,
+so every capability the app gains is reachable immediately, with no CLI upgrade
+and no new subcommand. `admin tools` is how you discover the current set — do not
+work from a list in a document, including this one.
+
+`--app-url` (or `SNABBSAJT_APP_URL`) overrides the origin recorded at pairing;
+you need it only for a non-production deployment. Note it is the **app** origin,
+not the API URL `connect` uses.
+
+### What a paired terminal still cannot do
+
+Scopes are not the last gate. The actions that are public or hard to undo —
+**publishing, taking a site offline, emailing a customer an invoice or offer,
+granting someone access to the site** — go through a prepare → approve → confirm
+rail. The `prepare_*` tool only creates a review and hands back an approval URL;
+the owner opens it and approves **at the moment it happens**, and the confirmation
+is bound to the exact state they reviewed. So a paired terminal, or an agent
+driving one, cannot publish or send anything unattended — whatever scopes it
+holds.
+
+Errors say what to do rather than what went wrong: a missing token points at
+`admin pair`, a revoked or expired one points at pairing again, and a tool that
+refuses (a missing scope, a stale review) reports the tool's own words and exits
+non-zero.
 
 ## Create a package
 

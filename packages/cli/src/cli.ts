@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { runAdminCommand } from "./commands/admin";
 import { runConnectCommand } from "./commands/connect";
 import { cliVersion, runSiteCommand } from "./commands/site";
 import { runSkillsCommand } from "./commands/skills";
@@ -11,6 +12,9 @@ Usage:
   snabbsajt --version
   snabbsajt connect [--api-url <url>] [--json]
   snabbsajt pull [-o <file>] [--locale sv|en|pl] [--json]
+  snabbsajt admin pair [--scopes a,b,c] [--api-url <url>] [--json]
+  snabbsajt admin tools [--app-url <url>] [--json]
+  snabbsajt admin run <tool> [--args '<json>'] [--app-url <url>] [--json]
   snabbsajt site init <dir> [--template nextjs|html] [--json]
   snabbsajt site import html <url|file.html|site.zip> [-o package-dir] [--json]
   snabbsajt site import wordpress --url <public-url> --wxr <export.xml> --out <package-dir> [--json]
@@ -24,9 +28,11 @@ Usage:
   snabbsajt skills doctor --agent auto|codex|claude|all [--global] [--json]
 
 connect and pull talk to a SnabbSajt site you already own, using a read-only,
-single-site token they obtain for you. Every other command runs entirely
-locally and needs no credentials at all. Skill installs are project-local
-unless you explicitly pass --global.`);
+single-site token they obtain for you — they cannot change anything. admin holds
+the only credential in this CLI that can: a separate, capability-scoped token in
+its own SNABBSAJT_ADMIN_TOKEN variable, so pull never holds write power. Every
+site and skills command runs entirely locally and needs no credentials at all.
+Skill installs are project-local unless you explicitly pass --global.`);
 }
 
 /** Commands that live at the top level rather than under a namespace, because
@@ -54,6 +60,10 @@ async function main(): Promise<number> {
   }
   const [namespace, ...rest] = args;
   if (TOP_LEVEL.has(namespace!)) return runConnectCommand(args);
+  // Routed before the shared "namespace with no subcommand" branch below, so a
+  // bare `snabbsajt admin` prints the admin usage rather than the global one —
+  // the credential rules are the thing a reader needs at that moment.
+  if (namespace === "admin") return runAdminCommand(rest);
   if (namespace !== "site" && namespace !== "skills") {
     console.error(`snabbsajt: unknown command "${namespace}"`);
     return 1;

@@ -14,6 +14,24 @@ that validated against an older CLI still validates against a newer one.
 
 ### Added
 
+- **`snabbsajt admin` — the CLI can now change a site, in its own namespace.**
+  `admin pair` obtains a **capability-scoped** token by device-code approval
+  (`POST /v1/cli/pair/{start,poll}`) and writes it as `SNABBSAJT_ADMIN_TOKEN` —
+  deliberately a different variable from `connect`'s read-only
+  `SNABBSAJT_DELIVERY_TOKEN`, so pairing for write access cannot silently
+  escalate what `pull` holds. `--scopes` defaults to `site:read,content:write`;
+  the owner approves scope by scope and may grant fewer, so `pair` prints the
+  **granted** set rather than the request. `admin tools` (`tools/list`) and
+  `admin run <tool> --args '<json>'` (`tools/call`) then speak ordinary MCP
+  JSON-RPC to `<appOrigin>/api/mcp` — the same endpoint an AI assistant uses —
+  so `run` is generic and every capability the app gains stays reachable with no
+  CLI change. `snabbsajt site *` remains local-first and keyless, and is never
+  given a token. Publishing, emailing a customer a document and granting site
+  access still require the owner to approve them in the browser at the moment
+  they happen, so a paired terminal cannot do them unattended. Non-secret
+  pairing metadata (app URL, site id, granted scopes) lands in
+  `.snabbsajt-admin.json`, kept separate from `connect`'s `.snabbsajt.json`. The
+  token is never printed — not in `--json`, not in an error.
 - `snabbsajt --version` (also `-v`), reporting the CLI version alone.
   `snabbsajt site doctor` still reports CLI, Site Kit and both format versions.
 

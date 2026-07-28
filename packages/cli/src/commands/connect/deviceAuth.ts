@@ -41,8 +41,12 @@ export type DevicePoll =
 
 export class ConnectError extends Error {}
 
-/** Keep a server-supplied number inside a range we are willing to wait for. */
-function clampNumber(
+/** Keep a server-supplied number inside a range we are willing to wait for.
+ *
+ *  Exported for the `admin` namespace, which pairs against different endpoints
+ *  (`/v1/cli/pair/*`) but must bound a server-supplied interval exactly as
+ *  strictly as this flow does. */
+export function clampNumber(
   value: unknown,
   fallback: number,
   min: number,
@@ -63,8 +67,11 @@ export type DeviceAuthOptions = {
 
 /** The pairing exchange ends with a live credential crossing the wire, so the
  *  host is vetted rather than accepted. `apiUrl` can come from a file the CLI
- *  tells you to commit, which means a pull request can change it. */
-function baseUrl(apiUrl?: string): string {
+ *  tells you to commit, which means a pull request can change it.
+ *
+ *  Exported so the `admin` namespace shares this one https check rather than
+ *  keeping a second copy of it. */
+export function baseUrl(apiUrl?: string): string {
   const raw = apiUrl || process.env.SNABBSAJT_API_URL || DEFAULT_API_URL;
   let parsed: URL;
   try {
@@ -90,7 +97,9 @@ function resolveFetch(injected?: typeof globalThis.fetch): typeof globalThis.fet
   return impl;
 }
 
-async function postJson(
+/** Unauthenticated JSON POST. Exported for the `admin` pairing endpoints, which
+ *  are the same kind of pre-credential exchange. */
+export async function postJson(
   fetchImpl: typeof globalThis.fetch,
   url: string,
   body: unknown,

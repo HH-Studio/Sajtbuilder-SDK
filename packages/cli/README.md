@@ -2,8 +2,10 @@
 
 Local-first command line tools for [SnabbSajt](https://snabbsajt.com) sites.
 
-**No API key. Every conversion command runs on your machine** — nothing is
-uploaded or published as a side effect.
+**No API key to create. Every `site` and `skills` command runs on your machine** —
+nothing is uploaded or published as a side effect. The commands that do talk to
+SnabbSajt obtain their own credential by browser approval: `connect`/`pull` a
+read-only one, `admin` a capability-scoped one you grant explicitly.
 
 ```bash
 npm install -g @snabbsajt/cli
@@ -25,6 +27,19 @@ npx @snabbsajt/cli pull      # fetch the published content
 `SNABBSAJT_DELIVERY_TOKEN` into `.env.local` (a secret — gitignore it). The token
 is **read-only and scoped to one site**, so neither command can change or publish
 anything.
+
+**Edit a site from the terminal**, when reading it is not enough:
+
+```bash
+npx @snabbsajt/cli admin pair    # approve the scopes in the browser
+npx @snabbsajt/cli admin tools   # see what your grant allows
+npx @snabbsajt/cli admin run get_site_overview
+```
+
+`admin` is the only namespace holding a credential that can change a site
+(`SNABBSAJT_ADMIN_TOKEN` — a different variable from the read-only one). `site *`
+stays keyless. `tools`/`run` speak MCP to the same endpoint an AI assistant uses,
+so every capability the app gains is reachable without a CLI upgrade.
 
 **Convert an existing website** into an editable SnabbSajt package:
 
@@ -70,6 +85,9 @@ cannot be approved.
 snabbsajt --version
 snabbsajt connect [--api-url <url>]
 snabbsajt pull [-o <file>] [--locale sv|en|pl]
+snabbsajt admin pair [--scopes a,b,c] [--api-url <url>]
+snabbsajt admin tools [--app-url <url>]
+snabbsajt admin run <tool> [--args '<json>'] [--app-url <url>]
 snabbsajt site init <dir> [--template nextjs|html]
 snabbsajt site import html <url|file.html|site.zip> [-o package-dir]
 snabbsajt site import wordpress --url <url> --wxr <export.xml> --out <dir>
