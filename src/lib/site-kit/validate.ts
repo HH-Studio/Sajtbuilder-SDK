@@ -18,7 +18,6 @@
 // ---------------------------------------------------------------------------
 
 import { validate, ValidationError } from "convex-helpers/validators";
-import { generateKeyBetween } from "fractional-indexing";
 import {
   portableSiteV1,
   type PortableSiteV1,
@@ -28,10 +27,19 @@ import { checkCaps } from "../portability/caps";
 import { collectAssetIds } from "../portability/assets";
 import { isValidVariant } from "../sections/registry";
 import type { SectionType } from "../../convex/model/sections";
-import { LOCALES } from "../../convex/model/business";
+import { LOCALES } from "../i18n";
+import { NEWS_SEGMENT } from "../site/news";
 import { validateRedirectMap } from "../site/redirects";
+import { isValidOrderKey } from "../editor/fractionalIndex";
+import { looksLikeTrialFont } from "../../convex/model/fonts";
 
-const NEWS_SEGMENT = "news";
+// One validator per section type, keyed by the discriminant - so a content
+// error is reported against the RIGHT member's fields (SDK feedback #3).
+const CONTENT_MEMBER_BY_TYPE = new Map(
+  (sectionContent as unknown as { members: Array<{ fields: { type: { value: SectionType } } }> }).members.map(
+    (member) => [member.fields.type.value, member as unknown as typeof sectionContent],
+  ),
+);
 
 export type SiteKitIssue = {
   level: "error" | "warning";
@@ -48,15 +56,6 @@ export type SiteKitReport = {
 
 /** exportIds/tmpIds become zip entry names — keep them filename/URL-safe. */
 const SAFE_ID = /^[A-Za-z0-9_-]+$/;
-
-function isValidOrderKey(value: string): boolean {
-  try {
-    generateKeyBetween(value, null);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 function err(issues: SiteKitIssue[], path: string, message: string): void {
   issues.push({ level: "error", path, message });
@@ -153,6 +152,8 @@ export function validateSitePackage(
     warn(issues, "pages", 'no home page (slug "") — import will promote the lowest-order page to home');
   }
 
+  // Redirects are checked against the actual portable pages, not merely their
+  // string shape. Chains are allowed but must terminate at one of these routes.
   const livePaths = new Set<string>(["", NEWS_SEGMENT]);
   for (const page of site.pages) {
     if (page.pageType === "post") livePaths.add(`${NEWS_SEGMENT}/${page.slug}`);
@@ -193,7 +194,7 @@ export function validateSitePackage(
     }
   });
   if (site.fontsAssignment) {
-    for (const key of ["headingTmpId", "bodyTmpId"] as const) {
+    for (const key of ["headingTmpId", "bodyTmpId", "displayTmpId"] as const) {
       const id = site.fontsAssignment[key];
       if (id !== undefined && !fontIds.has(id)) {
         err(issues, `fontsAssignment.${key}`, `unknown font "${id}"`);
@@ -204,21 +205,72 @@ export function validateSitePackage(
     if (f.source === "upload" && (!f.files || f.files.length === 0)) {
       err(issues, `fonts[${i}]`, 'source "upload" requires files[]');
     }
+    // Same heuristic the import applies (convex/portability.ts commitImport):
+    // surface it here so an agent knows the consequence before uploading.
+    if (
+      f.source === "upload" &&
+      f.license !== "trial" &&
+      looksLikeTrialFont(f.family, (f.files ?? []).map((x) => x.url))
+    ) {
+      warn(
+        issues,
+        `fonts[${i}]`,
+        `"${f.family}" looks like a TRIAL cut — import will mark it license:"trial"; the site can be built with it but publish is blocked until licensed files replace it`,
+      );
+    }
   });
 
   // 6. Sections: page ref, content union, type match, variant allow-list.
+  // Merge-import keys: duplicates are an error (a merge would match the wrong
+  // row); missing keys only warn (create imports don't need them, but a merge
+  // treats keyless sections as insert-only and can never update them).
+  const sectionKeys = new Map<string, number>();
+  let keylessSections = 0;
+  site.sections.forEach((s, i) => {
+    if (s.externalKey === undefined) {
+      keylessSections += 1;
+    } else {
+      const prev = sectionKeys.get(s.externalKey);
+      if (prev !== undefined) {
+        err(issues, `sections[${i}].externalKey`, `duplicate externalKey "${s.externalKey}" (also sections[${prev}])`);
+      }
+      sectionKeys.set(s.externalKey, i);
+    }
+  });
+  if (keylessSections > 0 && sectionKeys.size > 0) {
+    warn(
+      issues,
+      "sections",
+      `${keylessSections} section(s) have no externalKey — a merge import can only insert them, never update them`,
+    );
+  }
   site.sections.forEach((s, i) => {
     if (!pageIds.has(s.pageTmpId)) {
       err(issues, `sections[${i}].pageTmpId`, `unknown page "${s.pageTmpId}"`);
     }
-    // `order` is optional. Omit it and the importer assigns valid keys from
-    // array position - hand-authoring fractional keys is a footgun. A key that
-    // IS supplied still has to be well-formed, because it is preserved verbatim.
     if (s.order !== undefined && !isValidOrderKey(s.order)) {
-      err(issues, `sections[${i}].order`, "invalid fractional order key");
+      err(
+        issues,
+        `sections[${i}].order`,
+        `invalid fractional order key "${s.order}" — omit \`order\` entirely and the import assigns valid keys in array position`,
+      );
+    }
+    // Discriminate on content.type FIRST, then validate against only that
+    // member - validating the whole union reports the LAST member's shape
+    // ("Expected \`product-grid\`") for any failure, sending authors hunting a
+    // field that was never the problem (SDK feedback #3).
+    const declaredType = (s.content as { type?: unknown })?.type;
+    const member = CONTENT_MEMBER_BY_TYPE.get(declaredType as SectionType);
+    if (!member) {
+      err(
+        issues,
+        `sections[${i}].content.type`,
+        `unknown section type ${JSON.stringify(declaredType)} — see SECTION_REGISTRY for the valid list`,
+      );
+      return;
     }
     try {
-      validate(sectionContent, s.content, { throw: true, _pathPrefix: `sections[${i}].content` });
+      validate(member, s.content, { throw: true, _pathPrefix: `sections[${i}].content` });
     } catch (e) {
       if (e instanceof ValidationError) {
         err(issues, e.path ?? `sections[${i}].content`, e.message);
@@ -232,19 +284,6 @@ export function validateSitePackage(
     } else if (!isValidVariant(s.type, s.variant)) {
       warn(issues, `sections[${i}].variant`, `unknown variant "${s.variant}" for "${s.type}" — import coerces it to the default`);
     }
-    // Self-hosted video is portable: the bundle carries a kind:"video" asset
-    // and the section points at it. What is NOT allowed is claiming an upload
-    // without the clip, which would import as a video section that plays
-    // nothing.
-    if (contentType === "video") {
-      const video = s.content as { provider: string; video?: { assetId?: string } };
-      if (video.provider === "upload" && video.video?.assetId === undefined) {
-        err(issues, `sections[${i}].content.video`, 'provider "upload" requires a video assetRef');
-      }
-      if (video.provider !== "upload" && video.video !== undefined) {
-        err(issues, `sections[${i}].content.video`, 'a video assetRef is only valid with provider "upload"');
-      }
-    }
   });
 
   // 7. Asset references: every ref must resolve, or the import silently drops
@@ -257,6 +296,7 @@ export function validateSitePackage(
   };
   ref(site.site.logoAssetId, "site.logoAssetId");
   ref(site.site.faviconAssetId, "site.faviconAssetId");
+  ref(site.site.ogImageAssetId, "site.ogImageAssetId");
   site.pages.forEach((p, i) => ref(p.featuredImage?.assetId, `pages[${i}].featuredImage.assetId`));
   site.sections.forEach((s, i) => {
     for (const id of collectAssetIds(s.content)) ref(id, `sections[${i}].content`);

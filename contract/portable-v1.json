@@ -2,6 +2,7 @@
   "caps": {
     "maxAssets": 200,
     "maxBundleBytes": 157286400,
+    "maxBundleEntries": 5000,
     "maxCollections": 20,
     "maxFolders": 500,
     "maxFonts": 12,
@@ -11,10 +12,11 @@
     "maxSections": 500,
     "maxServices": 100,
     "maxSingleAssetBytes": 15728640,
-    "maxSingleVideoBytes": 314572800
+    "maxSingleVideoBytes": 314572800,
+    "maxTotalAssetBytes": 209715200
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:dfedaed2fd93b6599f320f9240690f237a81f9902952e6e091d07632bee37791",
+  "hash": "sha256:518b5f9ede5d1b062153777760ae185c77a33e2010c823d8270e8484063c7429",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -750,6 +752,12 @@
                 },
                 "optional": true
               },
+              "displayTmpId": {
+                "fieldType": {
+                  "type": "string"
+                },
+                "optional": true
+              },
               "headingTmpId": {
                 "fieldType": {
                   "type": "string"
@@ -1101,6 +1109,30 @@
                   },
                   "optional": true
                 },
+                "motion": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "literal",
+                        "value": "inherit"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "none"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "subtle"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "full"
+                      }
+                    ]
+                  },
+                  "optional": true
+                },
                 "order": {
                   "fieldType": {
                     "type": "string"
@@ -1280,6 +1312,10 @@
                       {
                         "type": "literal",
                         "value": "product-grid"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "external-product-grid"
                       },
                       {
                         "type": "literal",
@@ -2071,6 +2107,10 @@
                           },
                           {
                             "type": "literal",
+                            "value": "underline"
+                          },
+                          {
+                            "type": "literal",
                             "value": "pill"
                           }
                         ]
@@ -2093,11 +2133,49 @@
                             },
                             "optional": false
                           },
+                          "display": {
+                            "fieldType": {
+                              "type": "string"
+                            },
+                            "optional": true
+                          },
                           "heading": {
                             "fieldType": {
                               "type": "string"
                             },
                             "optional": false
+                          }
+                        }
+                      },
+                      "optional": true
+                    },
+                    "customLayout": {
+                      "fieldType": {
+                        "type": "object",
+                        "value": {
+                          "containerDefault": {
+                            "fieldType": {
+                              "type": "string"
+                            },
+                            "optional": true
+                          },
+                          "containerNarrow": {
+                            "fieldType": {
+                              "type": "string"
+                            },
+                            "optional": true
+                          },
+                          "containerWide": {
+                            "fieldType": {
+                              "type": "string"
+                            },
+                            "optional": true
+                          },
+                          "sectionPy": {
+                            "fieldType": {
+                              "type": "string"
+                            },
+                            "optional": true
                           }
                         }
                       },
@@ -2283,6 +2361,698 @@
                       },
                       "optional": true
                     },
+                    "customType": {
+                      "fieldType": {
+                        "type": "object",
+                        "value": {
+                          "body": {
+                            "fieldType": {
+                              "type": "object",
+                              "value": {
+                                "family": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "heading"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "body"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "display"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "lineHeight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "size": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "tracking": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "transform": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "none"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "uppercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lowercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "capitalize"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "weight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                }
+                              }
+                            },
+                            "optional": true
+                          },
+                          "display": {
+                            "fieldType": {
+                              "type": "object",
+                              "value": {
+                                "family": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "heading"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "body"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "display"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "lineHeight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "size": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "tracking": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "transform": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "none"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "uppercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lowercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "capitalize"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "weight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                }
+                              }
+                            },
+                            "optional": true
+                          },
+                          "eyebrow": {
+                            "fieldType": {
+                              "type": "object",
+                              "value": {
+                                "family": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "heading"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "body"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "display"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "lineHeight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "size": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "tracking": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "transform": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "none"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "uppercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lowercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "capitalize"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "weight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                }
+                              }
+                            },
+                            "optional": true
+                          },
+                          "h1": {
+                            "fieldType": {
+                              "type": "object",
+                              "value": {
+                                "family": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "heading"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "body"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "display"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "lineHeight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "size": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "tracking": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "transform": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "none"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "uppercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lowercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "capitalize"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "weight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                }
+                              }
+                            },
+                            "optional": true
+                          },
+                          "h2": {
+                            "fieldType": {
+                              "type": "object",
+                              "value": {
+                                "family": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "heading"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "body"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "display"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "lineHeight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "size": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "tracking": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "transform": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "none"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "uppercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lowercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "capitalize"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "weight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                }
+                              }
+                            },
+                            "optional": true
+                          },
+                          "h3": {
+                            "fieldType": {
+                              "type": "object",
+                              "value": {
+                                "family": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "heading"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "body"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "display"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "lineHeight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "size": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "tracking": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "transform": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "none"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "uppercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lowercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "capitalize"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "weight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                }
+                              }
+                            },
+                            "optional": true
+                          },
+                          "lead": {
+                            "fieldType": {
+                              "type": "object",
+                              "value": {
+                                "family": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "heading"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "body"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "display"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "lineHeight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "size": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "tracking": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "transform": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "none"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "uppercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lowercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "capitalize"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "weight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                }
+                              }
+                            },
+                            "optional": true
+                          },
+                          "quote": {
+                            "fieldType": {
+                              "type": "object",
+                              "value": {
+                                "family": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "heading"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "body"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "display"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "lineHeight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "size": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "tracking": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "transform": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "none"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "uppercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lowercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "capitalize"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "weight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                }
+                              }
+                            },
+                            "optional": true
+                          },
+                          "sm": {
+                            "fieldType": {
+                              "type": "object",
+                              "value": {
+                                "family": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "heading"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "body"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "display"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "lineHeight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "size": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "tracking": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "transform": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "none"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "uppercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lowercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "capitalize"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "weight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                }
+                              }
+                            },
+                            "optional": true
+                          }
+                        }
+                      },
+                      "optional": true
+                    },
                     "density": {
                       "fieldType": {
                         "type": "union",
@@ -2334,6 +3104,66 @@
                         ]
                       },
                       "optional": false
+                    },
+                    "headingCase": {
+                      "fieldType": {
+                        "type": "union",
+                        "value": [
+                          {
+                            "type": "literal",
+                            "value": "none"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "uppercase"
+                          }
+                        ]
+                      },
+                      "optional": true
+                    },
+                    "motion": {
+                      "fieldType": {
+                        "type": "union",
+                        "value": [
+                          {
+                            "type": "literal",
+                            "value": "none"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "subtle"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "full"
+                          }
+                        ]
+                      },
+                      "optional": true
+                    },
+                    "navLayout": {
+                      "fieldType": {
+                        "type": "union",
+                        "value": [
+                          {
+                            "type": "literal",
+                            "value": "spread"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "left"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "center"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "right"
+                          }
+                        ]
+                      },
+                      "optional": true
                     },
                     "palette": {
                       "fieldType": {
@@ -2585,6 +3415,7 @@
       "image",
       "featured-product",
       "product-grid",
+      "external-product-grid",
       "documents",
       "scroll-tabs",
       "comparison-slider"
@@ -2643,6 +3474,9 @@
         "grid",
         "list"
       ],
+      "external-product-grid": [
+        "default"
+      ],
       "faq": [
         "accordion",
         "accordion-cta",
@@ -2675,6 +3509,7 @@
         "overlay",
         "overlay-full",
         "overlay-left",
+        "overlay-light",
         "split"
       ],
       "highlights": [
@@ -2744,6 +3579,7 @@
         "inline"
       ],
       "rich-text": [
+        "columns",
         "narrow",
         "paper",
         "prose"

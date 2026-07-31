@@ -27,6 +27,38 @@ function walk(node: Json, out: Set<string>): void {
   }
 }
 
+/**
+ * Every assetId referenced as *logo art* — an assetRef sitting at a `logo` key
+ * (`logos.items[].logo`, `certifications.items[].logo`, and any future section
+ * with the same field). Keyed on the field name rather than the section type so
+ * a new logo-bearing section is covered without touching this walker.
+ *
+ * The import uses this to exempt logo art from the render-layout image guards
+ * (aspect ratio and the minDim floor): a wordmark is legitimately a wide, short
+ * strip and a partner badge is legitimately tiny, but neither is rendered as
+ * section media. Derived from what the sections actually REFERENCE, never from
+ * the caller-supplied `assets[].kind`, which is untrusted.
+ */
+export function collectLogoAssetIds(content: Json): string[] {
+  const out = new Set<string>();
+  walkLogos(content, out, false);
+  return [...out];
+}
+
+function walkLogos(node: Json, out: Set<string>, underLogo: boolean): void {
+  if (Array.isArray(node)) {
+    for (const n of node) walkLogos(n, out, underLogo);
+    return;
+  }
+  if (node && typeof node === "object") {
+    const rec = node as Record<string, Json>;
+    if (underLogo && typeof rec.assetId === "string") out.add(rec.assetId);
+    for (const [key, val] of Object.entries(rec)) {
+      walkLogos(val, out, underLogo || key === "logo");
+    }
+  }
+}
+
 /** Map from an exported assetId (the original `_id` string) to the new local id. */
 export type AssetIdMap = Record<string, string>;
 

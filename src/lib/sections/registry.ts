@@ -117,12 +117,33 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           pl: "To samo zdjęcie za tekstem co \"Zdjęcie w tle\", ale wypełnia cały pierwszy widok zamiast pasa o stałej wysokości.",
         },
       },
+      {
+        key: "overlay-light",
+        label: {
+          sv: "Ljus bild bakom",
+          en: "Light image behind",
+          pl: "Jasne zdjęcie w tle",
+        },
+        description: {
+          sv: "För ljusa, lugna bilder: ingen mörk toning, texten i sajtens egen färg i stället för vit.",
+          en: "For bright, calm photos: no dark scrim, and the text in the site's own colour instead of white.",
+          pl: "Do jasnych, spokojnych zdjęć: bez ciemnej przesłony, tekst w kolorze strony zamiast białego.",
+        },
+      },
     ],
     defaultVariant: "image-right",
     defaultTone: "light",
     allowedTones: ["light", "clear", "dark"],
     defaultContent: (lang) => ({
       type: "hero",
+      // The eyebrow is the line that says who this is for or how long you have
+      // been at it. Every hero variant renders it and it was never shown.
+      eyebrow: pick(
+        lang,
+        "Kort rad ovanför rubriken",
+        "Short line above the headline",
+        "Krótki wiersz nad nagłówkiem",
+      ),
       headline: pick(
         lang,
         "Välkommen till vårt företag",
@@ -212,6 +233,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
     defaultContent: (lang) => ({
       type: "services",
       heading: pick(lang, "Våra tjänster", "Our services", "Nasze usługi"),
+      // One line under the heading is where an owner frames the whole offer
+      // ("we tailor every engagement to where you are"). The field existed but
+      // never appeared, so almost no generated site used it.
+      intro: pick(
+        lang,
+        "En rad om hur ni arbetar eller vem ni arbetar med.",
+        "One line about how you work, or who you work with.",
+        "Jedno zdanie o tym, jak pracujecie lub z kim.",
+      ),
       items: [1, 2, 3].map((i) => ({
         title: pick(lang, `Tjänst ${i}`, `Service ${i}`, `Usługa ${i}`),
         description: pick(
@@ -352,6 +382,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       members: [1, 2, 3].map((i) => ({
         name: pick(lang, `Namn ${i}`, `Name ${i}`, `Imię ${i}`),
         role: pick(lang, "Roll", "Role", "Stanowisko"),
+        // Team cards carry a bio, and on a site whose team page is the whole
+        // proof (consultancies, clinics, agencies) it is the field that does
+        // the work. Without a placeholder it went unnoticed.
+        bio: pick(
+          lang,
+          "Några rader om personens bakgrund och vad kunderna får ut av att jobba med hen.",
+          "A few lines about this person's background and what customers get from working with them.",
+          "Kilka zdań o doświadczeniu tej osoby i o tym, co zyskują klienci ze współpracy.",
+        ),
       })),
     }),
   },
@@ -817,17 +856,21 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
   location: {
     type: "location",
     label: { sv: "Hitta hit", en: "Location", pl: "Jak dojechać" },
+    // No map is embedded - the section shows the address plus a link that opens
+    // it in the visitor's own map app. The labels used to promise a map and the
+    // section drew an empty grey frame to match, which read as a map that
+    // failed to load on the owner's live site (backlog 1012).
     whenToUse: {
-      sv: "Karta och adress. Använd när besökaren behöver hitta er fysiska plats.",
-      en: "Map and address. Use when visitors need to find your physical place.",
-      pl: "Mapa i adres. Użyj, gdy gość musi trafić do waszego lokalu.",
+      sv: "Adress och vägbeskrivning. Använd när besökaren behöver hitta er fysiska plats.",
+      en: "Address and directions. Use when visitors need to find your physical place.",
+      pl: "Adres i dojazd. Użyj, gdy gość musi trafić do waszego lokalu.",
     },
     category: "contact",
     icon: "MapPin",
     variants: [
       {
         key: "map-card",
-        label: { sv: "Karta och adress", en: "Map & address", pl: "Mapa i adres" },
+        label: { sv: "Adress och länk", en: "Address & link", pl: "Adres i link" },
       },
       {
         key: "address-only",
@@ -835,11 +878,11 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       },
       {
         key: "map-first",
-        label: { sv: "Karta först", en: "Map first", pl: "Najpierw mapa" },
+        label: { sv: "Centrerad", en: "Centered", pl: "Wyśrodkowany" },
         description: {
-          sv: "Kartan ligger överst med adressen samlad i en kort rad under.",
-          en: "The map leads, with the address collected in a short row below.",
-          pl: "Mapa jest na górze, a adres zebrany w krótkim wierszu pod nią.",
+          sv: "Adressen ligger centrerad med länken till kartan under.",
+          en: "The address is centered with the map link below it.",
+          pl: "Adres jest wyśrodkowany, a link do mapy pod nim.",
         },
       },
     ],
@@ -849,7 +892,20 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
     defaultContent: (lang) => ({
       type: "location",
       heading: pick(lang, "Hitta hit", "Find us", "Jak dojechać"),
-      address: { city: pick(lang, "Din ort", "Your city", "Twoja miejscowość") },
+      // EMPTY, not placeholder text. Generation returns this default verbatim
+      // when the owner gave us no address (build.ts, `case "location"`), so a
+      // sample street and postcode here is a complete, plausible-looking
+      // address we invented, published on a real business's site, with a map
+      // link sending their visitors to search for it. We do not invent facts on
+      // a customer's live site.
+      //
+      // The KEYS still have to be here: the dock builds its inputs by walking
+      // the keys present on the content (lib/editor/extractFields), so dropping
+      // `address` to `{}` would leave the owner with no field to type into.
+      // Present-but-empty gives the editor its three labelled inputs and gives
+      // the public site nothing to render - Location's empty-section guard
+      // returns null rather than drawing a frame around an address nobody set.
+      address: { street: "", postalCode: "", city: "" },
     }),
   },
 
@@ -996,6 +1052,14 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
     defaultContent: (lang) => ({
       type: "cta-band",
       headline: pick(lang, "Redo att börja?", "Ready to get started?", "Gotowy, aby zacząć?"),
+      // A headline alone reads abrupt at the bottom of a page; the supporting
+      // line is what makes the ask feel low-threshold.
+      subtext: pick(
+        lang,
+        "Skriv en rad om vad som händer när någon hör av sig.",
+        "Add a line about what happens when someone gets in touch.",
+        "Dodaj zdanie o tym, co się dzieje, gdy ktoś się odezwie.",
+      ),
       primaryCta: {
         label: pick(lang, "Kontakta oss", "Contact us", "Skontaktuj się z nami"),
         target: { kind: "anchor", anchorId: "kontakt" },
@@ -1087,6 +1151,18 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           label: pick(lang, "Telefon", "Phone", "Telefon"),
           type: "phone",
           required: true,
+        },
+        // Optional, exactly like the quote wizard's contact step - but it has to
+        // EXIST. Without it a lead arrives with no email, and the inbox's reply
+        // composer is gated on one, so the only outbound action the owner is
+        // offered is a phone call. A customer who wrote "hör gärna av er på
+        // mejl" could not be answered from inside the product (production
+        // journey C 2026-07-26, backlog 1011).
+        {
+          key: "email",
+          label: pick(lang, "E-post", "Email", "E-mail"),
+          type: "email",
+          required: false,
         },
         {
           key: "details",
@@ -1230,6 +1306,29 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
     defaultContent: (lang) => ({
       type: "footer",
       businessName: pick(lang, "Ditt företag", "Your business", "Twoja firma"),
+      // The footer supports a tagline, a contact line and a legal line, but
+      // shipping only `businessName` meant an owner had to discover them by
+      // hunting through the settings panel. Instructional placeholders (never
+      // invented facts - see the testimonials note above) show the fields exist
+      // and what belongs in them.
+      tagline: pick(
+        lang,
+        "En rad om vad ni gör och för vem.",
+        "One line about what you do and who you do it for.",
+        "Jedno zdanie o tym, co robicie i dla kogo.",
+      ),
+      contactLine: pick(
+        lang,
+        "Adress · Telefon · E-post",
+        "Address · Phone · Email",
+        "Adres · Telefon · E-mail",
+      ),
+      legalText: pick(
+        lang,
+        "© Ditt företag. Alla rättigheter förbehållna.",
+        "© Your business. All rights reserved.",
+        "© Twoja firma. Wszelkie prawa zastrzeżone.",
+      ),
     }),
   },
 
@@ -1237,9 +1336,9 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
     type: "legal",
     label: { sv: "Juridisk text", en: "Legal text", pl: "Tekst prawny" },
     whenToUse: {
-      sv: "Lång juridisk text (integritetspolicy, villkor). Använd på en egen sida – oftast genererad automatiskt.",
-      en: "Long-form legal text (privacy policy, terms). Use on its own page – usually auto-generated.",
-      pl: "Długi tekst prawny (polityka prywatności, regulamin). Użyj na osobnej stronie – zwykle tworzony automatycznie.",
+      sv: "Lång juridisk text (integritetspolicy, villkor). Använd på en egen sida – oftast genererad automatiskt. Går att redigera direkt på sidan, och att klistra in från Word.",
+      en: "Long-form legal text (privacy policy, terms). Use on its own page – usually auto-generated. Editable directly on the page, and you can paste from Word.",
+      pl: "Długi tekst prawny (polityka prywatności, regulamin). Użyj na osobnej stronie – zwykle tworzony automatycznie. Można go edytować bezpośrednio na stronie i wkleić z Worda.",
     },
     category: "structure",
     icon: "FileText",
@@ -1669,9 +1768,9 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
     type: "rich-text",
     label: { sv: "Textavsnitt", en: "Text block", pl: "Blok tekstu" },
     whenToUse: {
-      sv: "Brödtext med rubriker och punktlistor. Används för artiklar och längre innehåll – skriv stycke för stycke.",
-      en: "Body text with headings and bullet lists. Use for articles and longer content – write paragraph by paragraph.",
-      pl: "Zwykły tekst z nagłówkami i listami punktowanymi. Użyj do artykułów i dłuższych treści – pisz akapit po akapicie.",
+      sv: "Brödtext med rubriker, citat och punktlistor. Markera text på sidan för att göra den fet, länka den eller byta rubriknivå – eller klistra in direkt från Word.",
+      en: "Body text with headings, quotes and bullet lists. Select text on the page to make it bold, link it or change its level – or paste straight from Word.",
+      pl: "Zwykły tekst z nagłówkami, cytatami i listami punktowanymi. Zaznacz tekst na stronie, żeby go pogrubić, dodać link albo zmienić poziom nagłówka – lub wklej prosto z Worda.",
     },
     category: "content",
     icon: "Text",
@@ -1687,17 +1786,36 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           pl: "Tekst leży na wydzielonej kartce dokumentu, żeby łatwiej się skupić.",
         },
       },
+      {
+        key: "columns",
+        label: { sv: "Två spalter", en: "Two columns", pl: "Dwie kolumny" },
+        description: {
+          sv: "Varje rubrik med sin text blir ett eget block i ett tvåspaltigt rutnät. Bra för flera korta avsnitt, t.ex. metoder eller vanliga frågor.",
+          en: "Each heading and the text under it becomes its own block in a two-column grid. Good for several short sections, like methods or common questions.",
+          pl: "Każdy nagłówek wraz z tekstem pod nim staje się osobnym blokiem w dwukolumnowej siatce. Dobre do kilku krótkich sekcji, np. metod albo częstych pytań.",
+        },
+      },
     ],
     defaultVariant: "prose",
     defaultTone: "light",
     allowedTones: ["light", "clear"],
     defaultContent: (lang) => ({
       type: "rich-text",
+      // A heading + one paragraph hid the fact that this block also does bullet
+      // lists. Long-form pages (services, policies, articles) lean on that, and
+      // an owner who cannot see the list exists writes bullets as paragraphs.
       blocks: [
         { kind: "h", text: pick(lang, "Rubrik", "Heading", "Nagłówek") },
         {
           kind: "p",
           text: pick(lang, "Skriv din text här.", "Write your text here.", "Wpisz swój tekst tutaj."),
+        },
+        {
+          kind: "ul",
+          items: [
+            pick(lang, "Punkt i en lista", "A point in a list", "Punkt na liście"),
+            pick(lang, "Ännu en punkt", "Another point", "Kolejny punkt"),
+          ],
         },
       ],
     }),
@@ -1777,6 +1895,35 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
     defaultContent: (lang) => ({
       type: "product-grid",
       heading: pick(lang, "Produkter", "Products", "Produkty"),
+    }),
+  },
+
+  "external-product-grid": {
+    type: "external-product-grid",
+    label: {
+      sv: "Produkter från din butik",
+      en: "Products from your store",
+      pl: "Produkty z Twojego sklepu",
+    },
+    whenToUse: {
+      sv: "Visa produkter från butiken du redan har (Shopify) – köpet sker i butiken. Kräver att butiken är kopplad.",
+      en: "Show products from the store you already have (Shopify) – the purchase happens in your store. Requires a connected store.",
+      pl: "Pokaż produkty ze sklepu, który już masz (Shopify) – zakup odbywa się w sklepie. Wymaga połączonego sklepu.",
+    },
+    category: "services",
+    icon: "Store",
+    variants: [
+      {
+        key: "default",
+        label: { sv: "Standard", en: "Default", pl: "Standardowy" },
+      },
+    ],
+    defaultVariant: "default",
+    defaultTone: "light",
+    allowedTones: ["light", "clear", "dark"],
+    defaultContent: (lang) => ({
+      type: "external-product-grid",
+      heading: pick(lang, "Ur butiken", "From the store", "Ze sklepu"),
     }),
   },
 

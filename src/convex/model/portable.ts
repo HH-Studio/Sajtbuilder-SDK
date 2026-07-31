@@ -1,7 +1,12 @@
 import { v, type Infer } from "convex/values";
 import { themeTokens } from "./theme";
 import { sectionTypeLiteral, sectionLayoutValidator } from "./sections";
-import { address, sectionToneValidator, socialsValidator } from "./content";
+import {
+  address,
+  sectionMotionValidator,
+  sectionToneValidator,
+  socialsValidator,
+} from "./content";
 import { trackingConfig } from "./tracking";
 import {
   bookingConfigValidator,
@@ -134,11 +139,14 @@ export const portableSiteV1 = v.object({
     ogImageAssetId: v.optional(v.string()),
   }),
 
-  // custom-font heading/body assignment, by font tmpId
+  // custom-font heading/body/display assignment, by font tmpId
   fontsAssignment: v.optional(
     v.object({
       headingTmpId: v.optional(v.string()),
       bodyTmpId: v.optional(v.string()),
+      // Third role (hero headline / pull-quote). Absent on every bundle
+      // exported before it existed, and on every two-font site.
+      displayTmpId: v.optional(v.string()),
     }),
   ),
 
@@ -235,6 +243,9 @@ export const portableSiteV1 = v.object({
       type: sectionTypeLiteral,
       variant: v.string(),
       tone: v.optional(sectionToneValidator),
+      // Per-section scroll-motion override. Optional keeps every pre-motion V1
+      // bundle valid; absent = inherit the site's theme.motion on import.
+      motion: v.optional(sectionMotionValidator),
       layout: v.optional(sectionLayoutValidator),
       // Fractional-indexing key, preserved verbatim when present. OPTIONAL
       // (SDK feedback #4): hand-authoring these keys is a footgun — omit it

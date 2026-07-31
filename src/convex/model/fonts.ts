@@ -84,10 +84,17 @@ export const resolvedFont = v.object({
 });
 export type ResolvedFont = Infer<typeof resolvedFont>;
 
-/** Render payload: which resolved font is heading vs body. */
+/** Render payload: which resolved font is heading vs body vs display.
+ *
+ *  `display` is the third role. Sites regularly set three typefaces - a display
+ *  cut for the hero and pull-quotes, a condensed cut for section headings, a
+ *  text face for prose - and a two-slot assignment forces an import to collapse
+ *  one of them onto another, which is the single most visible thing a migrated
+ *  site gets wrong. Optional everywhere: a site with two fonts is unchanged. */
 export const resolvedSiteFonts = v.object({
   heading: v.optional(resolvedFont),
   body: v.optional(resolvedFont),
+  display: v.optional(resolvedFont),
 });
 export type ResolvedSiteFonts = Infer<typeof resolvedSiteFonts>;
 
@@ -95,7 +102,20 @@ export type ResolvedSiteFonts = Infer<typeof resolvedSiteFonts>;
 export const fontAssignment = v.object({
   headingFontId: v.optional(v.id("fonts")),
   bodyFontId: v.optional(v.id("fonts")),
+  displayFontId: v.optional(v.id("fonts")),
 });
+
+/** The roles a font can be assigned to. */
+export const FONT_ROLES = ["heading", "body", "display"] as const;
+export type FontRole = (typeof FONT_ROLES)[number];
+
+/** The `websites.fonts` key that stores a role's assignment. Kept as a map so a
+ *  new role cannot be added to the union without also being stored. */
+export const FONT_ROLE_FIELD: Record<FontRole, keyof FontAssignment> = {
+  heading: "headingFontId",
+  body: "bodyFontId",
+  display: "displayFontId",
+};
 export type FontAssignment = Infer<typeof fontAssignment>;
 
 // --- Validation / safe builders --------------------------------------------
@@ -150,7 +170,12 @@ export function buildGoogleUrl(family: string, weights?: number[]): string {
 /** Build the Typekit stylesheet URL for a validated Adobe project (kit) id. */
 export function buildAdobeUrl(kitId: string): string {
   if (!isValidAdobeKitId(kitId)) throw new Error("Invalid Adobe kit id");
-  return `https://use.typekit.net/${kitId}.css`;
+  // `?display=swap` matches what the Google URL above already asks for. Adobe's
+  // default is `font-display: auto`, which in Chrome means up to ~3 s of
+  // INVISIBLE text on a kit-backed site while the face downloads - the owner's
+  // headline simply is not there. Swap shows the fallback immediately and
+  // repaints when the real face lands.
+  return `https://use.typekit.net/${kitId}.css?display=swap`;
 }
 
 export { GOOGLE_FONTS };

@@ -47,11 +47,6 @@ export type ImportReportItemV1 = {
   target?: { kind: string; id: string };
   confidence?: number;
   blocking: boolean;
-  resolution?: {
-    status: "accepted" | "resolved";
-    note: string;
-    resolvedAt: string;
-  };
 };
 
 export type ImportReportV1 = {
@@ -216,7 +211,6 @@ export function validateImportReport(payload: unknown): ImportReportValidation {
   const itemIds = new Set<string>();
   const actualCounts = Object.fromEntries(IMPORT_DISPOSITIONS.map((disposition) => [disposition, 0])) as Record<ImportDisposition, number>;
   let actualBlocking = 0;
-  let unresolvedReviewItems = 0;
   if (!Array.isArray(report.items)) {
     issues.push({ path: "items", message: "must be an array" });
   } else {
@@ -227,7 +221,7 @@ export function validateImportReport(payload: unknown): ImportReportValidation {
       const path = `items[${index}]`;
       const item = requireRecord(candidate, path, issues);
       if (!item) return;
-      addUnknownKeyIssues(item, ["id", "disposition", "reason", "evidenceIds", "target", "confidence", "blocking", "resolution"], path, issues);
+      addUnknownKeyIssues(item, ["id", "disposition", "reason", "evidenceIds", "target", "confidence", "blocking"], path, issues);
       if (validateStableId(item.id, `${path}.id`, issues)) {
         if (itemIds.has(item.id as string)) issues.push({ path: `${path}.id`, message: `duplicate report item id "${item.id}"` });
         itemIds.add(item.id as string);
@@ -270,21 +264,6 @@ export function validateImportReport(payload: unknown): ImportReportValidation {
       } else if (item.blocking) {
         actualBlocking += 1;
       }
-      const needsReview = ["manual", "missing", "unsafe", "ai_proposed"].includes(item.disposition as string);
-      if (item.resolution === undefined) {
-        if (needsReview) unresolvedReviewItems += 1;
-      } else {
-        const resolution = requireRecord(item.resolution, `${path}.resolution`, issues);
-        if (resolution) {
-          addUnknownKeyIssues(resolution, ["status", "note", "resolvedAt"], `${path}.resolution`, issues);
-          if (resolution.status !== "accepted" && resolution.status !== "resolved") {
-            issues.push({ path: `${path}.resolution.status`, message: "must be accepted or resolved" });
-          }
-          validateBoundedString(resolution.note, `${path}.resolution.note`, IMPORT_REPORT_LIMITS.reason, issues);
-          validateTimestamp(resolution.resolvedAt, `${path}.resolution.resolvedAt`, issues);
-          if (!needsReview) issues.push({ path: `${path}.resolution`, message: "is only allowed on a review-required disposition" });
-        }
-      }
     });
   }
 
@@ -309,8 +288,8 @@ export function validateImportReport(payload: unknown): ImportReportValidation {
     }
   }
 
-  if (report.status === "ready" && (actualBlocking > 0 || unresolvedReviewItems > 0)) {
-    issues.push({ path: "status", message: "ready reports cannot contain blockers or unresolved review items" });
+  if (report.status === "ready" && actualBlocking > 0) {
+    issues.push({ path: "status", message: "ready reports cannot contain blockers" });
   }
   if (report.status === "blocked" && actualBlocking === 0) {
     issues.push({ path: "status", message: "blocked reports must contain a blocker" });
@@ -375,15 +354,10 @@ export function renderImportReportMarkdown(report: ImportReportV1): string {
     "",
   ];
 
-  const reviewFirst = [...normalized.items].sort((left, right) => {
-    const priority = (item: ImportReportItemV1) => item.blocking ? 0 : ["manual", "missing", "unsafe", "ai_proposed"].includes(item.disposition) && !item.resolution ? 1 : 2;
-    return priority(left) - priority(right) || left.id.localeCompare(right.id);
-  });
-  for (const item of reviewFirst) {
+  for (const item of normalized.items) {
     const details = [
       item.target ? `target ${markdownText(item.target.kind)}:${markdownText(item.target.id)}` : undefined,
       item.confidence === undefined ? undefined : `confidence ${Math.round(item.confidence * 100)}%`,
-      item.resolution ? `${item.resolution.status} ${item.resolution.resolvedAt}: ${markdownText(item.resolution.note)}` : undefined,
       `evidence ${item.evidenceIds.map((id) => `\`${markdownText(id)}\``).join(", ")}`,
     ].filter((value): value is string => value !== undefined);
     lines.push(

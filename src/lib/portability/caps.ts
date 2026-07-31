@@ -12,11 +12,9 @@
 // ---------------------------------------------------------------------------
 
 export const PORTABLE_CAPS = {
-  // Was 50, which was the only cap below the 500-row ceiling the publish,
-  // draft, snapshot and redirect readers all already support. redirects.ts even
-  // documents the mismatch ("cannot use the stricter 50-page portable-import
-  // cap: ordinary sites may have hundreds of blog posts") - a real site with a
-  // blog archive could not be imported at all.
+  // Was 50, the only cap below the 500-row ceiling the publish, draft, snapshot
+  // and redirect readers all already support - so a real site with a blog
+  // archive could not be imported at all even though it would publish fine.
   maxPages: 500,
   // At parity with PUBLISH_SECTION_CAP / DRAFT_SECTION_READ_CAP / draftSnapshot
   // MAX_SECTIONS. Raising this needs those four raised in step, and they bound
@@ -29,13 +27,33 @@ export const PORTABLE_CAPS = {
   maxServices: 100,
   /** Deliberately below the 500-row ASSET_URL_RESULT_CAP: on the URL/HTML
    *  import path this also bounds the safeFetch fan-out against attacker-chosen
-   *  hosts (worst case `maxAssets × maxSingleAssetBytes` per call, see
-   *  importPerWorkspacePerMin in convex/lib/rateLimit.ts). Raising it needs an
-   *  aggregate byte budget on that download loop first. */
+   *  hosts. The aggregate byte budget this used to ask for now exists
+   *  (`maxTotalAssetBytes`), so the worst case per call is that budget rather
+   *  than `maxAssets × maxSingleAssetBytes`. See importPerWorkspacePerMin in
+   *  convex/lib/rateLimit.ts for the rate half of the same guard. */
   maxAssets: 200,
+  /** AGGREGATE outbound-fetch budget for one import (abuse audit AB-05).
+   *
+   *  Without it, `maxAssets × maxSingleAssetBytes` = 3 GB of attacker-chosen
+   *  remote content could be pulled per call, five calls a minute per
+   *  workspace: a bandwidth bill and a reflected-fetch amplifier pointed at a
+   *  third party of the caller's choosing. 200 MB comfortably covers a real
+   *  small-business site (the largest plan's whole storage quota is 50 GB, but
+   *  a single site's imagery is measured in tens of MB); past it the remaining
+   *  assets are reported `over_budget` rather than the import failing. */
+  maxTotalAssetBytes: 200 * 1024 * 1024,
   // A site realistically has 1-2 (Blog, News) - generous headroom over that.
   maxCollections: 20,
-  // Matches the persisted redirect table/read boundary.
+  /** Rows in the site's REDIRECT TABLE - matches the persisted read boundary.
+   *
+   *  NOT an HTTP redirect-hop limit. `maxRedirects` elsewhere in the codebase
+   *  (lib/net/safeFetch, convex/netFetch, convex/import/provider) is the number
+   *  of 3xx hops a server-side fetch will follow, and it is 4. The names are
+   *  identical and the meanings are unrelated; wiring one to the other would
+   *  open a redirect-chain hole (abuse audit AB-17). Renaming this key was
+   *  considered and rejected: PORTABLE_CAPS is serialised verbatim into the
+   *  PUBLISHED Site Kit contract (contract/site-kit-portable-v1.json), so the
+   *  name is external API. The comment is the guard. */
   maxRedirects: 500,
   /** Per-image byte ceiling - matches IMAGE_LIMITS.maxBytes in lib/sections/limits.ts. */
   maxSingleAssetBytes: 15 * 1024 * 1024,
@@ -50,7 +68,30 @@ export const PORTABLE_CAPS = {
    *  unpacked in memory (zipSync/unzipSync), so this bounds both the export
    *  build and the import unzip (backstop against a decompression bomb). */
   maxBundleBytes: 150 * 1024 * 1024,
+  /** Entry-COUNT ceiling on that same `.zip`. `maxBundleBytes` bounds the
+   *  inflated payload but not the number of members, and an archive of empty
+   *  entries sums to zero bytes while still forcing one record key per entry
+   *  (~46 bytes of central directory each, so ~3M of them fit in 150 MB).
+   *  A real bundle is site.json + manifest.json + at most `maxPages` pages and
+   *  `maxAssets` assets, so this is roughly five times the largest legitimate
+   *  archive (backend security audit 2026-07-26, UP-4). */
+  maxBundleEntries: 5_000,
 } as const;
+
+/** Running check for the bundle unpack loop: has this archive already exceeded
+ *  what we are willing to inflate? Both dimensions matter and neither implies
+ *  the other - a few huge members blow the byte budget, millions of empty ones
+ *  blow the entry budget while summing to zero bytes. Pure so the boundary is
+ *  testable without a real zip (backend security audit 2026-07-26, UP-4). */
+export function exceedsBundleUnpackLimits(
+  entries: number,
+  inflatedBytes: number,
+): boolean {
+  return (
+    inflatedBytes > PORTABLE_CAPS.maxBundleBytes ||
+    entries > PORTABLE_CAPS.maxBundleEntries
+  );
+}
 
 export type CapCode =
   | "too_many_pages"

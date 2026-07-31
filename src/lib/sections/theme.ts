@@ -1,1 +1,761 @@
+import type { CSSProperties } from "react";
+import {
+  normalizeButtonStyle,
+  TYPE_ROLE_KEYS,
+  type ThemeTokens,
+  type Appearance,
+  type CustomTypeRole,
+  type TypeRole,
+} from "../../convex/model/theme";
+import { SITE_LOGO_CLASS } from "../appearance/logoImage";
+import { PALETTES, type Surface } from "../palettes";
+
+// ---------------------------------------------------------------------------
+// Maps constrained theme tokens to CSS custom properties consumed by the site
+// section components. The site renderer puts root-level vars (fonts, radius,
+// density, default light surface) on a `.site-root` wrapper; each Section then
+// applies a tone-specific surface (light / clear / dark) onto itself.
+// ---------------------------------------------------------------------------
+
 export type SectionTone = "light" | "clear" | "dark";
+
+/** Typeface family of the heading font - drives optical line-height / tracking /
+ *  weight so serif and grotesk headings each read correctly (sizes stay shared).
+ *  `displaySerif` = the premium display cut (Cormorant Garamond) - editorial
+ *  gravitas, tight leading; `groteskBold` = the loud trades/gym cut of Inter -
+ *  heavy weight, tight tracking, tracked-caps eyebrow. */
+type FontCategory =
+  | "grotesk"
+  | "groteskBold"
+  | "serif"
+  | "displaySerif"
+  | "humanist";
+
+const FONT_PAIRS: Record<
+  ThemeTokens["fontPair"],
+  { heading: string; body: string; category: FontCategory }
+> = {
+  modern: {
+    heading: "var(--font-site-grotesk)",
+    body: "var(--font-sans)",
+    category: "grotesk",
+  },
+  classic: {
+    heading: "var(--font-site-serif)",
+    body: "var(--font-sans)",
+    category: "serif",
+  },
+  friendly: {
+    heading: "var(--font-site-humanist)",
+    body: "var(--font-site-humanist)",
+    category: "humanist",
+  },
+  // Premium was typographically identical to classic (same Fraunces heading on
+  // the same body) - "premium" and "trust" sites were indistinguishable. It now
+  // uses a real display serif so boutique/high-end positioning reads as such.
+  premium: {
+    heading: "var(--font-site-serif-display)",
+    body: "var(--font-sans)",
+    category: "displaySerif",
+  },
+  editorial: {
+    heading: "var(--font-site-serif)",
+    body: "var(--font-site-grotesk)",
+    category: "serif",
+  },
+  // Same family as `modern` but a deliberately louder cut - without this the
+  // two pairs shared identical heading optics and differed only in body font.
+  grotesk: {
+    heading: "var(--font-site-grotesk)",
+    body: "var(--font-site-grotesk)",
+    category: "groteskBold",
+  },
+};
+
+/** Per-category heading optics. Three rows, not a 6×N table - sizes are shared,
+ *  only leading / tracking / weight shift so each typeface reads correctly. */
+const CATEGORY_TYPE: Record<
+  FontCategory,
+  {
+    leadingHeading: string;
+    leadingDisplay: string;
+    trackingDisplay: string;
+    weightHeading: string;
+    /** Eyebrow/kicker treatment: grotesk & humanist read as a tracked
+     *  uppercase label; serif pairs read as an editorial sentence-case
+     *  kicker (uppercase + wide tracking fights a serif's shapes). */
+    eyebrowTransform: "uppercase" | "none";
+    trackingEyebrow: string;
+  }
+> = {
+  grotesk: {
+    leadingHeading: "1.12",
+    leadingDisplay: "1.05",
+    trackingDisplay: "-0.025em",
+    weightHeading: "600",
+    eyebrowTransform: "uppercase",
+    trackingEyebrow: "0.06em",
+  },
+  // Loud cut: heavier weight + tighter display tracking + wider tracked-caps
+  // eyebrow. Gyms and trades with attitude, not a second "modern".
+  groteskBold: {
+    leadingHeading: "1.08",
+    leadingDisplay: "1.02",
+    trackingDisplay: "-0.035em",
+    weightHeading: "700",
+    eyebrowTransform: "uppercase",
+    trackingEyebrow: "0.09em",
+  },
+  serif: {
+    leadingHeading: "1.16",
+    leadingDisplay: "1.08",
+    trackingDisplay: "-0.02em",
+    weightHeading: "400",
+    eyebrowTransform: "none",
+    trackingEyebrow: "0.01em",
+  },
+  // Display serif (Cormorant Garamond): smaller x-height needs a heavier
+  // weight to hold its color; tight editorial leading; sentence-case kicker.
+  displaySerif: {
+    leadingHeading: "1.1",
+    leadingDisplay: "1.04",
+    trackingDisplay: "-0.012em",
+    weightHeading: "600",
+    eyebrowTransform: "none",
+    trackingEyebrow: "0.02em",
+  },
+  humanist: {
+    leadingHeading: "1.2",
+    leadingDisplay: "1.12",
+    trackingDisplay: "-0.01em",
+    weightHeading: "500",
+    eyebrowTransform: "uppercase",
+    trackingEyebrow: "0.05em",
+  },
+};
+
+const RADIUS_REM: Record<ThemeTokens["radius"], string> = {
+  sharp: "0rem",
+  soft: "0.625rem",
+  round: "1.1rem",
+};
+
+const DENSITY_SCALE: Record<ThemeTokens["density"], string> = {
+  compact: "0.85",
+  comfortable: "1",
+  spacious: "1.18",
+};
+
+/** Fluid typographic scale, exposed as CSS vars consumed by the shared Heading /
+ *  Body / Eyebrow components. Sizes are a single shared scale (fluid `clamp`, so
+ *  the per-section `sm:` breakpoint jumps disappear); each size is multiplied by
+ *  `--site-type-scale` (default 1 - a single future "large type" lever). Only the
+ *  heading leading / tracking / weight vary, by font category. */
+/** The multiplier behind each `typeScale` token. "large" is a deliberate, small
+ *  step (+12.5%): enough to read as bigger text site-wide, small enough that no
+ *  heading clamp overflows its section on mobile. */
+const TYPE_SCALE_VALUE: Record<
+  NonNullable<ThemeTokens["typeScale"]>,
+  string
+> = { normal: "1", large: "1.125" };
+
+// ---------------------------------------------------------------------------
+// Measured design overrides (`theme.customType` / `customLayout`).
+//
+// These carry raw CSS lengths from an imported site, so every value is
+// re-validated here before it reaches a declaration — same posture as
+// `SAFE_COLOR` for `customPalette` and `safeFamily` for `customFonts`. A value
+// that does not match is dropped and the built-in one is used, so a bad or
+// hostile bundle degrades to the preset design rather than injecting CSS.
+// ---------------------------------------------------------------------------
+
+/** A simple CSS length: optional sign, up to 4 integer digits, 3 decimals, and
+ *  one of five units. Deliberately does NOT allow `calc()`, `var()`, functions,
+ *  or multiple values — a measured computed style is always a single length, so
+ *  nothing legitimate needs more, and this leaves no room for a payload. */
+const SAFE_LENGTH = /^-?\d{1,4}(\.\d{1,3})?(px|rem|em|vw|%)$/;
+
+export function safeLength(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  return SAFE_LENGTH.test(trimmed) ? trimmed : undefined;
+}
+
+/** A CSS font-weight: 1..1000, integers only. */
+function safeWeight(value: number | undefined): string | undefined {
+  if (typeof value !== "number" || !Number.isInteger(value)) return undefined;
+  return value >= 1 && value <= 1000 ? String(value) : undefined;
+}
+
+/** A unitless line-height ratio. Bounded so a measured outlier (or a hostile
+ *  bundle) cannot produce a page kilometres tall. */
+function safeRatio(value: number | undefined): string | undefined {
+  if (typeof value !== "number" || !Number.isFinite(value)) return undefined;
+  return value >= 0.5 && value <= 4 ? String(Number(value.toFixed(3))) : undefined;
+}
+
+const TRANSFORMS = new Set(["none", "uppercase", "lowercase", "capitalize"]);
+function safeTransform(value: string | undefined): string | undefined {
+  return value && TRANSFORMS.has(value) ? value : undefined;
+}
+
+/** Map a role's `family` choice onto the root family var. Unknown => undefined,
+ *  so the role keeps the family it uses today. */
+function familyVar(value: string | undefined): string | undefined {
+  if (value === "heading") return "var(--site-font-heading)";
+  if (value === "body") return "var(--site-font-body)";
+  if (value === "display") return "var(--site-font-display)";
+  return undefined;
+}
+
+/** Per-role defaults: the exact values each role renders with today, expressed
+ *  once so the override layer can replace individual entries without any role
+ *  silently changing. `leading` is omitted for the body-ish roles because their
+ *  line-height is responsive (`--site-leading-body-mobile` / `-body`) and stays
+ *  driven by those two vars. */
+function roleDefaults(
+  c: (typeof CATEGORY_TYPE)[FontCategory],
+): Record<
+  TypeRole,
+  {
+    leading?: string;
+    weight: string;
+    tracking: string;
+    transform: string;
+    family: string;
+  }
+> {
+  const headingTransform = "var(--site-heading-transform, none)";
+  const headingFamily = "var(--site-font-heading)";
+  const bodyFamily = "var(--site-font-body)";
+  const heading = {
+    leading: c.leadingHeading,
+    weight: c.weightHeading,
+    tracking: "-0.01em",
+    transform: headingTransform,
+    family: headingFamily,
+  };
+  // Literal, never `var(--site-weight-body)`: the `body` ROLE emits that very
+  // name, so a var() default would be self-referential and drop to
+  // invalid-at-computed-value-time (i.e. inherited weight) on every paragraph.
+  const bodyish = {
+    weight: "400",
+    tracking: "normal",
+    transform: "none",
+    family: bodyFamily,
+  };
+  return {
+    display: {
+      leading: c.leadingDisplay,
+      weight: c.weightHeading,
+      tracking: c.trackingDisplay,
+      transform: headingTransform,
+      family: headingFamily,
+    },
+    h1: heading,
+    h2: heading,
+    h3: { ...heading, leading: "1.4" },
+    lead: bodyish,
+    body: bodyish,
+    sm: bodyish,
+    eyebrow: {
+      weight: "500", // = --site-weight-medium, inlined for the same reason
+      tracking: c.trackingEyebrow,
+      transform: c.eyebrowTransform,
+      family: bodyFamily,
+    },
+    // The pull-quote's defaults are exactly the tokens the blockquote in
+    // Testimonials.tsx used inline before it had a role: heading family, h2
+    // size, medium weight, heading leading + tracking. Its transform is "none"
+    // and NOT the headingCase token, because a caps-headings site never applied
+    // caps to its quotes.
+    quote: {
+      leading: c.leadingHeading,
+      weight: "500",
+      tracking: "-0.01em",
+      transform: "none",
+      family: headingFamily,
+    },
+  };
+}
+
+/** The per-role `--site-{leading,weight,tracking,transform,family}-<role>` vars,
+ *  each defaulting to the value that role renders with today and each
+ *  individually replaceable by a measured `customType` entry. */
+function roleVars(
+  category: FontCategory,
+  custom: ThemeTokens["customType"],
+): Record<string, string> {
+  const defaults = roleDefaults(CATEGORY_TYPE[category]);
+  const out: Record<string, string> = {};
+  for (const role of TYPE_ROLE_KEYS) {
+    const d = defaults[role];
+    const o: CustomTypeRole | undefined = custom?.[role];
+    if (d.leading !== undefined) {
+      out[`--site-leading-${role}`] = safeRatio(o?.lineHeight) ?? d.leading;
+    }
+    out[`--site-weight-${role}`] = safeWeight(o?.weight) ?? d.weight;
+    out[`--site-tracking-${role}`] = safeLength(o?.tracking) ?? d.tracking;
+    out[`--site-transform-${role}`] = safeTransform(o?.transform) ?? d.transform;
+    out[`--site-family-${role}`] = familyVar(o?.family) ?? d.family;
+  }
+  return out;
+}
+
+/** Section rhythm + container widths, from `customLayout`. Absent (or rejected)
+ *  values fall back to the three numbers the renderer has always used:
+ *  4.5rem section padding, and 48/64/72rem containers (Tailwind's max-w-3xl /
+ *  5xl / 6xl, which is what `Section` used as classes). */
+function layoutVars(custom: ThemeTokens["customLayout"]): Record<string, string> {
+  return {
+    "--site-py-base": safeLength(custom?.sectionPy) ?? "4.5rem",
+    "--site-w-narrow": safeLength(custom?.containerNarrow) ?? "48rem",
+    "--site-w-default": safeLength(custom?.containerDefault) ?? "64rem",
+    "--site-w-wide": safeLength(custom?.containerWide) ?? "72rem",
+  };
+}
+
+function typeScaleVars(
+  category: FontCategory,
+  typeScale: ThemeTokens["typeScale"],
+  custom?: ThemeTokens["customType"],
+): CSSProperties {
+  const c = CATEGORY_TYPE[category];
+  const scale = (clamp: string) => `calc(var(--site-type-scale) * ${clamp})`;
+  /** A measured size is an absolute length and must NOT be multiplied by
+   *  `--site-type-scale`: the whole point is that it is the source page's own
+   *  size. The scale keeps applying to every role that was not measured. */
+  const size = (role: TypeRole, clamp: string) =>
+    safeLength(custom?.[role]?.size) ?? scale(clamp);
+  return {
+    // Absent => "normal" (1), so sites stored before this lever keep their exact
+    // current sizes without a migration.
+    "--site-type-scale": TYPE_SCALE_VALUE[typeScale ?? "normal"],
+    // sizes (shared) - anchored to the previous discrete sizes at mobile + ≥1280px
+    "--site-text-display": size("display", "clamp(2.5rem, 1.9rem + 2.6vw, 3.75rem)"),
+    "--site-text-h1": size("h1", "clamp(2rem, 1.6rem + 1.8vw, 3rem)"),
+    "--site-text-h2": size("h2", "clamp(1.5rem, 1.3rem + 0.9vw, 1.875rem)"),
+    "--site-text-h3": size("h3", "clamp(1.125rem, 1.05rem + 0.3vw, 1.25rem)"),
+    "--site-text-lead": size("lead", "clamp(1.125rem, 1.05rem + 0.3vw, 1.25rem)"),
+    "--site-text-body": size("body", "1rem"),
+    "--site-text-sm": size("sm", "0.875rem"),
+    "--site-text-eyebrow": size("eyebrow", "0.8125rem"),
+    // Same clamp as h2, which is the size the pull-quote borrowed before it had
+    // a role - so an unmeasured site renders identically.
+    "--site-text-quote": size("quote", "clamp(1.5rem, 1.3rem + 0.9vw, 1.875rem)"),
+    // line-heights - body shared, heading/display per category
+    "--site-leading-heading": c.leadingHeading,
+    "--site-leading-snug": "1.4",
+    // Body leading stays responsive (mobile 1.4 -> 1.6 at 768px). A measured
+    // body line-height pins both, because the source page had one value.
+    "--site-leading-body-mobile": safeRatio(custom?.body?.lineHeight) ?? "1.4",
+    "--site-leading-body": safeRatio(custom?.body?.lineHeight) ?? "1.6",
+    // weights
+    "--site-weight-heading": c.weightHeading,
+    "--site-weight-medium": "500",
+    "--site-weight-body": "400",
+    // tracking - display + eyebrow per category, heading shared
+    "--site-tracking-heading": "-0.01em",
+    "--site-eyebrow-transform": c.eyebrowTransform,
+    // Per-role type. Each of these defaults to the shared value above, so a
+    // theme with no `customType` emits the same numbers it always did; a
+    // measured import replaces individual roles. Some reference vars declared
+    // elsewhere on the same element (`--site-heading-transform`, set by
+    // `rootChromeVars`) — custom properties resolve at computed-value time, so
+    // declaration order between them does not matter.
+    ...roleVars(category, custom),
+  } as CSSProperties;
+}
+
+/** Spacing scale, scaled by density. Generalizes the section's one-off
+ *  `--site-section-py: calc(4.5rem*var(--site-density))` so internal gaps and
+ *  padding also breathe under "spacious" and tighten under "compact". The
+ *  `calc()` references `--site-density` at CSS time, so it tracks density with
+ *  no JS. Base unit 0.25rem mirrors Tailwind's scale for familiar values. */
+function spacingVars(): CSSProperties {
+  return {
+    "--site-space-2xs": "calc(0.25rem * var(--site-density))",
+    "--site-space-xs": "calc(0.375rem * var(--site-density))",
+    "--site-space-sm": "calc(0.5rem * var(--site-density))",
+    "--site-space-md": "calc(0.75rem * var(--site-density))",
+    "--site-space-lg": "calc(1rem * var(--site-density))",
+    "--site-space-xl": "calc(1.25rem * var(--site-density))",
+    "--site-space-2xl": "calc(1.75rem * var(--site-density))",
+    "--site-space-3xl": "calc(2.5rem * var(--site-density))",
+  } as CSSProperties;
+}
+
+/** Resolve the concrete Surface for a section tone (light appearance). Kept for
+ *  any caller that needs a single concrete surface; the renderer uses the
+ *  appearance-aware indirection below. */
+export function getToneSurface(
+  tokens: ThemeTokens,
+  tone: SectionTone,
+): Surface {
+  return appearanceToneSurfaces(tokens.palette, "light", tokens.customPalette)[tone];
+}
+
+/** Resolve the appearance ("light" | "dark" | "system"), defaulting to "light"
+ *  for sites stored before the field existed. */
+export function appearanceOf(tokens: ThemeTokens): Appearance {
+  return tokens.appearance ?? "light";
+}
+
+// A single CSS colour value we are willing to emit into the scoped scheme
+// <style>. Allows oklch()/rgb()/hsl()/hex and the "oklch(0 0 0 / 5%)" alpha
+// form used by borders. Anything with CSS-breaking characters (`;{}<>`, quotes,
+// url(), etc.) is rejected so an imported `customPalette` can't inject rules.
+const SAFE_COLOR =
+  /^(#[0-9a-fA-F]{3,8}|(oklch|rgba?|hsla?)\([0-9a-zA-Z.,%/\s-]+\))$/;
+
+/** A `customPalette` surface pair is trusted only if EVERY colour on both
+ *  surfaces is a safe CSS colour token; otherwise we ignore it and fall back to
+ *  the built-in palette (never render a half-sanitized custom palette). */
+function safeCustomPalette(
+  custom: { light: Surface; dark: Surface } | undefined,
+): { light: Surface; dark: Surface } | undefined {
+  if (!custom) return undefined;
+  const ok = ([custom.light, custom.dark] as Surface[]).every((s) =>
+    Object.values(s).every((v) => typeof v === "string" && SAFE_COLOR.test(v.trim())),
+  );
+  return ok ? custom : undefined;
+}
+
+/** The three tone surfaces (light / clear / dark) resolved for a given
+ *  appearance. In a DARK site the base flips to the palette's dark surface and a
+ *  "dark"-toned emphasis band becomes light (so it still reads as a contrast
+ *  band). Both built-in surfaces are pre-validated AA. An optional `custom`
+ *  palette (site import) is used verbatim when present AND fully sanitized. */
+export function appearanceToneSurfaces(
+  palette: ThemeTokens["palette"],
+  appearance: "light" | "dark",
+  custom?: { light: Surface; dark: Surface },
+): Record<SectionTone, Surface> {
+  const p = safeCustomPalette(custom) ?? PALETTES[palette];
+  if (appearance === "dark") {
+    return {
+      light: p.dark, // base surface
+      clear: { ...p.dark, bg: p.dark.muted, card: p.dark.bg }, // tinted dark band
+      dark: p.light, // emphasis band → light, for contrast
+    };
+  }
+  return {
+    light: p.light,
+    clear: { ...p.light, bg: p.light.muted, card: p.light.bg },
+    dark: p.dark,
+  };
+}
+
+/** CSS variables for a surface (applied to a Section element). */
+export function surfaceVars(surface: Surface): CSSProperties {
+  return {
+    "--site-bg": surface.bg,
+    "--site-fg": surface.fg,
+    "--site-muted": surface.muted,
+    "--site-muted-fg": surface.mutedFg,
+    "--site-primary": surface.primary,
+    "--site-primary-fg": surface.primaryFg,
+    // primary used as TEXT (eyebrows, inline links). Same as --site-primary for
+    // every palette whose primary is already AA on the page; palettes with a
+    // LIGHT primary fill override it (see Surface.primaryText).
+    "--site-primary-text": surface.primaryText ?? surface.primary,
+    "--site-accent": surface.accent,
+    "--site-accent-fg": surface.accentFg,
+    "--site-border": surface.border,
+    "--site-card": surface.card,
+    "--site-card-fg": surface.cardFg,
+    "--site-card-border": surface.cardBorder,
+  } as CSSProperties;
+}
+
+// ---------------------------------------------------------------------------
+// Appearance (light / dark / system) plumbing.
+//
+// Sections used to bake their tone surface into INLINE styles, which a
+// `prefers-color-scheme` media query can't override - so "system" wouldn't work.
+// Instead the site root emits ONE scoped <style> that defines, per tone, the
+// surface vars (`--s-light-*`, `--s-clear-*`, `--s-dark-*`); each Section then
+// sets `--site-*: var(--s-<tone>-*)` (still inline, but a reference). For
+// "system" the root's <style> swaps those `--s-*` values under a dark media
+// query, so every section + the root background follow the device - with zero
+// runtime JS and identical output in editor / preview / public / snapshot.
+// ---------------------------------------------------------------------------
+
+const SURFACE_VARS: ReadonlyArray<readonly [keyof Surface, string]> = [
+  ["bg", "bg"],
+  ["fg", "fg"],
+  ["muted", "muted"],
+  ["mutedFg", "muted-fg"],
+  ["primary", "primary"],
+  ["primaryFg", "primary-fg"],
+  ["accent", "accent"],
+  ["accentFg", "accent-fg"],
+  ["border", "border"],
+  ["card", "card"],
+  ["cardFg", "card-fg"],
+  ["cardBorder", "card-border"],
+];
+
+/** Emit `--<prefix>-<name>:<value>;` declarations for one surface. */
+function surfaceCss(prefix: string, s: Surface): string {
+  return SURFACE_VARS.map(([k, name]) => `--${prefix}-${name}:${s[k]};`).join("");
+}
+
+/** Concrete primary-button values for ONE surface. These must be emitted as
+ *  literal colours per tone (never as `var(--site-primary)` references from
+ *  the root): an inline custom property substitutes its var() references at
+ *  the element that DECLARES it, so a root-declared `var(--site-primary)`
+ *  freezes to the light surface's primary and every button on a dark band
+ *  inherits light-surface colours - on slate/mono that meant a near-invisible
+ *  dark button on a dark band (2026-07-16 benchmark). */
+function buttonValues(
+  surface: Pick<Surface, "primary" | "primaryFg">,
+  buttonStyle: ThemeTokens["buttonStyle"],
+): Record<string, string> {
+  const style = normalizeButtonStyle(buttonStyle);
+  const outline = style === "outline";
+  const underline = style === "underline";
+  return {
+    "btn-bg": outline || underline ? "transparent" : surface.primary,
+    "btn-fg": outline || underline ? surface.primary : surface.primaryFg,
+    "btn-border": outline ? surface.primary : "transparent",
+    // Solid darkens on hover; outline fills in; underline stays text-like.
+    "btn-hover-bg": underline
+      ? "transparent"
+      : outline
+        ? surface.primary
+        : `color-mix(in oklch, ${surface.primary}, black 10%)`,
+    "btn-hover-fg": underline
+      ? surface.primary
+      : surface.primaryFg,
+    "btn-decoration": underline ? "underline" : "none",
+    "btn-hover-shadow": underline ? "none" : "var(--site-shadow-xs)",
+  };
+}
+
+/** Surface vars for content drawn ON a scrimmed photo (the hero overlay
+ *  variants). The scrim is always dark and the copy is always white, but the
+ *  section's TONE surface flips with the site appearance: in a dark site the
+ *  "dark" tone resolves to the palette's LIGHT surface, so an outline/underline
+ *  CTA took `--site-btn-fg: <dark ink>` and disappeared into the photo. Pinning
+ *  the button + secondary tokens to on-media values keeps every buttonStyle
+ *  readable in both appearances. Raw colours are allowed here: this file is a
+ *  token definition (design rule 2). */
+export function onMediaVars(
+  buttonStyle: ThemeTokens["buttonStyle"],
+): CSSProperties {
+  const out: Record<string, string> = {
+    "--site-fg": "#ffffff",
+    "--site-primary-text": "#ffffff",
+    "--site-muted": "rgb(255 255 255 / 16%)",
+    "--site-accent": "rgb(255 255 255 / 26%)",
+  };
+  for (const [name, value] of Object.entries(
+    buttonValues({ primary: "#ffffff", primaryFg: "#111111" }, buttonStyle),
+  )) {
+    out[`--site-${name}`] = value;
+  }
+  return out as CSSProperties;
+}
+
+function buttonCss(
+  prefix: string,
+  surface: Surface,
+  buttonStyle: ThemeTokens["buttonStyle"],
+): string {
+  return Object.entries(buttonValues(surface, buttonStyle))
+    .map(([name, value]) => `--${prefix}-${name}:${value};`)
+    .join("");
+}
+
+const BUTTON_VAR_NAMES = [
+  "btn-bg",
+  "btn-fg",
+  "btn-border",
+  "btn-hover-bg",
+  "btn-hover-fg",
+  "btn-decoration",
+  "btn-hover-shadow",
+] as const;
+
+/** Section-level color vars, pointing each `--site-*` at the matching tone
+ *  indirection var so the active appearance (incl. "system") decides the
+ *  concrete value. Includes the button tokens: they carry concrete per-tone
+ *  colours (see `buttonValues`), so a button on a dark band uses the dark
+ *  surface's primary. */
+export function sectionToneVars(tone: SectionTone): CSSProperties {
+  const out: Record<string, string> = {};
+  for (const [, name] of SURFACE_VARS) {
+    out[`--site-${name}`] = `var(--s-${tone}-${name})`;
+  }
+  for (const name of BUTTON_VAR_NAMES) {
+    out[`--site-${name}`] = `var(--s-${tone}-${name})`;
+  }
+  return out as CSSProperties;
+}
+
+/** The per-tone surface vars (`--s-*`) plus the base `--site-*` (= light tone)
+ *  for one resolved appearance, as a single CSS declaration string. */
+function schemeBlock(
+  tones: Record<SectionTone, Surface>,
+  buttonStyle: ThemeTokens["buttonStyle"],
+): string {
+  return (
+    surfaceCss("s-light", tones.light) +
+    surfaceCss("s-clear", tones.clear) +
+    surfaceCss("s-dark", tones.dark) +
+    buttonCss("s-light", tones.light, buttonStyle) +
+    buttonCss("s-clear", tones.clear, buttonStyle) +
+    buttonCss("s-dark", tones.dark, buttonStyle) +
+    // base surface used by the root element itself (sections override it)
+    surfaceCss("site", tones.light) +
+    buttonCss("site", tones.light, buttonStyle)
+  );
+}
+
+/** The scoped stylesheet for a site root: defines the tone indirection vars for
+ *  the chosen appearance. For "system" it defaults to light and swaps to dark
+ *  under `prefers-color-scheme: dark`. Scoped by palette + scheme so multiple
+ *  site roots on one page never bleed into each other. Values come only from our
+ *  pre-validated palette constants - never user input - so it is injection-safe. */
+/** Logo blend + halo rules scoped to a site root. Light sites keep multiply so
+ *  near-white logo exports don't read as cards; dark sites drop multiply (it
+ *  darkens marks into the surface) and add a soft halo so dark marks stay legible. */
+export function logoTreatmentCss(sel: string, appearance: Appearance): string {
+  const logo = `.${SITE_LOGO_CLASS}`;
+  const lightRule = `${sel} ${logo}{mix-blend-mode:multiply}`;
+  const darkRule = `${sel} ${logo}{mix-blend-mode:normal;filter:drop-shadow(0 0 1px oklch(1 0 0/.28))}`;
+  if (appearance === "dark") return darkRule;
+  if (appearance === "system") {
+    return `${lightRule}@media (prefers-color-scheme:dark){${darkRule}}`;
+  }
+  return lightRule;
+}
+
+export function siteSchemeCss(tokens: ThemeTokens): string {
+  const appearance = appearanceOf(tokens);
+  const sel = `[data-site-root][data-site-pal="${tokens.palette}"][data-site-scheme="${appearance}"]`;
+  return schemeCssForSelector(sel, tokens) + logoTreatmentCss(sel, appearance);
+}
+
+/** Same scoped scheme stylesheet as `siteSchemeCss`, but for an ARBITRARY
+ *  selector — for standalone chrome that renders OUTSIDE the site root and so
+ *  can't read the root's scoped vars (the cookie banner). Critically it keeps
+ *  the "system" `prefers-color-scheme` swap, so a night-mode system site never
+ *  shows a light banner (backlog 0303). Palette constants only — injection-safe. */
+export function schemeCssForSelector(sel: string, tokens: ThemeTokens): string {
+  const palette = tokens.palette;
+  const custom = tokens.customPalette;
+  const appearance = appearanceOf(tokens);
+  if (appearance === "system") {
+    const light = appearanceToneSurfaces(palette, "light", custom);
+    const dark = appearanceToneSurfaces(palette, "dark", custom);
+    return (
+      `${sel}{${schemeBlock(light, tokens.buttonStyle)}}` +
+      `@media (prefers-color-scheme:dark){${sel}{${schemeBlock(dark, tokens.buttonStyle)}}}`
+    );
+  }
+  return `${sel}{${schemeBlock(appearanceToneSurfaces(palette, appearance, custom), tokens.buttonStyle)}}`;
+}
+
+/** Optional custom-font family names (already sanitized) overriding the
+ *  fontPair-derived families for heading, body and/or display. `display` is the
+ *  third role (hero headline, pull-quote); when absent it falls back to the
+ *  heading family, so every existing two-font site is unchanged. */
+export type CustomFontFamilies = {
+  heading?: string;
+  body?: string;
+  display?: string;
+};
+
+/** A font-family name we are willing to place in a style value: letters,
+ *  numbers, spaces and hyphens only (covers every real Google/Adobe family) so
+ *  an imported `customFonts` value can't break out of the declaration. */
+function safeFamily(name: string | undefined): string | undefined {
+  if (!name) return undefined;
+  const trimmed = name.trim();
+  return /^[A-Za-z0-9 -]{1,48}$/.test(trimmed) ? trimmed : undefined;
+}
+
+/** Wrap a sanitized custom family in quotes and append the built-in pair font
+ *  as a fallback, so a failed font load never yields unstyled/invisible text. */
+function fontStack(custom: string | undefined, fallback: string): string {
+  const safe = safeFamily(custom);
+  return safe ? `"${safe}", ${fallback}` : fallback;
+}
+
+/** Non-color root vars (fonts, radius, density, type + spacing scales). The site
+ *  root applies these inline; its COLORS come from the scoped scheme stylesheet
+ *  (`siteSchemeCss`) so "system" mode can swap them via a media query. */
+export function rootChromeVars(
+  tokens: ThemeTokens,
+  customFonts?: CustomFontFamilies,
+): CSSProperties {
+  const fonts = FONT_PAIRS[tokens.fontPair];
+  // Fall back to the theme's own imported fonts when a caller doesn't pass an
+  // explicit override, so an imported site keeps its typefaces automatically.
+  const cf = customFonts ?? tokens.customFonts;
+  return {
+    ...typeScaleVars(fonts.category, tokens.typeScale, tokens.customType),
+    ...spacingVars(),
+    ...layoutVars(tokens.customLayout),
+    "--site-font-heading": fontStack(cf?.heading, fonts.heading),
+    "--site-font-body": fontStack(cf?.body, fonts.body),
+    // Third role. Falls back to the heading stack (not the pair's heading font)
+    // so a site with no display face renders its display role exactly as before.
+    "--site-font-display": cf?.display
+      ? fontStack(cf.display, "var(--site-font-heading)")
+      : "var(--site-font-heading)",
+    // Always emitted (never conditional) so `Heading` can reference it without
+    // a fallback dance: an undeclared custom property makes `text-transform`
+    // invalid-at-computed-value-time, which inherits rather than resets.
+    "--site-heading-transform":
+      tokens.headingCase === "uppercase" ? "uppercase" : "none",
+    "--site-radius": RADIUS_REM[tokens.radius],
+    "--site-density": DENSITY_SCALE[tokens.density],
+    // Radius owns roundness now — legacy `pill` no longer forces 9999px.
+    "--site-btn-radius": "var(--site-radius)",
+    // Primary-button COLOUR tokens live in the scoped scheme stylesheet
+    // (`siteSchemeCss` → `buttonValues`) with concrete per-tone values, and
+    // each Section maps `--site-btn-*` to its tone via `sectionToneVars`.
+    // They are deliberately NOT declared here: an inline custom property
+    // substitutes its var() references at the declaring element, so a
+    // root-level `var(--site-primary)` would freeze to the light surface and
+    // dark-band buttons would inherit light-surface colours (invisible on
+    // slate/mono - caught in the 2026-07-16 rendered benchmark).
+    // Elevation. Two levels only: xs for resting cards, md for true floating
+    // layers (nav dropdowns, chat widget). Appearance-independent — the low
+    // alpha reads as near-nothing on dark surfaces, which is the intent.
+    "--site-shadow-xs": "0 1px 2px oklch(0 0 0 / 4%)",
+    "--site-shadow-md":
+      "0 4px 16px oklch(0 0 0 / 10%), 0 1px 3px oklch(0 0 0 / 6%)",
+    fontFamily: "var(--site-font-body)",
+  } as CSSProperties;
+}
+
+/** Root-level CSS variables for the whole site (chrome + a CONCRETE base
+ *  surface). Used by standalone chrome that renders OUTSIDE the site root (e.g.
+ *  the cookie banner) and therefore can't read the scoped scheme vars. The base
+ *  surface is appearance-aware; "system" resolves to light here. */
+export function rootThemeVars(
+  tokens: ThemeTokens,
+  customFonts?: CustomFontFamilies,
+): CSSProperties {
+  const appearance = appearanceOf(tokens);
+  const base = appearanceToneSurfaces(
+    tokens.palette,
+    appearance === "dark" ? "dark" : "light",
+    tokens.customPalette,
+  ).light;
+  const btn: Record<string, string> = {};
+  for (const [name, value] of Object.entries(
+    buttonValues(base, tokens.buttonStyle),
+  )) {
+    btn[`--site-${name}`] = value;
+  }
+  return {
+    ...rootChromeVars(tokens, customFonts),
+    ...surfaceVars(base),
+    ...btn,
+  } as CSSProperties;
+}

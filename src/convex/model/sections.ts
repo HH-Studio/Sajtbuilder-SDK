@@ -7,6 +7,7 @@ import {
   address,
   bookingSource,
   siteIconKey,
+  richBlock,
 } from "./content";
 
 // ---------------------------------------------------------------------------
@@ -29,9 +30,20 @@ export const sectionContent = v.union(
     headline: v.string(),
     subheadline: v.optional(v.string()),
     media: v.optional(assetRef),
-    // Overlay variant only: a self-hosted background video (kind:"video" asset).
-    // `media` is its poster + reduced-motion fallback. Muted autoplay loop.
+    // A video for the hero, in EVERY layout: full-bleed behind the text in the
+    // overlay variants, in the media box otherwise. Two mutually exclusive
+    // sources - `bgVideo` is a self-hosted upload (kind:"video" asset),
+    // `videoUrl` a YouTube/Vimeo link or a direct https URL to a custom-hosted
+    // file (parsed by lib/sections/videoEmbed.ts; a raw iframe src is never
+    // stored). `media` doubles as the poster + reduced-motion fallback.
     bgVideo: v.optional(assetRef),
+    videoUrl: v.optional(v.string()),
+    // Playback, owner-controlled. Absent = the muted autoplay loop without
+    // controls that the overlay layouts shipped with. Autoplay only takes
+    // effect while muted - every browser blocks autoplay with sound.
+    videoAutoplay: v.optional(v.boolean()),
+    videoMuted: v.optional(v.boolean()),
+    videoControls: v.optional(v.boolean()),
     primaryCta: v.optional(ctaRef),
     secondaryCta: v.optional(ctaRef),
   }),
@@ -153,6 +165,8 @@ export const sectionContent = v.union(
     type: v.literal("pricing"),
     heading: v.string(),
     intro: v.optional(v.string()),
+    /** @see rich-text's `eyebrow` */
+    eyebrow: v.optional(v.string()),
     currency: v.string(), // "kr" | "$" ...
     tiers: v.array(
       v.object({
@@ -169,6 +183,11 @@ export const sectionContent = v.union(
   v.object({
     type: v.literal("faq"),
     heading: v.optional(v.string()),
+    // Seeded lede under the heading (backlog 0899). OPTIONAL and additive: every
+    // published snapshot predates it and every reader must render exactly as
+    // before when it is absent - `SectionHeading` already returns null for an
+    // empty heading+intro pair, so absence is byte-identical to today.
+    intro: v.optional(v.string()),
     items: v.array(
       v.object({
         question: v.string(),
@@ -204,6 +223,8 @@ export const sectionContent = v.union(
     type: v.literal("contact"),
     heading: v.string(),
     intro: v.optional(v.string()),
+    /** @see rich-text's `eyebrow` */
+    eyebrow: v.optional(v.string()),
     fields: v.array(formField),
     submitLabel: v.string(),
     successMessage: v.string(),
@@ -373,12 +394,7 @@ export const sectionContent = v.union(
   v.object({
     type: v.literal("legal"),
     heading: v.string(),
-    blocks: v.array(
-      v.object({
-        kind: v.union(v.literal("h"), v.literal("p")),
-        text: v.string(),
-      }),
-    ),
+    blocks: v.array(richBlock),
   }),
 
   // --- Ported marketing-website blocks (see docs/block-catalog.md) ----------
@@ -501,13 +517,10 @@ export const sectionContent = v.union(
   v.object({
     type: v.literal("rich-text"),
     heading: v.optional(v.string()),
-    blocks: v.array(
-      v.union(
-        v.object({ kind: v.literal("h"), text: v.string() }),
-        v.object({ kind: v.literal("p"), text: v.string() }),
-        v.object({ kind: v.literal("ul"), items: v.array(v.string()) }),
-      ),
-    ),
+    // Small label above the heading ("01", "Metoder", "Sedan 1998"). Optional,
+    // so a section that never had one renders exactly as before.
+    eyebrow: v.optional(v.string()),
+    blocks: v.array(richBlock),
   }),
 
   // Single figure with an optional caption. `image` is optional so a freshly
@@ -557,6 +570,52 @@ export const sectionContent = v.union(
           currency: v.string(),
           imageUrl: v.optional(v.string()),
           inStock: v.boolean(),
+        }),
+      ),
+    ),
+  }),
+
+  // CONNECTED EXTERNAL STORE. The merchant's own shop (Shopify first) stays the
+  // commerce authority: catalogue, variants, inventory, cart, checkout, orders,
+  // fulfilment and refunds all live there. We own presentation only.
+  //
+  // The owner writes heading/intro. Everything else is RESOLVED - `products` by
+  // an explicit catalogue refresh (convex/externalStore.listExternalProducts,
+  // which writes the last-good cards here), and the connection facts at publish
+  // (convex/model/externalProductMaterialize.ts). No provider HTML, no embed
+  // code, no script ever lands in here; `url` is always a link into the shop.
+  //
+  // `priceText` is a DISPLAY string, never a number we compute with: the shop
+  // re-prices at checkout and the component says so in words.
+  v.object({
+    type: v.literal("external-product-grid"),
+    heading: v.optional(v.string()),
+    intro: v.optional(v.string()),
+    provider: v.optional(v.union(v.literal("shopify"), v.literal("external"))),
+    /** The shop's front page - the "Besök butiken" destination, and the honest
+     *  fallback for a provider whose catalogue we cannot read. */
+    storeUrl: v.optional(v.string()),
+    storeName: v.optional(v.string()),
+    /** False once the owner disconnects the store. The public site then shows
+     *  heading/intro only - never an error, never a stale shop link. */
+    connected: v.optional(v.boolean()),
+    /** When the cards below were last read from the provider (ms). Drives the
+     *  "prices are confirmed in the shop" line. */
+    productsFetchedAt: v.optional(v.number()),
+    products: v.optional(
+      v.array(
+        v.object({
+          handle: v.string(),
+          title: v.string(),
+          priceText: v.optional(v.string()),
+          currency: v.optional(v.string()),
+          imageUrl: v.optional(v.string()),
+          availableForSale: v.boolean(),
+          /** Product page in the merchant's shop. */
+          url: v.string(),
+          /** Cart permalink (`/cart/<variantId>:1`). Needs no API and no token,
+           *  so the buy action keeps working while our read path is failing. */
+          buyUrl: v.optional(v.string()),
         }),
       ),
     ),
@@ -673,6 +732,7 @@ export const SECTION_TYPES = [
   "image",
   "featured-product",
   "product-grid",
+  "external-product-grid",
   "documents",
   "scroll-tabs",
   "comparison-slider",

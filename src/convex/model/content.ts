@@ -23,11 +23,11 @@ export const sectionToneValidator = v.union(
 );
 export type SectionToneValue = Infer<typeof sectionToneValidator>;
 
-/** How much a section animates as it enters. Frozen into the published
- *  snapshot alongside tone and layout, so a published site moves exactly like
- *  the draft did. "inherit" defers to the site theme's own motion setting.
- *  A renderer must still honour `prefers-reduced-motion` whatever this says —
- *  the value expresses intent, never permission. */
+/** Per-section scroll motion. "inherit" (and an absent field) follow the site's
+ *  `theme.motion`; the other three override it for this one section - so an
+ *  owner can calm a busy band or emphasise one without changing the whole site.
+ *  Stored as an explicit "inherit" too, so turning an override OFF is a real
+ *  write the editor can undo rather than a field deletion. */
 export const sectionMotionValidator = v.union(
   v.literal("inherit"),
   v.literal("none"),
@@ -94,6 +94,21 @@ export const ctaRef = v.object({
   style: v.optional(ctaStyle),
 });
 export type CtaRef = Infer<typeof ctaRef>;
+
+/** An owner-authored navigation link — one entry in the site header menu that
+ *  is NOT one of the site's pages (an external profile, a phone number, the
+ *  booking page…). Page entries stay derived from the `pages` table so a new
+ *  page still shows up in the menu on its own; these are the extras. Reuses
+ *  `ctaTarget` so a nav link can never be an unsafe or broken href.
+ *
+ *  `id` is a short client-generated string (not a Convex id): these live inline
+ *  on the website row, and ordering (`websites.navOrder`) references them. */
+export const navLink = v.object({
+  id: v.string(),
+  label: v.string(),
+  target: ctaTarget,
+});
+export type NavLink = Infer<typeof navLink>;
 
 /** One weekday's opening hours. */
 export const openingDay = v.object({
@@ -302,3 +317,46 @@ export const address = v.object({
   lng: v.optional(v.number()),
 });
 export type Address = Infer<typeof address>;
+
+// ---------------------------------------------------------------------------
+// Rich text. Shared by `rich-text` (Textavsnitt) and `legal` (Juridisk text).
+// The TS mirror of this shape, plus every helper that reads it, lives in
+// lib/sections/richText.ts - keep the two in step.
+// ---------------------------------------------------------------------------
+
+/** A run of text carrying at most a bold flag and a link. Bold and link are the
+ *  only marks on purpose: they are what an owner actually pastes out of Word,
+ *  and every further mark is one more way to make a page look homemade. Colour,
+ *  size and font stay with the theme, where they cannot be got wrong. */
+export const inlineSpan = v.object({
+  text: v.string(),
+  bold: v.optional(v.boolean()),
+  /** Sanitised by `safeLinkHref` before it is written, and again at render. */
+  href: v.optional(v.string()),
+});
+export type InlineSpan = Infer<typeof inlineSpan>;
+
+/** A block's text: a plain string, or runs once something in it is marked.
+ *
+ *  A union rather than a second `spans` field next to `text`: two fields have
+ *  to be kept in sync by every writer (generation, AI, import, paste, the
+ *  panel), and the day they drift the published page says one thing while
+ *  search and SEO read another. It also means no migration - every string
+ *  already in the database is still valid. */
+export const blockText = v.union(v.string(), v.array(inlineSpan));
+export type BlockText = Infer<typeof blockText>;
+
+/** One block of long-form copy. `h` carries an optional level: 2 is "Rubrik",
+ *  3 is "Underrubrik". There is deliberately no h1 - the page heading planner
+ *  owns the single `<h1>` per page, and a block claiming one breaks it. */
+export const richBlock = v.union(
+  v.object({
+    kind: v.literal("h"),
+    level: v.optional(v.union(v.literal(2), v.literal(3))),
+    text: blockText,
+  }),
+  v.object({ kind: v.literal("p"), text: blockText }),
+  v.object({ kind: v.literal("quote"), text: blockText }),
+  v.object({ kind: v.literal("ul"), items: v.array(blockText) }),
+);
+export type RichBlock = Infer<typeof richBlock>;
