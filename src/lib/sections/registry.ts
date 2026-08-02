@@ -2070,6 +2070,42 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
     }),
   },
 
+  "illustration": {
+    type: "illustration",
+    label: { sv: "Teckning", en: "Line drawing", pl: "Rysunek" },
+    whenToUse: {
+      sv: "En enkel teckning som hör till er – ett märke, en pil, en skiss. Den följer sidans färger och blir aldrig suddig. För foton, använd Bild.",
+      en: "A simple drawing of your own — a mark, an arrow, a sketch. It follows the site's colours and never goes blurry. For photographs, use Image.",
+      pl: "Prosty rysunek — znak, strzałka, szkic. Podąża za kolorami strony i nigdy się nie rozmywa. Do zdjęć użyj bloku Obraz.",
+    },
+    category: "content",
+    icon: "Sparkles",
+    variants: [
+      { key: "default", label: { sv: "Standard", en: "Default", pl: "Standard" } },
+      {
+        key: "inline",
+        label: { sv: "Liten", en: "Small", pl: "Mały" },
+        description: {
+          sv: "Centrerad och smal – för ett märke eller en liten skiss mellan två textblock.",
+          en: "Centered and narrow — for a mark or a small sketch between two blocks of text.",
+          pl: "Wyśrodkowany i wąski — dla znaku lub małego szkicu między blokami tekstu.",
+        },
+      },
+      { key: "wide", label: { sv: "Bred", en: "Wide", pl: "Szeroki" } },
+    ],
+    defaultVariant: "default",
+    defaultTone: "light",
+    allowedTones: ["light", "clear", "dark"],
+    defaultContent: (lang) => ({
+      type: "illustration",
+      heading: pick(lang, "Rubrik", "Heading", "Nagłówek"),
+      // A single stroked circle: something visible the moment the block is
+      // added, in the site's own ink, that an import replaces wholesale.
+      viewBox: "0 0 100 100",
+      paths: [{ d: "M 50 6 A 44 44 0 1 1 49.9 6 Z", stroke: "ink", strokeWidth: 2 }],
+    }),
+  },
+
   // section:new-registry-anchor — `bun run section:new <type>` inserts
   // registry entries above. Do not remove or rename this comment.
 };

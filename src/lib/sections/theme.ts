@@ -391,6 +391,10 @@ function roleVars(
     out[`--site-tracking-${role}`] = safeLength(o?.tracking) ?? d.tracking;
     out[`--site-transform-${role}`] = safeTransform(o?.transform) ?? d.transform;
     out[`--site-family-${role}`] = familyVar(o?.family) ?? d.family;
+    // A role's own ink, when the source page set one. `currentColor` is the
+    // no-op default: it is exactly what the text inherits today, so a theme
+    // with no measured colour emits a declaration that changes nothing.
+    out[`--site-ink-${role}`] = safeColor(o?.color) ?? "currentColor";
   }
   return out;
 }
@@ -400,12 +404,17 @@ function roleVars(
  *  4.5rem section padding, and 48/64/72rem containers (Tailwind's max-w-3xl /
  *  5xl / 6xl, which is what `Section` used as classes). */
 function layoutVars(custom: ThemeTokens["customLayout"]): Record<string, string> {
-  return {
+  const out: Record<string, string> = {
     "--site-py-base": safeLength(custom?.sectionPy) ?? "4.5rem",
     "--site-w-narrow": safeLength(custom?.containerNarrow) ?? "48rem",
     "--site-w-default": safeLength(custom?.containerDefault) ?? "64rem",
     "--site-w-wide": safeLength(custom?.containerWide) ?? "72rem",
   };
+  // Only emitted when measured: unlike the four above there is no single
+  // "today's value" to default to here - each band keeps its own gap.
+  const gap = safeLength(custom?.gridGap);
+  if (gap) out["--site-grid-gap"] = gap;
+  return out;
 }
 
 /** The named curves `customMotion.easing` may select, as concrete CSS. A closed
@@ -631,6 +640,15 @@ export function appearanceOf(tokens: ThemeTokens): Appearance {
 // url(), etc.) is rejected so an imported `customPalette` can't inject rules.
 const SAFE_COLOR =
   /^(#[0-9a-fA-F]{3,8}|(oklch|rgba?|hsla?)\([0-9a-zA-Z.,%/\s-]+\))$/;
+
+/** One measured colour we are willing to emit (a `customType` role's own ink).
+ *  Same gate as `customPalette`: anything with CSS-breaking characters is
+ *  dropped and the role inherits its section's text colour instead. */
+export function safeColor(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  return SAFE_COLOR.test(trimmed) ? trimmed : undefined;
+}
 
 /** A `customPalette` surface pair is trusted only if EVERY colour on both
  *  surfaces is a safe CSS colour token; otherwise we ignore it and fall back to

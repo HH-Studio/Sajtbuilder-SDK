@@ -697,6 +697,42 @@ export const sectionContent = v.union(
     footnote: v.optional(v.string()),
   }),
 
+  // TODO(section): shape the real fields for "illustration" (typed content only -
+  // no raw HTML; assetRef for media, ctaRef for links; see neighbours above).
+  v.object({
+    type: v.literal("illustration"),
+    heading: v.optional(v.string()),
+    body: v.optional(v.string()),
+    /** The drawing's coordinate space, `"minX minY width height"`. */
+    viewBox: v.string(),
+    /** The drawing itself, as PATHS rather than markup.
+     *
+     *  There is deliberately no way to express an element that is not a path,
+     *  a URL, an event attribute or a `foreignObject`, so there is nothing for
+     *  a sanitiser to miss — the renderer builds the `<svg>` from this list and
+     *  never inlines source markup. Colour is a closed set of site tokens
+     *  (`lib/sections/illustration.ts`), so an imported drawing recolours with
+     *  the site instead of freezing the source's palette.
+     *
+     *  Everything here is re-validated before it reaches an attribute: `d`
+     *  against a closed character set and a length cap, `viewBox` against a
+     *  four-number shape with a positive extent, `strokeWidth` against a range.
+     *  A path that fails is dropped; a drawing with nothing left renders no
+     *  `<svg>` at all rather than an empty box. */
+    paths: v.array(
+      v.object({
+        d: v.string(),
+        fill: v.optional(v.string()),
+        stroke: v.optional(v.string()),
+        strokeWidth: v.optional(v.number()),
+      }),
+    ),
+    /** Read out to a screen reader in place of the drawing. Absent means the
+     *  drawing is decorative and is hidden from assistive tech, which is the
+     *  honest default for a mark or a divider flourish. */
+    alt: v.optional(v.string()),
+  }),
+
   // section:new-content-anchor — `bun run section:new <type>` inserts new
   // content shapes ABOVE this line. Do not remove or rename this comment.
 );
@@ -749,6 +785,7 @@ export const SECTION_TYPES = [
   "documents",
   "scroll-tabs",
   "comparison-slider",
+  "illustration",
   // section:new-type-anchor — the scaffolder inserts new type literals above.
 ] as const;
 

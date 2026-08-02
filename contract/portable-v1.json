@@ -16,7 +16,7 @@
     "maxTotalAssetBytes": 209715200
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:d68d753f6daa8f909ebf6d6883dbbf5dd283d61eff1eaa539fd05a1efe7f3a69",
+  "hash": "sha256:e0eb1e0ed936722cec6f5317473fc214b2650f5d0f5cbd4ae0aa689af7dc3164",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1395,6 +1395,10 @@
                       {
                         "type": "literal",
                         "value": "comparison-slider"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "illustration"
                       }
                     ]
                   },
@@ -2428,6 +2432,12 @@
                             },
                             "optional": true
                           },
+                          "gridGap": {
+                            "fieldType": {
+                              "type": "string"
+                            },
+                            "optional": true
+                          },
                           "heroMaxHeight": {
                             "fieldType": {
                               "type": "string"
@@ -2714,6 +2724,12 @@
                             "fieldType": {
                               "type": "object",
                               "value": {
+                                "color": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
                                 "family": {
                                   "fieldType": {
                                     "type": "union",
@@ -2802,6 +2818,12 @@
                             "fieldType": {
                               "type": "object",
                               "value": {
+                                "color": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
                                 "family": {
                                   "fieldType": {
                                     "type": "union",
@@ -2890,6 +2912,12 @@
                             "fieldType": {
                               "type": "object",
                               "value": {
+                                "color": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
                                 "family": {
                                   "fieldType": {
                                     "type": "union",
@@ -2978,6 +3006,12 @@
                             "fieldType": {
                               "type": "object",
                               "value": {
+                                "color": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
                                 "family": {
                                   "fieldType": {
                                     "type": "union",
@@ -3066,6 +3100,12 @@
                             "fieldType": {
                               "type": "object",
                               "value": {
+                                "color": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
                                 "family": {
                                   "fieldType": {
                                     "type": "union",
@@ -3154,6 +3194,12 @@
                             "fieldType": {
                               "type": "object",
                               "value": {
+                                "color": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
                                 "family": {
                                   "fieldType": {
                                     "type": "union",
@@ -3242,6 +3288,12 @@
                             "fieldType": {
                               "type": "object",
                               "value": {
+                                "color": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
                                 "family": {
                                   "fieldType": {
                                     "type": "union",
@@ -3330,6 +3382,12 @@
                             "fieldType": {
                               "type": "object",
                               "value": {
+                                "color": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
                                 "family": {
                                   "fieldType": {
                                     "type": "union",
@@ -3418,6 +3476,12 @@
                             "fieldType": {
                               "type": "object",
                               "value": {
+                                "color": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
                                 "family": {
                                   "fieldType": {
                                     "type": "union",
@@ -3633,6 +3697,26 @@
                           {
                             "type": "literal",
                             "value": "brand-center"
+                          }
+                        ]
+                      },
+                      "optional": true
+                    },
+                    "navOverlay": {
+                      "fieldType": {
+                        "type": "union",
+                        "value": [
+                          {
+                            "type": "literal",
+                            "value": "none"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "transparent"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "gradient"
                           }
                         ]
                       },
@@ -3891,7 +3975,8 @@
       "external-product-grid",
       "documents",
       "scroll-tabs",
-      "comparison-slider"
+      "comparison-slider",
+      "illustration"
     ],
     "variants": {
       "about": [
@@ -3993,6 +4078,11 @@
         "grid-3",
         "icon-list",
         "plain"
+      ],
+      "illustration": [
+        "default",
+        "inline",
+        "wide"
       ],
       "image": [
         "full",

@@ -113,6 +113,24 @@ export const NAV_LAYOUT_KEYS = [
   "brand-center",
 ] as const;
 
+// Whether the site header sits IN the page flow or floats over the first
+// section. A large family of real sites — and the one this was measured on —
+// starts its hero at y=0 with the menu floating on top of the photo; ours is
+// sticky and pushes the whole page down by its own height (~65px at every
+// width, the single largest layout difference left on that import).
+//
+// `transparent` is exactly that: no surface of its own. `gradient` adds a
+// top-down scrim so light menu text stays legible over a busy photo, which is
+// what most sites doing this actually ship.
+//
+// This is NOT the translucent glass bar the 2026-07-26 directive rejected, and
+// it is not a default: absent means `none`, so every existing site keeps its
+// solid, in-flow header. Owner ruling 2026-08-02: fully transparent and
+// gradient are both fine as an opt-in, and an import may carry whatever its
+// source had.
+export const NAV_OVERLAY_KEYS = ["none", "transparent", "gradient"] as const;
+export type NavOverlay = (typeof NAV_OVERLAY_KEYS)[number];
+
 // One tone surface as raw CSS colour strings. Used only by `customPalette`
 // (site import): a colour set generated from an imported site's own brand,
 // carried verbatim so the migrated site reads as "my site" instead of snapping
@@ -216,6 +234,14 @@ export const customTypeRole = v.object({
     v.union(...TEXT_TRANSFORM_KEYS.map((k) => v.literal(k))),
   ),
   family: v.optional(v.union(...TYPE_FAMILY_KEYS.map((k) => v.literal(k)))),
+  /** This role's own ink, as a CSS colour. Real pages set a colour on ONE
+   *  element rather than on the palette: the reference import's hero headline
+   *  is a deep navy while the rest of its ink is near-black, and with no per-role
+   *  colour an import had to choose between getting the hero right and getting
+   *  every other heading right. Re-validated by the same `SAFE_COLOR` gate as
+   *  `customPalette` before it reaches a declaration; absent means the role
+   *  inherits the section's own text colour, exactly as today. */
+  color: v.optional(v.string()),
 });
 export type CustomTypeRole = Infer<typeof customTypeRole>;
 
@@ -254,6 +280,11 @@ export const customLayout = v.object({
   // aspect and caps it. Present => that behaviour, capped at this length.
   // Absent => `image/full` stays exactly one screen.
   mediaBandMaxHeight: v.optional(v.string()),
+  // The row gap a measured page uses between the cells of a multi-column band.
+  // Webflow's grid gap is routinely larger than ours, which is most of why a
+  // measured import's process/steps band came out ~130px shorter than its
+  // source at desktop. Absent => the section's own gap, exactly as today.
+  gridGap: v.optional(v.string()),
 });
 export type CustomLayout = Infer<typeof customLayout>;
 
@@ -317,6 +348,7 @@ export const themeTokens = v.object({
   typeScale: v.optional(v.union(...TYPE_SCALE_KEYS.map((k) => v.literal(k)))),
   motion: v.optional(v.union(...MOTION_KEYS.map((k) => v.literal(k)))),
   navLayout: v.optional(v.union(...NAV_LAYOUT_KEYS.map((k) => v.literal(k)))),
+  navOverlay: v.optional(v.union(...NAV_OVERLAY_KEYS.map((k) => v.literal(k)))),
   // Optional import-only overrides. Absent on every hand-built site (they keep
   // `palette`/`fontPair`). When present, the renderer uses these instead so an
   // imported site keeps its original brand colour + typefaces.

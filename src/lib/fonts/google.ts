@@ -20,7 +20,12 @@ export const GOOGLE_FONTS: readonly GoogleFont[] = [
   // Sans
   { family: "Inter", weights: [400, 500, 700], category: "sans" },
   { family: "Roboto", weights: [400, 500, 700], category: "sans" },
-  { family: "Open Sans", weights: [400, 600, 700], category: "sans" },
+  // 300 is deliberate and rare: a light cut is a real design choice on a hero
+  // sub-heading, and a measured import that asks for weight 300 otherwise gets
+  // 400 with no way to say so (annahedin.com sets its hero sub-heading in Open
+  // Sans 300). Google serves these as one variable subset, so the extra weight
+  // is not an extra file.
+  { family: "Open Sans", weights: [300, 400, 600, 700], category: "sans" },
   { family: "Montserrat", weights: [400, 600, 700], category: "sans" },
   { family: "Poppins", weights: [400, 500, 700], category: "sans" },
   { family: "Lato", weights: [400, 700], category: "sans" },
