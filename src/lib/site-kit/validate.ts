@@ -26,6 +26,11 @@ import { sectionContent } from "../../convex/model/sections";
 import { checkCaps } from "../portability/caps";
 import { collectAssetIds } from "../portability/assets";
 import { isValidVariant } from "../sections/registry";
+import {
+  ILLUSTRATION_LIMITS,
+  safePathData,
+  safeViewBox,
+} from "../sections/illustration";
 import type { SectionType } from "../../convex/model/sections";
 import { LOCALES } from "../i18n";
 import { NEWS_SEGMENT } from "../site/news";
@@ -285,6 +290,43 @@ export function validateSitePackage(
     // a blank rectangle and no reason why. The two embed providers are exempt:
     // they carry a `videoId` instead, and an absent one is already reported by
     // the renderer.
+    // An `illustration` carries a drawing the renderer re-validates and DROPS
+    // per path (`lib/sections/illustration.ts`) — a bad `d`, an over-long one,
+    // or a 65th path just vanishes. Silent loss is exactly what this format
+    // promises not to do, so the bundle says it here instead, while the author
+    // can still fix the file. Independent review, 2026-08-02.
+    if ((s.content as { type?: string }).type === "illustration") {
+      const drawing = s.content as {
+        viewBox?: string;
+        paths?: Array<{ d?: string }>;
+      };
+      if (!safeViewBox(drawing.viewBox)) {
+        err(
+          issues,
+          `sections[${i}].content.viewBox`,
+          `must be four numbers with a positive extent ("0 0 100 100"); this one renders nothing`,
+        );
+      }
+      const paths = drawing.paths ?? [];
+      if (paths.length > ILLUSTRATION_LIMITS.paths) {
+        err(
+          issues,
+          `sections[${i}].content.paths`,
+          `${paths.length} paths exceeds the ${ILLUSTRATION_LIMITS.paths} a drawing may carry — the rest would be dropped on import`,
+        );
+      }
+      paths.slice(0, ILLUSTRATION_LIMITS.paths).forEach((path, p) => {
+        if (safePathData(path?.d)) return;
+        const length = typeof path?.d === "string" ? path.d.length : 0;
+        err(
+          issues,
+          `sections[${i}].content.paths[${p}].d`,
+          length > ILLUSTRATION_LIMITS.pathData
+            ? `${length} characters exceeds the ${ILLUSTRATION_LIMITS.pathData}-character cap — this path would be dropped on import`
+            : `must be SVG path data starting at a moveto ("M …"); this one would be dropped on import`,
+        );
+      });
+    }
     const videoContent = s.content as { type?: string; provider?: string; video?: unknown };
     if (videoContent.type === "video" && videoContent.provider === "upload" && !videoContent.video) {
       err(

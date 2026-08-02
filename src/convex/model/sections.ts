@@ -697,8 +697,6 @@ export const sectionContent = v.union(
     footnote: v.optional(v.string()),
   }),
 
-  // TODO(section): shape the real fields for "illustration" (typed content only -
-  // no raw HTML; assetRef for media, ctaRef for links; see neighbours above).
   v.object({
     type: v.literal("illustration"),
     heading: v.optional(v.string()),
