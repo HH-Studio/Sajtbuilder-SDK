@@ -2073,6 +2073,14 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
   "illustration": {
     type: "illustration",
     label: { sv: "Teckning", en: "Line drawing", pl: "Rysunek" },
+    // Restricted deliberately, and not because the block is niche: it has NO
+    // authoring UI. The paths arrive from an import. An owner who added it out
+    // of the ordinary picker would get the default circle and no way to make it
+    // their own drawing, which is a worse answer than not offering it. It still
+    // renders everywhere it already exists — imported drafts, preview, every
+    // published site — so nothing an import produced is affected. Revisit when
+    // there is a way to bring your own file in.
+    availability: "restricted",
     whenToUse: {
       sv: "En enkel teckning som hör till er – ett märke, en pil, en skiss. Den följer sidans färger och blir aldrig suddig. För foton, använd Bild.",
       en: "A simple drawing of your own — a mark, an arrow, a sketch. It follows the site's colours and never goes blurry. For photographs, use Image.",
