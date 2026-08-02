@@ -16,7 +16,7 @@
     "maxTotalAssetBytes": 209715200
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:518b5f9ede5d1b062153777760ae185c77a33e2010c823d8270e8484063c7429",
+  "hash": "sha256:fa5ec62c6ecd37b9f65fffbaed708613b88046322efba18d8f85059016a36557",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -196,6 +196,33 @@
               "minLength": 1,
               "pattern": "\\S",
               "type": "string"
+            },
+            "resolution": {
+              "additionalProperties": false,
+              "properties": {
+                "note": {
+                  "maxLength": 2000,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "type": "string"
+                },
+                "resolvedAt": {
+                  "format": "date-time",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$",
+                  "type": "string"
+                },
+                "status": {
+                  "enum": [
+                    "accepted",
+                    "rejected"
+                  ]
+                }
+              },
+              "required": [
+                "status",
+                "resolvedAt"
+              ],
+              "type": "object"
             },
             "target": {
               "additionalProperties": false,
@@ -429,7 +456,9 @@
       "completedAt is not before startedAt",
       "timestamps are real canonical ISO 8601 UTC instants",
       "ready reports contain no blocking items",
-      "blocked reports contain at least one blocking item"
+      "blocked reports contain at least one blocking item",
+      "ready reports carry a resolution on every manual/missing/unsafe/ai_proposed item",
+      "only manual/missing/unsafe/ai_proposed items may carry a resolution"
     ]
   },
   "portable": {
@@ -895,6 +924,12 @@
                   },
                   "optional": true
                 },
+                "navLabel": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
                 "order": {
                   "fieldType": {
                     "type": "number"
@@ -1082,6 +1117,26 @@
                               "value": "spacious"
                             }
                           ]
+                        },
+                        "optional": true
+                      },
+                      "parallax": {
+                        "fieldType": {
+                          "type": "object",
+                          "value": {
+                            "x": {
+                              "fieldType": {
+                                "type": "string"
+                              },
+                              "optional": true
+                            },
+                            "y": {
+                              "fieldType": {
+                                "type": "string"
+                              },
+                              "optional": true
+                            }
+                          }
                         },
                         "optional": true
                       },
@@ -1979,6 +2034,30 @@
                     {
                       "type": "literal",
                       "value": "pl"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "de"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "da"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "no"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "fi"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "fr"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "es"
                     }
                   ]
                 },
@@ -2001,6 +2080,30 @@
                       {
                         "type": "literal",
                         "value": "pl"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "de"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "da"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "no"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "fi"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "fr"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "es"
                       }
                     ]
                   }
@@ -2010,6 +2113,148 @@
               "logoAssetId": {
                 "fieldType": {
                   "type": "string"
+                },
+                "optional": true
+              },
+              "navLinks": {
+                "fieldType": {
+                  "type": "array",
+                  "value": {
+                    "type": "object",
+                    "value": {
+                      "id": {
+                        "fieldType": {
+                          "type": "string"
+                        },
+                        "optional": false
+                      },
+                      "label": {
+                        "fieldType": {
+                          "type": "string"
+                        },
+                        "optional": false
+                      },
+                      "target": {
+                        "fieldType": {
+                          "type": "union",
+                          "value": [
+                            {
+                              "type": "object",
+                              "value": {
+                                "kind": {
+                                  "fieldType": {
+                                    "type": "literal",
+                                    "value": "page"
+                                  },
+                                  "optional": false
+                                },
+                                "pageSlug": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                }
+                              }
+                            },
+                            {
+                              "type": "object",
+                              "value": {
+                                "anchorId": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "kind": {
+                                  "fieldType": {
+                                    "type": "literal",
+                                    "value": "anchor"
+                                  },
+                                  "optional": false
+                                }
+                              }
+                            },
+                            {
+                              "type": "object",
+                              "value": {
+                                "kind": {
+                                  "fieldType": {
+                                    "type": "literal",
+                                    "value": "phone"
+                                  },
+                                  "optional": false
+                                },
+                                "value": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                }
+                              }
+                            },
+                            {
+                              "type": "object",
+                              "value": {
+                                "kind": {
+                                  "fieldType": {
+                                    "type": "literal",
+                                    "value": "email"
+                                  },
+                                  "optional": false
+                                },
+                                "value": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                }
+                              }
+                            },
+                            {
+                              "type": "object",
+                              "value": {
+                                "kind": {
+                                  "fieldType": {
+                                    "type": "literal",
+                                    "value": "external"
+                                  },
+                                  "optional": false
+                                },
+                                "url": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                }
+                              }
+                            },
+                            {
+                              "type": "object",
+                              "value": {
+                                "kind": {
+                                  "fieldType": {
+                                    "type": "literal",
+                                    "value": "booking"
+                                  },
+                                  "optional": false
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "optional": false
+                      }
+                    }
+                  }
+                },
+                "optional": true
+              },
+              "navOrder": {
+                "fieldType": {
+                  "type": "array",
+                  "value": {
+                    "type": "string"
+                  }
                 },
                 "optional": true
               },
@@ -2171,9 +2416,97 @@
                             },
                             "optional": true
                           },
+                          "heroMaxHeight": {
+                            "fieldType": {
+                              "type": "string"
+                            },
+                            "optional": true
+                          },
+                          "heroMinVh": {
+                            "fieldType": {
+                              "type": "number"
+                            },
+                            "optional": true
+                          },
+                          "mediaBandMaxHeight": {
+                            "fieldType": {
+                              "type": "string"
+                            },
+                            "optional": true
+                          },
                           "sectionPy": {
                             "fieldType": {
                               "type": "string"
+                            },
+                            "optional": true
+                          }
+                        }
+                      },
+                      "optional": true
+                    },
+                    "customMotion": {
+                      "fieldType": {
+                        "type": "object",
+                        "value": {
+                          "duration": {
+                            "fieldType": {
+                              "type": "number"
+                            },
+                            "optional": true
+                          },
+                          "easing": {
+                            "fieldType": {
+                              "type": "union",
+                              "value": [
+                                {
+                                  "type": "literal",
+                                  "value": "linear"
+                                },
+                                {
+                                  "type": "literal",
+                                  "value": "ease-out"
+                                },
+                                {
+                                  "type": "literal",
+                                  "value": "power2-out"
+                                },
+                                {
+                                  "type": "literal",
+                                  "value": "power3-out"
+                                },
+                                {
+                                  "type": "literal",
+                                  "value": "expo-out"
+                                },
+                                {
+                                  "type": "literal",
+                                  "value": "back-out"
+                                }
+                              ]
+                            },
+                            "optional": true
+                          },
+                          "enterBlur": {
+                            "fieldType": {
+                              "type": "string"
+                            },
+                            "optional": true
+                          },
+                          "enterY": {
+                            "fieldType": {
+                              "type": "string"
+                            },
+                            "optional": true
+                          },
+                          "stagger": {
+                            "fieldType": {
+                              "type": "number"
+                            },
+                            "optional": true
+                          },
+                          "startAt": {
+                            "fieldType": {
+                              "type": "number"
                             },
                             "optional": true
                           }
@@ -2401,6 +2734,18 @@
                                   },
                                   "optional": true
                                 },
+                                "sizeFluid": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "sizeMin": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
                                 "tracking": {
                                   "fieldType": {
                                     "type": "string"
@@ -2472,6 +2817,18 @@
                                   "optional": true
                                 },
                                 "size": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "sizeFluid": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "sizeMin": {
                                   "fieldType": {
                                     "type": "string"
                                   },
@@ -2553,6 +2910,18 @@
                                   },
                                   "optional": true
                                 },
+                                "sizeFluid": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "sizeMin": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
                                 "tracking": {
                                   "fieldType": {
                                     "type": "string"
@@ -2624,6 +2993,18 @@
                                   "optional": true
                                 },
                                 "size": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "sizeFluid": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "sizeMin": {
                                   "fieldType": {
                                     "type": "string"
                                   },
@@ -2705,6 +3086,18 @@
                                   },
                                   "optional": true
                                 },
+                                "sizeFluid": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "sizeMin": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
                                 "tracking": {
                                   "fieldType": {
                                     "type": "string"
@@ -2776,6 +3169,18 @@
                                   "optional": true
                                 },
                                 "size": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "sizeFluid": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "sizeMin": {
                                   "fieldType": {
                                     "type": "string"
                                   },
@@ -2857,6 +3262,18 @@
                                   },
                                   "optional": true
                                 },
+                                "sizeFluid": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "sizeMin": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
                                 "tracking": {
                                   "fieldType": {
                                     "type": "string"
@@ -2933,6 +3350,18 @@
                                   },
                                   "optional": true
                                 },
+                                "sizeFluid": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "sizeMin": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
                                 "tracking": {
                                   "fieldType": {
                                     "type": "string"
@@ -3004,6 +3433,18 @@
                                   "optional": true
                                 },
                                 "size": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "sizeFluid": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": true
+                                },
+                                "sizeMin": {
                                   "fieldType": {
                                     "type": "string"
                                   },
@@ -3105,6 +3546,22 @@
                       },
                       "optional": false
                     },
+                    "headingAlign": {
+                      "fieldType": {
+                        "type": "union",
+                        "value": [
+                          {
+                            "type": "literal",
+                            "value": "start"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "center"
+                          }
+                        ]
+                      },
+                      "optional": true
+                    },
                     "headingCase": {
                       "fieldType": {
                         "type": "union",
@@ -3160,6 +3617,10 @@
                           {
                             "type": "literal",
                             "value": "right"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "brand-center"
                           }
                         ]
                       },
@@ -3462,7 +3923,8 @@
       "contact": [
         "form-info",
         "info-cards",
-        "info-only"
+        "info-only",
+        "links"
       ],
       "cta-band": [
         "boxed",

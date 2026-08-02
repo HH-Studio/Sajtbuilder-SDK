@@ -55,7 +55,14 @@ export const sectionContent = v.union(
     items: v.array(
       v.object({
         title: v.string(),
-        description: v.string(),
+        // Optional on purpose (2026-07-31): the generator only writes a
+        // description it can actually stand behind (`describeService`). When it
+        // has nothing true to say about a service it omits the field rather
+        // than printing a mood line — "Slingor – Boka en tid som passar dig"
+        // was the old positional pool, and an absent description beats a wrong
+        // one. Widening required -> optional is a one-deploy change: every
+        // stored item already carries the field and stays valid.
+        description: v.optional(v.string()),
         // Optional owner-entered display price from the canonical services menu.
         // Kept as text because services can be "from", hourly, or quote-only.
         priceText: v.optional(v.string()),
@@ -173,6 +180,12 @@ export const sectionContent = v.union(
         name: v.string(),
         price: v.string(),
         period: v.optional(v.string()),
+        /** Prose under the tier name, ABOVE the price. What a plan actually is,
+         *  in a sentence — which is how most price lists outside SaaS are
+         *  written. `features` is the tick-list underneath and stays separate:
+         *  a sentence forced into it rendered as one long bullet with a green
+         *  check in front of it, which is not the same page. */
+        description: v.optional(v.string()),
         features: v.array(v.string()),
         cta: v.optional(ctaRef),
         highlighted: v.optional(v.boolean()),
@@ -783,5 +796,19 @@ export const sectionLayoutValidator = v.object({
    *  public site - the inverse of hideOnMobile, same binary 767/768 split.
    *  The editor keeps it visible-but-dimmed so it stays selectable. */
   hideOnDesktop: v.optional(v.literal(true)),
+  /** This band's content drifts against the page as it scrolls, starting at
+   *  this offset and settling at zero. Import-only today: it is the one motion
+   *  in a Webflow/GSAP source page that is not a reveal, and a band that had it
+   *  reads as a flat slab without it.
+   *
+   *  Values are simple CSS lengths (`"10%"`, `"-40px"`), re-validated by
+   *  `safeLength` before they reach a declaration; a percentage is relative to
+   *  the element's own size, which is what the source pages measure in too.
+   *  Absent (the default everywhere) means the band sits still, and
+   *  `prefers-reduced-motion` disables it regardless — a parallax is exactly
+   *  the effect that causes vestibular symptoms. */
+  parallax: v.optional(
+    v.object({ x: v.optional(v.string()), y: v.optional(v.string()) }),
+  ),
 });
 export type SectionLayout = Infer<typeof sectionLayoutValidator>;

@@ -11,7 +11,7 @@ import {
   socialsValidator,
 } from "./content";
 import { CONTENT_TYPES } from "../../lib/content/contentTypes";
-import { localeValidator } from "./business";
+import { siteLocaleValidator } from "./business";
 import { publishedVisitorAssistantConfigValidator } from "./visitorAssistant";
 
 const contentTypeValidator = v.union(...CONTENT_TYPES.map((t) => v.literal(t)));
@@ -110,11 +110,11 @@ export const siteSnapshot = v.object({
   // Favicon (browser-tab icon), pre-resolved to a url at publish time. Absent =>
   // the platform's default favicon.
   faviconUrl: v.optional(v.string()),
-  language: localeValidator,
+  language: siteLocaleValidator,
   // All published languages of this site (primary first), copied onto every
   // locale's snapshot so the public renderer can show a language switcher +
   // emit hreflang without an extra read. Absent => single-language.
-  languages: v.optional(v.array(localeValidator)),
+  languages: v.optional(v.array(siteLocaleValidator)),
   theme: themeTokens,
   // Resolved custom fonts (heading/body) - present only when assigned; absent
   // snapshots simply render the theme's built-in fontPair.

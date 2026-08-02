@@ -58,6 +58,27 @@ export const TYPE_SCALE_KEYS = ["normal", "large"] as const;
 // and every export) keeps the owner's real casing.
 export const HEADING_CASE_KEYS = ["none", "uppercase"] as const;
 
+// Where a section's heading block (eyebrow + heading + intro) sits on the page.
+// This is the single strongest structural signal an art-direction family has:
+// left-aligned section heads down a page and centered section heads down a page
+// are two visibly different websites, and every generated site was previously
+// stuck on whatever each section component hard-coded.
+//
+// It is a DEFAULT, not a command. A section whose own layout cannot honour it —
+// a split composition where the heading sits in one column of a two-column grid
+// — opts out explicitly (`<SectionHeading align="start">`), because a heading
+// centered over a 4fr column is worse than either alignment.
+//
+// Optional, and ABSENT MEANS "start": every site created before this token
+// existed keeps its exact current rendering with no migration.
+//
+// Set at GENERATION and IMPORT time only — deliberately not in `updateTheme`'s
+// allow-list (convex/sections.ts) and with no editor control, exactly like
+// `headingCase`. It is an art-direction decision the generator makes, not a
+// knob the owner tunes; its absence from that allow-list is intentional, not a
+// missed registration.
+export const HEADING_ALIGN_KEYS = ["start", "center"] as const;
+
 // Site-wide scroll motion. Sections fade-and-rise as they enter the viewport
 // (see components/site-sections/shared/SectionMotion.tsx). Composite-only
 // (opacity + transform), one-shot, and always off under
@@ -80,7 +101,17 @@ export const MOTION_KEYS = ["none", "subtle", "full"] as const;
 // before this token existed, so no migration is needed and no existing header
 // moves. `spread` is `justify-between`: the links drift to wherever the logo
 // and the call button leave room, which is why the other three exist.
-export const NAV_LAYOUT_KEYS = ["spread", "left", "center", "right"] as const;
+// `brand-center` is the one that reorders rather than just re-aligns: the links
+// sit FIRST, the wordmark is centred between them and the button. It is a very
+// common editorial/boutique header, and it was the shape annahedin.com used —
+// unreachable with the other four, which all keep the brand on the left.
+export const NAV_LAYOUT_KEYS = [
+  "spread",
+  "left",
+  "center",
+  "right",
+  "brand-center",
+] as const;
 
 // One tone surface as raw CSS colour strings. Used only by `customPalette`
 // (site import): a colour set generated from an imported site's own brand,
@@ -161,8 +192,21 @@ export const TYPE_FAMILY_KEYS = ["heading", "body", "display"] as const;
  *  re-validated against a strict pattern before they reach CSS
  *  (`safeLength` in lib/sections/theme.ts) — this validator only bounds shape. */
 export const customTypeRole = v.object({
-  /** CSS length, e.g. "80px" / "3.5rem". Simple lengths only. */
+  /** CSS length, e.g. "80px" / "3.5rem". Simple lengths only. The size at the
+   *  widest measured breakpoint — the ceiling of the ramp below. */
   size: v.optional(v.string()),
+  /** The other two ends of a measured RAMP. A source page does not set one
+   *  size per role, it sets three or four across breakpoints: annahedin.com's
+   *  hero runs 80 → 60 → 50 → 40px and its pull-quote 58 → 48 → 30px. Storing
+   *  only `size` pinned a phone to the desktop number, which was the whole
+   *  remaining mobile gap on that import (a 58px quote on a 375px screen).
+   *
+   *  Both present => the role renders `clamp(sizeMin, sizeFluid, size)`.
+   *  Either missing => `size` alone, exactly as before. `sizeFluid` must be a
+   *  container-relative length (`cqw`) — see safeLength's note on why `vw` is
+   *  rejected: it would break the editor's scaled preview. */
+  sizeMin: v.optional(v.string()),
+  sizeFluid: v.optional(v.string()),
   weight: v.optional(v.number()),
   /** Unitless line-height ratio, e.g. 1.05. */
   lineHeight: v.optional(v.number()),
@@ -190,8 +234,75 @@ export const customLayout = v.object({
   containerNarrow: v.optional(v.string()),
   containerDefault: v.optional(v.string()),
   containerWide: v.optional(v.string()),
+  // Photo-band height, for a source page whose hero is "as tall as its photo,
+  // within limits" rather than "as tall as its text". Our overlay hero is
+  // text-sized (padding only), which on an imported site collapsed a 700px
+  // picture band to ~350px — the single most visible thing a migration gets
+  // wrong, and unreachable from the preset tokens.
+  //
+  // The ASPECT is not stored: it comes from the hero's own image, so the two
+  // can never disagree. These are the clamp's two ends:
+  //   heroMinVh     — floor, as a % of viewport height (a phone, where the
+  //                   photo's own aspect would leave a letterbox strip)
+  //   heroMaxHeight — ceiling, a length (a wide desktop, where the aspect
+  //                   would otherwise run past one screen)
+  // Absent (either one) => the hero keeps its text-sized padding exactly.
+  heroMinVh: v.optional(v.number()),
+  heroMaxHeight: v.optional(v.string()),
+  // Same idea for a full-bleed IMAGE band. `image/full` means "one screenful"
+  // by design; a measured source page instead runs the picture at its own
+  // aspect and caps it. Present => that behaviour, capped at this length.
+  // Absent => `image/full` stays exactly one screen.
+  mediaBandMaxHeight: v.optional(v.string()),
 });
 export type CustomLayout = Infer<typeof customLayout>;
+
+/** The named easing curves an import may ask for. A CLOSED SET on purpose: the
+ *  value lands in `animation-timing-function`, so accepting a raw string would
+ *  make a bundle able to write arbitrary CSS into the declaration. Every real
+ *  source curve we have seen (GSAP `power2.out`, Webflow's "ease out quart",
+ *  a bare `ease-out`) lands on one of these, and one that does not degrades to
+ *  `linear` — which is what the reveal has always used. */
+export const MOTION_EASING_KEYS = [
+  "linear",
+  "ease-out",
+  "power2-out",
+  "power3-out",
+  "expo-out",
+  "back-out",
+] as const;
+export type MotionEasing = (typeof MOTION_EASING_KEYS)[number];
+
+/** Measured scroll/load motion, in the same spirit as `customType` /
+ *  `customLayout`: the three preset `motion` steps cannot express "rise 24px,
+ *  blur 10px, over 1s, 0.2s apart", and that is the whole vocabulary a Webflow
+ *  or GSAP source page animates with.
+ *
+ *  Every field is optional and ABSENT MEANS TODAY'S RENDERING, byte for byte:
+ *  the renderer emits nothing at all when the block is empty, and each CSS var
+ *  it does emit is read with the current value as its `var()` fallback
+ *  (app/globals.css). `motion` still decides WHETHER a section reveals; this
+ *  only reshapes the reveal that token already asked for. */
+export const customMotion = v.object({
+  /** How far content rises as it enters, e.g. "24px". A simple CSS length,
+   *  re-validated by `safeLength` before it reaches a declaration. */
+  enterY: v.optional(v.string()),
+  /** Blur it starts from, e.g. "10px". Absent => no blur, which is what the
+   *  reveal has always done — and deliberately so: an always-on `filter` would
+   *  make every revealing band a containing block for its fixed children. */
+  enterBlur: v.optional(v.string()),
+  /** Page-LOAD reveal length in ms (the first section only; everything below
+   *  the fold is scroll-driven and has no duration). Bounded at render. */
+  duration: v.optional(v.number()),
+  easing: v.optional(v.union(...MOTION_EASING_KEYS.map((k) => v.literal(k)))),
+  /** Milliseconds between sibling elements in the load reveal. */
+  stagger: v.optional(v.number()),
+  /** Where in the band's ENTRY the reveal starts, as a percentage. 0 = the
+   *  moment its top edge crosses the bottom of the screen (GSAP's
+   *  `start: "top bottom"`), which is also today's default. */
+  startAt: v.optional(v.number()),
+});
+export type CustomMotion = Infer<typeof customMotion>;
 
 export const themeTokens = v.object({
   palette: v.union(...PALETTE_KEYS.map((k) => v.literal(k))),
@@ -235,10 +346,16 @@ export const themeTokens = v.object({
   // sentence, not a label, and the sites that use caps headings almost never
   // shout their own name.
   headingCase: v.optional(v.union(...HEADING_CASE_KEYS.map((k) => v.literal(k)))),
+  // Section-heading alignment (see HEADING_ALIGN_KEYS). Absent means "start",
+  // which is what every section rendered before the token existed.
+  headingAlign: v.optional(
+    v.union(...HEADING_ALIGN_KEYS.map((k) => v.literal(k))),
+  ),
   // Measured type + layout (see the block above `themeTokens`). Import-only,
   // absent means today's preset rendering, reset drops them wholesale.
   customType: v.optional(customType),
   customLayout: v.optional(customLayout),
+  customMotion: v.optional(customMotion),
 });
 
 export type ThemeTokens = Infer<typeof themeTokens>;
@@ -246,6 +363,7 @@ export type SurfaceTokens = Infer<typeof surfaceTokens>;
 export type Appearance = (typeof APPEARANCE_KEYS)[number];
 export type Motion = (typeof MOTION_KEYS)[number];
 export type HeadingCase = (typeof HEADING_CASE_KEYS)[number];
+export type HeadingAlign = (typeof HEADING_ALIGN_KEYS)[number];
 export type NavLayout = (typeof NAV_LAYOUT_KEYS)[number];
 export type ButtonStyle = (typeof BUTTON_STYLE_KEYS)[number];
 

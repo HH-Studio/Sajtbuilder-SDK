@@ -15,7 +15,7 @@ export const socialsValidator = v.object({
 export type Socials = Infer<typeof socialsValidator>;
 
 /** Section surface tone - a separate, plain-language control from layout
- *  variant ("Standard" / "Tydlig" / "Mörk"). */
+ *  variant ("Standard" / palette clearLabel e.g. "Grå" / "Mörk"). */
 export const sectionToneValidator = v.union(
   v.literal("light"),
   v.literal("clear"),

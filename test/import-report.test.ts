@@ -75,6 +75,12 @@ describe("ImportReportV1", () => {
     blocker.status = "ready";
     expect(validateImportReport(blocker).issues.some((issue) => issue.path === "status")).toBe(true);
 
+  });
+
+  // The review gate the CLI's `site review --approve` flow depends on: a report
+  // may only call itself `ready` once every item the adapter could not decide
+  // on its own carries a resolution.
+  it("gates a ready report on every review item being resolved", () => {
     const unresolved = clone(fixtures().find(({ name }) => name === "unsafe-script.json")!.report);
     unresolved.status = "ready";
     expect(validateImportReport(unresolved).issues.some((issue) => issue.path === "status")).toBe(true);

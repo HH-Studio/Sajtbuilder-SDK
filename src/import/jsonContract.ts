@@ -11,6 +11,8 @@ import {
   IMPORT_REPORT_REVISION,
   IMPORT_REPORT_STATUSES,
   PORTABLE_SITE_FORMAT_VERSION,
+  RESOLUTION_STATUSES,
+  REVIEW_DISPOSITIONS,
 } from "./report";
 
 const nonEmptyString = (maxLength: number, pattern?: string) => ({
@@ -136,6 +138,14 @@ export function buildImportReportJsonContract() {
                 ),
                 confidence,
                 blocking: { type: "boolean" },
+                resolution: strictObject(
+                  {
+                    status: { enum: [...RESOLUTION_STATUSES] },
+                    note: nonEmptyString(IMPORT_REPORT_LIMITS.reason),
+                    resolvedAt: timestamp,
+                  },
+                  ["status", "resolvedAt"],
+                ),
               },
               ["id", "disposition", "reason", "evidenceIds", "blocking"],
             ),
@@ -182,6 +192,8 @@ export function buildImportReportJsonContract() {
       "timestamps are real canonical ISO 8601 UTC instants",
       "ready reports contain no blocking items",
       "blocked reports contain at least one blocking item",
+      `ready reports carry a resolution on every ${REVIEW_DISPOSITIONS.join("/")} item`,
+      `only ${REVIEW_DISPOSITIONS.join("/")} items may carry a resolution`,
     ],
   } as const;
 }

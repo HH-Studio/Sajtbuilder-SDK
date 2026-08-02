@@ -773,6 +773,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           pl: "E-mail, telefon i adres pokazane jako trzy karty z ikonami zamiast formularza.",
         },
       },
+      {
+        key: "links",
+        label: { sv: "Centrerade länkar", en: "Centred links", pl: "Wyśrodkowane linki" },
+        description: {
+          sv: "Kontaktvägarna som centrerade länkar under varandra, utan ikoner eller formulär. Sist kan en rubrik visa besöksadressen.",
+          en: "Contact methods as centred links stacked under each other, with no icons or form. A titled item at the end shows the visiting address.",
+          pl: "Sposoby kontaktu jako wyśrodkowane linki jeden pod drugim, bez ikon i formularza. Ostatnia pozycja z tytułem pokazuje adres.",
+        },
+      },
     ],
     defaultVariant: "form-info",
     defaultTone: "clear",
@@ -1836,6 +1845,11 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       {
         key: "full",
         label: { sv: "Hel bredd", en: "Full width", pl: "Cała szerokość" },
+        description: {
+          sv: "Bilden fyller hela skärmen – kant till kant, utan marginaler.",
+          en: "The photo fills the whole screen – edge to edge, with no margins.",
+          pl: "Zdjęcie wypełnia cały ekran – od krawędzi do krawędzi, bez marginesów.",
+        },
       },
       { key: "inset", label: { sv: "Smal", en: "Inset", pl: "Wąskie" } },
     ],

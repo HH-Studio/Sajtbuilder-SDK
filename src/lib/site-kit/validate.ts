@@ -278,6 +278,21 @@ export function validateSitePackage(
       }
       throw e;
     }
+    // A `video` section on the `upload` provider plays a self-hosted clip. The
+    // clip is optional in the validator (the editor lets an owner pick the
+    // provider before uploading), but a BUNDLE that declares `upload` and
+    // carries no clip imports as a player with nothing in it — the author gets
+    // a blank rectangle and no reason why. The two embed providers are exempt:
+    // they carry a `videoId` instead, and an absent one is already reported by
+    // the renderer.
+    const videoContent = s.content as { type?: string; provider?: string; video?: unknown };
+    if (videoContent.type === "video" && videoContent.provider === "upload" && !videoContent.video) {
+      err(
+        issues,
+        `sections[${i}].content.video`,
+        `provider "upload" requires a video assetRef — declare the clip as a kind:"video" asset and point \`video\` at it`,
+      );
+    }
     const contentType = (s.content as { type: SectionType }).type;
     if (contentType !== s.type) {
       err(issues, `sections[${i}]`, `type "${s.type}" does not match content.type "${contentType}"`);

@@ -12,6 +12,34 @@ that validated against an older CLI still validates against a newer one.
 
 ## [Unreleased]
 
+### Fixed
+
+- **The mirrored app model had drifted 40%, and everything an author could not
+  express was downstream of that.** `src/convex/model/theme.ts` was 13 kB
+  against the app's 22 kB: no `customMotion` at all (nor its `enterY`,
+  `enterBlur`, `duration`, `easing`, `stagger`, `startAt`), no `headingAlign`,
+  no per-role `sizeMin` / `sizeFluid`, no `heroMinVh` / `heroMaxHeight` /
+  `mediaBandMaxHeight`, and a `navLayout` union missing two of the app's keys.
+  The app has accepted every one of those fields since they landed —
+  `commitImport` writes `theme` verbatim — so the only thing stopping a
+  developer from authoring them was this file. Ten mirrors are now
+  byte-identical to the app again (`convex/model/{business,content,portable,
+  sections,snapshot,theme}`, `lib/sections/{registry,theme}`,
+  `lib/site-kit/validate`, `import/{report,jsonContract}`), plus two new ones
+  the app now depends on (`lib/i18n/site-locales`, `lib/palettes`).
+
+- **`ImportReportItemV1.resolution` existed in this repo and nowhere else.**
+  `snabbsajt site review --approve` (packages/cli) and the REVIEW-DRAFT bundle
+  both write a `resolution`, but the canonical model had no such field and no
+  rule about it — so the CLI failed to typecheck against its own mirror, and a
+  report could call itself `ready` with every `manual` / `missing` / `unsafe` /
+  `ai_proposed` item still undecided. The field and both invariants now live in
+  the app and mirror down.
+
+- **A bundle declaring `provider: "upload"` with no clip now fails
+  validation.** `src/index.ts` documented that `validateSitePackage` checked
+  this; it did not, and the bundle imported as an empty player.
+
 ### Added
 
 - **`snabbsajt admin` — the CLI can now change a site, in its own namespace.**

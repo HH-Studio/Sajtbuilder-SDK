@@ -3,6 +3,7 @@ import { themeTokens } from "./theme";
 import { sectionTypeLiteral, sectionLayoutValidator } from "./sections";
 import {
   address,
+  navLink,
   sectionMotionValidator,
   sectionToneValidator,
   socialsValidator,
@@ -17,7 +18,7 @@ import {
   serviceActionKind,
 } from "./content";
 import { fontSource, fontStyle, fontLicense } from "./fonts";
-import { verticalValidator, goalValidator, localeValidator } from "./business";
+import { verticalValidator, goalValidator, siteLocaleValidator } from "./business";
 import { CONTENT_TYPES } from "../../lib/content/contentTypes";
 
 const contentTypeValidator = v.union(...CONTENT_TYPES.map((t) => v.literal(t)));
@@ -112,14 +113,14 @@ export const portableSiteV1 = v.object({
     businessName: v.string(),
     vertical: verticalValidator,
     goal: goalValidator,
-    language: localeValidator, // primary language
+    language: siteLocaleValidator, // primary language
     // Full published-languages set, primary first (websites.languages).
     // Absent/[] carries the same "single-language ([language])" meaning as
     // the live schema. Without this, an export/import round-trip or
     // duplicate of a multilingual site silently downgraded it to
     // single-language (no switcher/hreflang) with no settings UI to restore
     // the list afterward.
-    languages: v.optional(v.array(localeValidator)),
+    languages: v.optional(v.array(siteLocaleValidator)),
     theme: themeTokens,
     contact: v.object({
       phone: v.optional(v.string()),
@@ -127,6 +128,16 @@ export const portableSiteV1 = v.object({
       address: v.optional(address),
     }),
     socials: v.optional(socialsValidator),
+    // The header menu the owner built on top of the page list: extra links
+    // that are not pages (`navLinks`) and the order both kinds sit in
+    // (`navOrder`). Without these a round-trip — and every import of a site
+    // whose real menu is anchors into one long page — came back with a menu
+    // derived purely from `showInNav` pages, which is not the menu the source
+    // site had. `navOrder`'s page keys are exported as `page:<page tmpId>`
+    // (not a foreign Convex id) and remapped on import, like every other
+    // cross-row reference in this file.
+    navLinks: v.optional(v.array(navLink)),
+    navOrder: v.optional(v.array(v.string())),
     tracking: v.optional(trackingConfig),
     // Shared native-booking defaults. Optional so older V1 backups retain
     // their existing inline-booking behavior on import.
@@ -195,6 +206,10 @@ export const portableSiteV1 = v.object({
       order: v.number(),
       folderTmpId: v.optional(v.string()),
       showInNav: v.boolean(),
+      // Menu text when it differs from the page's own title (websites' menu
+      // editor writes this). Part of the same menu-fidelity set as the site's
+      // `navLinks`/`navOrder` above.
+      navLabel: v.optional(v.string()),
       // News/blog post fields. `featuredImage.assetId` is the export-local asset
       // id string (like content image refs), remapped to a fresh id on import -
       // never a `v.id` (would break cross-deployment import).

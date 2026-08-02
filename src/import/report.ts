@@ -29,6 +29,28 @@ export const IMPORT_DISPOSITIONS = [
 
 export const IMPORT_REPORT_STATUSES = ["ready", "review_required", "blocked"] as const;
 
+/** Dispositions that describe something the adapter could NOT decide on its
+ *  own: it guessed (`ai_proposed`), it dropped something (`missing`,
+ *  `unsafe`), or it is asking a person to do the work (`manual`). A report is
+ *  only `ready` once every one of these carries a `resolution` — otherwise
+ *  "ready" claims a human signed off on a decision nobody made.
+ *
+ *  This is the gate the Site Kit CLI's `site review` / approve flow already
+ *  implements (packages/cli/src/commands/site.ts) and the SDK's REVIEW-DRAFT
+ *  bundle already labels; it was missing from the canonical model, so the CLI
+ *  compiled against a field the validator had never heard of. */
+export const REVIEW_DISPOSITIONS = [
+  "manual",
+  "missing",
+  "unsafe",
+  "ai_proposed",
+] as const satisfies readonly (typeof IMPORT_DISPOSITIONS)[number][];
+
+/** What a local reviewer decided. `accepted` = keep the adapter's outcome as
+ *  it stands (including "this was correctly dropped"); `rejected` = the
+ *  outcome is wrong and the import should not carry it. */
+export const RESOLUTION_STATUSES = ["accepted", "rejected"] as const;
+
 export type ImportDisposition = (typeof IMPORT_DISPOSITIONS)[number];
 export type ImportReportStatus = (typeof IMPORT_REPORT_STATUSES)[number];
 
@@ -47,6 +69,16 @@ export type ImportReportItemV1 = {
   target?: { kind: string; id: string };
   confidence?: number;
   blocking: boolean;
+  /** A local reviewer's decision on a `REVIEW_DISPOSITIONS` item. Optional
+   *  everywhere: an adapter never writes it, the review step does. */
+  resolution?: ImportResolutionV1;
+};
+
+export type ImportResolutionV1 = {
+  status: (typeof RESOLUTION_STATUSES)[number];
+  note?: string;
+  /** ISO-8601, same shape as the report's own timestamps. */
+  resolvedAt: string;
 };
 
 export type ImportReportV1 = {
@@ -211,6 +243,7 @@ export function validateImportReport(payload: unknown): ImportReportValidation {
   const itemIds = new Set<string>();
   const actualCounts = Object.fromEntries(IMPORT_DISPOSITIONS.map((disposition) => [disposition, 0])) as Record<ImportDisposition, number>;
   let actualBlocking = 0;
+  let unresolvedReviewItems = 0;
   if (!Array.isArray(report.items)) {
     issues.push({ path: "items", message: "must be an array" });
   } else {
@@ -221,7 +254,7 @@ export function validateImportReport(payload: unknown): ImportReportValidation {
       const path = `items[${index}]`;
       const item = requireRecord(candidate, path, issues);
       if (!item) return;
-      addUnknownKeyIssues(item, ["id", "disposition", "reason", "evidenceIds", "target", "confidence", "blocking"], path, issues);
+      addUnknownKeyIssues(item, ["id", "disposition", "reason", "evidenceIds", "target", "confidence", "blocking", "resolution"], path, issues);
       if (validateStableId(item.id, `${path}.id`, issues)) {
         if (itemIds.has(item.id as string)) issues.push({ path: `${path}.id`, message: `duplicate report item id "${item.id}"` });
         itemIds.add(item.id as string);
@@ -264,6 +297,33 @@ export function validateImportReport(payload: unknown): ImportReportValidation {
       } else if (item.blocking) {
         actualBlocking += 1;
       }
+      const needsReview = REVIEW_DISPOSITIONS.includes(
+        item.disposition as (typeof REVIEW_DISPOSITIONS)[number],
+      );
+      if (item.resolution !== undefined) {
+        const resolution = requireRecord(item.resolution, `${path}.resolution`, issues);
+        if (resolution) {
+          addUnknownKeyIssues(resolution, ["status", "note", "resolvedAt"], `${path}.resolution`, issues);
+          if (!RESOLUTION_STATUSES.includes(resolution.status as (typeof RESOLUTION_STATUSES)[number])) {
+            issues.push({ path: `${path}.resolution.status`, message: "unknown resolution status" });
+          }
+          if (resolution.note !== undefined) {
+            validateBoundedString(resolution.note, `${path}.resolution.note`, IMPORT_REPORT_LIMITS.reason, issues);
+          }
+          validateTimestamp(resolution.resolvedAt, `${path}.resolution.resolvedAt`, issues);
+          // Resolving something the adapter already decided for itself is not a
+          // review, it is noise — and it would let a report look reviewed while
+          // the items that actually needed a person went untouched.
+          if (!needsReview) {
+            issues.push({
+              path: `${path}.resolution`,
+              message: `only ${REVIEW_DISPOSITIONS.join(", ")} items can carry a resolution`,
+            });
+          }
+        }
+      } else if (needsReview) {
+        unresolvedReviewItems += 1;
+      }
     });
   }
 
@@ -290,6 +350,12 @@ export function validateImportReport(payload: unknown): ImportReportValidation {
 
   if (report.status === "ready" && actualBlocking > 0) {
     issues.push({ path: "status", message: "ready reports cannot contain blockers" });
+  }
+  if (report.status === "ready" && unresolvedReviewItems > 0) {
+    issues.push({
+      path: "status",
+      message: `ready reports cannot contain ${unresolvedReviewItems} unresolved ${REVIEW_DISPOSITIONS.join("/")} item(s) — resolve each one or keep the report review_required`,
+    });
   }
   if (report.status === "blocked" && actualBlocking === 0) {
     issues.push({ path: "status", message: "blocked reports must contain a blocker" });

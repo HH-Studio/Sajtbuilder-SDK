@@ -61,7 +61,10 @@ describe("public Site Kit API", () => {
     expect(validateSitePackage(site).issues).toContainEqual({
       level: "error",
       path: "sections[0].order",
-      message: "invalid fractional order key",
+      // Substring, not equality: the sentence after this prefix is app-owned
+      // copy that gets improved, and asserting it verbatim made a better error
+      // message read as a broken mirror.
+      message: expect.stringContaining("invalid fractional order key"),
     });
   });
 

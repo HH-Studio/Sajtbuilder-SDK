@@ -35,14 +35,20 @@ const FONT_PAIRS: Record<
   ThemeTokens["fontPair"],
   { heading: string; body: string; category: FontCategory }
 > = {
+  // Bodies name `--font-geist-sans` directly, never `--font-sans`. They used to
+  // say `var(--font-sans)` and globals.css re-pointed that variable to Geist
+  // under [data-site-root] — which also meant `font-sans` on editor chrome
+  // rendered inside the canvas resolved to the SITE's font instead of the app's
+  // (owner report 2026-08-02: the "Lägg till sektion" pill went serif). Same
+  // rendered typeface as before; one less variable with two meanings.
   modern: {
     heading: "var(--font-site-grotesk)",
-    body: "var(--font-sans)",
+    body: "var(--font-geist-sans)",
     category: "grotesk",
   },
   classic: {
     heading: "var(--font-site-serif)",
-    body: "var(--font-sans)",
+    body: "var(--font-geist-sans)",
     category: "serif",
   },
   friendly: {
@@ -55,7 +61,7 @@ const FONT_PAIRS: Record<
   // uses a real display serif so boutique/high-end positioning reads as such.
   premium: {
     heading: "var(--font-site-serif-display)",
-    body: "var(--font-sans)",
+    body: "var(--font-geist-sans)",
     category: "displaySerif",
   },
   editorial: {
@@ -72,8 +78,29 @@ const FONT_PAIRS: Record<
   },
 };
 
-/** Per-category heading optics. Three rows, not a 6×N table - sizes are shared,
- *  only leading / tracking / weight shift so each typeface reads correctly. */
+/** The five fluid sizes a category owns, plus its two reading measures. A
+ *  category is a typographic personality, so the SIZE RAMP belongs to it too:
+ *  Cormorant at 40px reads smaller than Inter at 40px, and an editorial serif
+ *  site and a grotesk site should not share one metric scale (that is what made
+ *  two generated sites look like the same template). */
+type CategorySizes = {
+  display: string;
+  h1: string;
+  h2: string;
+  h3: string;
+  lead: string;
+  /** Body reading measure, in `ch` of the element's own font — the 60-75
+   *  character band. Resolved at the USE site (unregistered custom properties
+   *  substitute their token stream), so `ch` tracks the paragraph's font. */
+  measure: string;
+  /** Heading measure. A section head wraps at ~22-24 characters per line; a
+   *  bigger cut wraps sooner so a two-line head stays two lines. */
+  measureHeading: string;
+};
+
+/** Per-category heading optics + size ramp. Leading / tracking / weight shift
+ *  so each typeface reads correctly, and the sizes shift so each typeface holds
+ *  its column. */
 const CATEGORY_TYPE: Record<
   FontCategory,
   {
@@ -86,6 +113,7 @@ const CATEGORY_TYPE: Record<
      *  kicker (uppercase + wide tracking fights a serif's shapes). */
     eyebrowTransform: "uppercase" | "none";
     trackingEyebrow: string;
+    sizes: CategorySizes;
   }
 > = {
   grotesk: {
@@ -95,9 +123,19 @@ const CATEGORY_TYPE: Record<
     weightHeading: "600",
     eyebrowTransform: "uppercase",
     trackingEyebrow: "0.06em",
+    sizes: {
+      display: "clamp(2.5rem, 1.34rem + 4.75cqw, 5.5rem)", // 40 -> 88
+      h1: "clamp(2rem, 1.6rem + 1.8cqw, 3rem)", // 32 -> 48
+      h2: "clamp(1.75rem, 1.35rem + 1.6cqw, 2.5rem)", // 28 -> 40
+      h3: "clamp(1.1875rem, 1.1rem + 0.35cqw, 1.375rem)", // 19 -> 22
+      lead: "clamp(1.125rem, 1.05rem + 0.35cqw, 1.3125rem)", // 18 -> 21
+      measure: "64ch",
+      measureHeading: "24ch",
+    },
   },
   // Loud cut: heavier weight + tighter display tracking + wider tracked-caps
-  // eyebrow. Gyms and trades with attitude, not a second "modern".
+  // eyebrow, and the biggest ramp of the five. Gyms and trades with attitude,
+  // not a second "modern".
   groteskBold: {
     leadingHeading: "1.08",
     leadingDisplay: "1.02",
@@ -105,6 +143,15 @@ const CATEGORY_TYPE: Record<
     weightHeading: "700",
     eyebrowTransform: "uppercase",
     trackingEyebrow: "0.09em",
+    sizes: {
+      display: "clamp(2.625rem, 1.225rem + 5.74cqw, 6.25rem)", // 42 -> 100
+      h1: "clamp(2.125rem, 1.65rem + 2.1cqw, 3.25rem)", // 34 -> 52
+      h2: "clamp(1.875rem, 1.4rem + 1.9cqw, 2.75rem)", // 30 -> 44
+      h3: "clamp(1.1875rem, 1.1rem + 0.35cqw, 1.375rem)",
+      lead: "clamp(1.125rem, 1.05rem + 0.35cqw, 1.3125rem)",
+      measure: "62ch",
+      measureHeading: "22ch",
+    },
   },
   serif: {
     leadingHeading: "1.16",
@@ -113,9 +160,19 @@ const CATEGORY_TYPE: Record<
     weightHeading: "400",
     eyebrowTransform: "none",
     trackingEyebrow: "0.01em",
+    sizes: {
+      display: "clamp(2.5rem, 1.34rem + 4.75cqw, 5.5rem)", // 40 -> 88
+      h1: "clamp(2rem, 1.55rem + 2cqw, 3.25rem)", // 32 -> 52
+      h2: "clamp(1.75rem, 1.3rem + 1.8cqw, 2.625rem)", // 28 -> 42
+      h3: "clamp(1.25rem, 1.15rem + 0.4cqw, 1.4375rem)", // 20 -> 23
+      lead: "clamp(1.1875rem, 1.1rem + 0.35cqw, 1.375rem)", // 19 -> 22
+      measure: "68ch",
+      measureHeading: "24ch",
+    },
   },
   // Display serif (Cormorant Garamond): smaller x-height needs a heavier
-  // weight to hold its color; tight editorial leading; sentence-case kicker.
+  // weight to hold its color AND more size than a grotesk at the same role;
+  // tight editorial leading; sentence-case kicker.
   displaySerif: {
     leadingHeading: "1.1",
     leadingDisplay: "1.04",
@@ -123,6 +180,15 @@ const CATEGORY_TYPE: Record<
     weightHeading: "600",
     eyebrowTransform: "none",
     trackingEyebrow: "0.02em",
+    sizes: {
+      display: "clamp(2.875rem, 1.475rem + 5.74cqw, 6.5rem)", // 46 -> 104
+      h1: "clamp(2.25rem, 1.7rem + 2.4cqw, 3.75rem)", // 36 -> 60
+      h2: "clamp(1.9375rem, 1.45rem + 2.1cqw, 3rem)", // 31 -> 48
+      h3: "clamp(1.3125rem, 1.2rem + 0.45cqw, 1.5rem)", // 21 -> 24
+      lead: "clamp(1.1875rem, 1.1rem + 0.35cqw, 1.375rem)",
+      measure: "70ch",
+      measureHeading: "22ch",
+    },
   },
   humanist: {
     leadingHeading: "1.2",
@@ -131,6 +197,15 @@ const CATEGORY_TYPE: Record<
     weightHeading: "500",
     eyebrowTransform: "uppercase",
     trackingEyebrow: "0.05em",
+    sizes: {
+      display: "clamp(2.375rem, 1.458rem + 3.76cqw, 4.75rem)", // 38 -> 76
+      h1: "clamp(1.9375rem, 1.55rem + 1.7cqw, 2.75rem)", // 31 -> 44
+      h2: "clamp(1.625rem, 1.3rem + 1.4cqw, 2.25rem)", // 26 -> 36
+      h3: "clamp(1.1875rem, 1.1rem + 0.3cqw, 1.3125rem)", // 19 -> 21
+      lead: "clamp(1.125rem, 1.05rem + 0.3cqw, 1.25rem)", // 18 -> 20
+      measure: "64ch",
+      measureHeading: "24ch",
+    },
   },
 };
 
@@ -147,7 +222,20 @@ const DENSITY_SCALE: Record<ThemeTokens["density"], string> = {
 };
 
 /** Fluid typographic scale, exposed as CSS vars consumed by the shared Heading /
- *  Body / Eyebrow components. Sizes are a single shared scale (fluid `clamp`, so
+ *  Body / Eyebrow components.
+ *
+ *  The fluid term is `cqw`, NEVER `vw`. `ThemeProvider` puts `@container`
+ *  (`container-type: inline-size`) on the site root, so `cqw` measures the width
+ *  the site is actually rendered into. `vw` measures the browser window, which
+ *  is the same thing on a public site and a LIE everywhere the site is rendered
+ *  into a narrower box: the editor's phone/tablet frame is a fixed-width `<div>`
+ *  (`md:w-[390px]` in EditorCanvas), not an iframe, so with `vw` a "Mobil"
+ *  preview on a 1440px screen rendered its H1 at the clamp max (48px) where the
+ *  real phone gives 32.6px. "Preview == production" is a non-negotiable; these
+ *  units are how it is kept. `scripts/design-audit.ts` (`site-viewport-unit`)
+ *  flags any viewport unit that comes back into this file or the renderer tree.
+ *
+ *  Sizes are a single shared scale (fluid `clamp`, so
  *  the per-section `sm:` breakpoint jumps disappear); each size is multiplied by
  *  `--site-type-scale` (default 1 - a single future "large type" lever). Only the
  *  heading leading / tracking / weight vary, by font category. */
@@ -172,8 +260,13 @@ const TYPE_SCALE_VALUE: Record<
 /** A simple CSS length: optional sign, up to 4 integer digits, 3 decimals, and
  *  one of five units. Deliberately does NOT allow `calc()`, `var()`, functions,
  *  or multiple values — a measured computed style is always a single length, so
- *  nothing legitimate needs more, and this leaves no room for a payload. */
-const SAFE_LENGTH = /^-?\d{1,4}(\.\d{1,3})?(px|rem|em|vw|%)$/;
+ *  nothing legitimate needs more, and this leaves no room for a payload.
+ *
+ *  `cqw`, not `vw`: an imported site that measured a fluid `vw` size would
+ *  otherwise re-introduce the preview-fidelity bug through `customType` (see the
+ *  type-scale comment above). A measured `vw` value is now rejected and the
+ *  preset size is used instead. */
+const SAFE_LENGTH = /^-?\d{1,4}(\.\d{1,3})?(px|rem|em|cqw|%)$/;
 
 export function safeLength(value: string | undefined): string | undefined {
   if (!value) return undefined;
@@ -315,6 +408,131 @@ function layoutVars(custom: ThemeTokens["customLayout"]): Record<string, string>
   };
 }
 
+/** The named curves `customMotion.easing` may select, as concrete CSS. A closed
+ *  map, not a passthrough: the value is substituted into
+ *  `animation-timing-function`, so a raw string would be an injection surface
+ *  and nothing legitimate needs one. `power2-out` is GSAP's `power2.out`. */
+const MOTION_EASING_CSS: Record<string, string> = {
+  linear: "linear",
+  "ease-out": "cubic-bezier(0, 0, 0.58, 1)",
+  "power2-out": "cubic-bezier(0.215, 0.61, 0.355, 1)",
+  "power3-out": "cubic-bezier(0.165, 0.84, 0.44, 1)",
+  "expo-out": "cubic-bezier(0.19, 1, 0.22, 1)",
+  "back-out": "cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+};
+
+/** A measured millisecond count, bounded. A source page that reported 90000
+ *  (or a hostile bundle that says so) must clamp, not ship a minute-long fade. */
+function safeMs(
+  value: number | undefined,
+  min: number,
+  max: number,
+): string | undefined {
+  if (typeof value !== "number" || !Number.isFinite(value)) return undefined;
+  const clamped = Math.min(max, Math.max(min, Math.round(value)));
+  return `${clamped}ms`;
+}
+
+/** A measured percentage 0..90, for where in a band's entry the reveal starts. */
+function safePercent(value: number | undefined): string | undefined {
+  if (typeof value !== "number" || !Number.isFinite(value)) return undefined;
+  if (value < 0 || value > 90) return undefined;
+  return `${Number(value.toFixed(2))}%`;
+}
+
+/** Measured scroll/load motion (`theme.customMotion`) as CSS vars.
+ *
+ *  Returns an EMPTY object when nothing measured cleanly, which is the whole
+ *  contract: every consuming declaration in app/globals.css reads these with
+ *  today's value as its `var()` fallback, so a theme without `customMotion`
+ *  (every hand-built site) emits exactly the vars it always did and renders
+ *  exactly as it always did. Asserted in lib/sections/motionVars.test.ts. */
+export function motionVars(
+  custom: ThemeTokens["customMotion"],
+): Record<string, string> {
+  if (!custom) return {};
+  const out: Record<string, string> = {};
+  const y = safeLength(custom.enterY);
+  if (y) out["--site-motion-y"] = y;
+  // Blur swaps in a second keyframe set rather than adding `filter` to the one
+  // every site uses: an always-declared filter (even `blur(0)`) makes the
+  // element a containing block for `position: fixed` descendants, and turns a
+  // composite-only reveal into one that rasterises. Opt-in, per imported site.
+  const blur = safeLength(custom.enterBlur);
+  if (blur) {
+    out["--site-motion-blur"] = blur;
+    out["--site-motion-anim"] = "site-reveal-in-blur";
+  }
+  const ease = custom.easing ? MOTION_EASING_CSS[custom.easing] : undefined;
+  if (ease) out["--site-motion-ease"] = ease;
+  // 80ms floor: below that a "duration" is a cut, and the source almost
+  // certainly meant seconds. 3s ceiling: longer than any real page-load fade.
+  const duration = safeMs(custom.duration, 80, 3000);
+  if (duration) out["--site-motion-duration"] = duration;
+  const stagger = safeMs(custom.stagger, 0, 600);
+  if (stagger) out["--site-motion-stagger"] = stagger;
+  const start = safePercent(custom.startAt);
+  if (start) out["--site-motion-start"] = start;
+  return out;
+}
+
+/** A section's measured parallax drift (`section.layout.parallax`) as the two
+ *  vars `.site-parallax` reads. Returns undefined unless at least one axis
+ *  survived `safeLength`, so a band with no parallax (every band today) gets no
+ *  extra element and no extra declaration. */
+export function parallaxVars(
+  parallax: { x?: string; y?: string } | undefined,
+): CSSProperties | undefined {
+  const x = safeLength(parallax?.x);
+  const y = safeLength(parallax?.y);
+  if (!x && !y) return undefined;
+  return {
+    ...(x ? { "--site-parallax-x": x } : {}),
+    ...(y ? { "--site-parallax-y": y } : {}),
+  } as CSSProperties;
+}
+
+/** Whether this theme asks for a page-LOAD reveal on the first section. The
+ *  scroll reveal cannot produce one: a band that is already in view at load has
+ *  a completed view() progress, so it renders settled — which is why an
+ *  imported hero arrived static while its source faded in. */
+export function hasLoadReveal(tokens: ThemeTokens): boolean {
+  return !!safeMs(tokens.customMotion?.duration, 80, 3000);
+}
+
+/** The measured hero photo-band clamp (see `customLayout.heroMinVh` /
+ *  `heroMaxHeight`). Returns undefined unless BOTH ends measured cleanly and
+ *  the hero has a usable image aspect — a half-specified band is worse than
+ *  the text-sized default, because it changes the layout without matching the
+ *  source either. `vh` is deliberate over `svh`: the source rules these are
+ *  measured from are written in `vh`. */
+export function heroBandMinHeight(
+  custom: ThemeTokens["customLayout"],
+  media: { width: number; height: number } | null | undefined,
+): string | undefined {
+  const max = safeLength(custom?.heroMaxHeight);
+  const minVh = custom?.heroMinVh;
+  if (!max) return undefined;
+  if (typeof minVh !== "number" || !(minVh > 0) || minVh > 100) return undefined;
+  if (!media || !(media.width > 0) || !(media.height > 0)) return undefined;
+  const ratio = Math.min(3, Math.max(0.2, media.height / media.width));
+  return `clamp(${minVh}vh, calc(100vw * ${ratio.toFixed(4)}), ${max})`;
+}
+
+/** One role's measured size: a plain length, or the full `clamp()` ramp when
+ *  the import measured all three ends. `sizeFluid` must be container-relative
+ *  (`cqw`) — a `vw` middle would re-introduce the preview-fidelity bug the
+ *  type-scale comment above describes, so it is rejected and the ramp degrades
+ *  to the single measured size rather than rendering something wrong. */
+export function measuredSize(role: CustomTypeRole | undefined): string | undefined {
+  const size = safeLength(role?.size);
+  if (!size) return undefined;
+  const min = safeLength(role?.sizeMin);
+  const fluid = safeLength(role?.sizeFluid);
+  if (!min || !fluid || !fluid.endsWith("cqw")) return size;
+  return `clamp(${min}, ${fluid}, ${size})`;
+}
+
 function typeScaleVars(
   category: FontCategory,
   typeScale: ThemeTokens["typeScale"],
@@ -326,23 +544,29 @@ function typeScaleVars(
    *  `--site-type-scale`: the whole point is that it is the source page's own
    *  size. The scale keeps applying to every role that was not measured. */
   const size = (role: TypeRole, clamp: string) =>
-    safeLength(custom?.[role]?.size) ?? scale(clamp);
+    measuredSize(custom?.[role]) ?? scale(clamp);
   return {
     // Absent => "normal" (1), so sites stored before this lever keep their exact
     // current sizes without a migration.
     "--site-type-scale": TYPE_SCALE_VALUE[typeScale ?? "normal"],
-    // sizes (shared) - anchored to the previous discrete sizes at mobile + ≥1280px
-    "--site-text-display": size("display", "clamp(2.5rem, 1.9rem + 2.6vw, 3.75rem)"),
-    "--site-text-h1": size("h1", "clamp(2rem, 1.6rem + 1.8vw, 3rem)"),
-    "--site-text-h2": size("h2", "clamp(1.5rem, 1.3rem + 0.9vw, 1.875rem)"),
-    "--site-text-h3": size("h3", "clamp(1.125rem, 1.05rem + 0.3vw, 1.25rem)"),
-    "--site-text-lead": size("lead", "clamp(1.125rem, 1.05rem + 0.3vw, 1.25rem)"),
+    // Sizes come from the font category's own ramp (see `CategorySizes`), so
+    // the typographic personality tracks the theme's fontPair instead of five
+    // pairs sharing one metric scale.
+    "--site-text-display": size("display", c.sizes.display),
+    "--site-text-h1": size("h1", c.sizes.h1),
+    "--site-text-h2": size("h2", c.sizes.h2),
+    "--site-text-h3": size("h3", c.sizes.h3),
+    "--site-text-lead": size("lead", c.sizes.lead),
     "--site-text-body": size("body", "1rem"),
     "--site-text-sm": size("sm", "0.875rem"),
     "--site-text-eyebrow": size("eyebrow", "0.8125rem"),
-    // Same clamp as h2, which is the size the pull-quote borrowed before it had
-    // a role - so an unmeasured site renders identically.
-    "--site-text-quote": size("quote", "clamp(1.5rem, 1.3rem + 0.9vw, 1.875rem)"),
+    // Same size as h2, which is what the pull-quote borrowed before it had a
+    // role of its own.
+    "--site-text-quote": size("quote", c.sizes.h2),
+    // Reading measures. Deliberately NOT multiplied by `--site-type-scale`:
+    // they are in `ch`, so they already grow with the text.
+    "--site-measure": c.sizes.measure,
+    "--site-measure-heading": c.sizes.measureHeading,
     // line-heights - body shared, heading/display per category
     "--site-leading-heading": c.leadingHeading,
     "--site-leading-snug": "1.4",
@@ -494,11 +718,20 @@ const SURFACE_VARS: ReadonlyArray<readonly [keyof Surface, string]> = [
   ["card", "card"],
   ["cardFg", "card-fg"],
   ["cardBorder", "card-border"],
+  // `primaryText` is optional on a palette (it exists only where `primary` is a
+  // light FILL and so cannot double as legible text); it falls back to
+  // `primary`, exactly as the root var does. It has to be emitted PER TONE for
+  // the same reason the button values are: an eyebrow or a link CTA on a
+  // dark-tone band otherwise inherits the root's light-surface value, which is
+  // a light-on-light text colour.
+  ["primaryText", "primary-text"],
 ];
 
 /** Emit `--<prefix>-<name>:<value>;` declarations for one surface. */
 function surfaceCss(prefix: string, s: Surface): string {
-  return SURFACE_VARS.map(([k, name]) => `--${prefix}-${name}:${s[k]};`).join("");
+  return SURFACE_VARS.map(
+    ([k, name]) => `--${prefix}-${name}:${s[k] ?? s.primary};`,
+  ).join("");
 }
 
 /** Concrete primary-button values for ONE surface. These must be emitted as
@@ -699,6 +932,9 @@ export function rootChromeVars(
     ...typeScaleVars(fonts.category, tokens.typeScale, tokens.customType),
     ...spacingVars(),
     ...layoutVars(tokens.customLayout),
+    // Empty for every theme without `customMotion`, so the emitted var set is
+    // unchanged for every site that has one measured (see `motionVars`).
+    ...motionVars(tokens.customMotion),
     "--site-font-heading": fontStack(cf?.heading, fonts.heading),
     "--site-font-body": fontStack(cf?.body, fonts.body),
     // Third role. Falls back to the heading stack (not the pair's heading font)
@@ -711,6 +947,19 @@ export function rootChromeVars(
     // invalid-at-computed-value-time, which inherits rather than resets.
     "--site-heading-transform":
       tokens.headingCase === "uppercase" ? "uppercase" : "none",
+    // Section-heading alignment (`theme.headingAlign`), consumed by
+    // `SectionHeading`. TWO vars for one token because a flex column needs both
+    // axes and their "start" values are not the same word: `text-align: start`
+    // is exactly what the block inherits today, while the neutral value for
+    // `align-items` is `stretch` (what an unset flex container already uses) —
+    // `align-items: start` would shrink-wrap every child and is NOT today's
+    // rendering. Both are always emitted, for the same reason as the transform
+    // above: an undeclared custom property makes the declaration
+    // invalid-at-computed-value-time, which inherits rather than resets.
+    "--site-heading-align":
+      tokens.headingAlign === "center" ? "center" : "start",
+    "--site-heading-items":
+      tokens.headingAlign === "center" ? "center" : "stretch",
     "--site-radius": RADIUS_REM[tokens.radius],
     "--site-density": DENSITY_SCALE[tokens.density],
     // Radius owns roundness now — legacy `pill` no longer forces 9999px.

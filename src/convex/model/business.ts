@@ -106,8 +106,53 @@ export function primaryGoal(
   return found ?? fallback;
 }
 
+/**
+ * What "no goal chosen" should mean per vertical: a hairdresser who answers
+ * nothing still wants bookings, a plumber wants calls. A generic
+ * "show_services" for everyone made the lazy path measurably worse than
+ * answering — the laziest path must still produce the RIGHT site.
+ *
+ * Lives here, not in the wizard, because BOTH creation flows need the same
+ * answer. The signed-in wizard applied it on Skip; the anonymous `/create`
+ * flow — the one every marketing CTA lands on — had no equivalent, so its
+ * optional goal dropdown left `goal` unset and the server fell back to the
+ * generic default this map exists to avoid. Audit 2026-08-02 ON-04d.
+ */
+export const SKIP_GOAL_BY_VERTICAL: Partial<Record<Vertical, Goal>> = {
+  dentist: "get_bookings",
+  clinic: "get_bookings",
+  salon: "get_bookings",
+  fitness: "get_bookings",
+  therapist: "get_bookings",
+  restaurant: "get_bookings",
+  handyman: "get_calls",
+  cleaning: "get_calls",
+  consultant: "get_calls",
+  coach: "get_calls",
+};
+
+/** The engine goal to use when the owner named none. */
+export const skipGoalFor = (v: Vertical | "" | undefined): Goal =>
+  (v && SKIP_GOAL_BY_VERTICAL[v]) || "show_services";
+
+/** Admin UI languages — handwritten dictionary in lib/i18n.ts. Do not widen
+ *  without translating the whole admin app. Customer websites use SITE_LOCALES. */
 export const LOCALES = ["sv", "en", "pl"] as const;
 export type Locale = (typeof LOCALES)[number];
+
+export {
+  SITE_LOCALES,
+  type SiteLocale,
+  GENERATION_LOCALES,
+  type GenerationLocale,
+  SITE_LOCALE_LABELS,
+  SITE_LOCALE_ENGLISH_NAMES,
+  isSiteLocale,
+  toAdminDictLocale,
+  toGenerationLocale,
+} from "../../lib/i18n/site-locales";
+
+import { SITE_LOCALES } from "../../lib/i18n/site-locales";
 
 export const verticalValidator = v.union(...VERTICALS.map((k) => v.literal(k)));
 export const goalValidator = v.union(...GOALS.map((k) => v.literal(k)));
@@ -117,7 +162,12 @@ export const onboardingGoalValidator = v.union(
 export const positioningValidator = v.union(
   ...POSITIONINGS.map((k) => v.literal(k)),
 );
+/** Admin UI preference (`users.locale`) and other admin-only locale fields. */
 export const localeValidator = v.union(...LOCALES.map((k) => v.literal(k)));
+/** Website primary + secondary languages (content / publish / translate). */
+export const siteLocaleValidator = v.union(
+  ...SITE_LOCALES.map((k) => v.literal(k)),
+);
 
 export const websiteStatusValidator = v.union(
   v.literal("draft"),
