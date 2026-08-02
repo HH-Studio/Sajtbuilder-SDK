@@ -16,7 +16,7 @@
     "maxTotalAssetBytes": 209715200
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:fa5ec62c6ecd37b9f65fffbaed708613b88046322efba18d8f85059016a36557",
+  "hash": "sha256:d68d753f6daa8f909ebf6d6883dbbf5dd283d61eff1eaa539fd05a1efe7f3a69",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1082,6 +1082,18 @@
                   "fieldType": {
                     "type": "object",
                     "value": {
+                      "columnSpan": {
+                        "fieldType": {
+                          "type": "number"
+                        },
+                        "optional": true
+                      },
+                      "columnStart": {
+                        "fieldType": {
+                          "type": "number"
+                        },
+                        "optional": true
+                      },
                       "hideOnDesktop": {
                         "fieldType": {
                           "type": "literal",
@@ -3972,7 +3984,8 @@
         "overlay-full",
         "overlay-left",
         "overlay-light",
-        "split"
+        "split",
+        "split-bleed"
       ],
       "highlights": [
         "alternating",

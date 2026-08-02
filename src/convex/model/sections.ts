@@ -810,5 +810,21 @@ export const sectionLayoutValidator = v.object({
   parallax: v.optional(
     v.object({ x: v.optional(v.string()), y: v.optional(v.string()) }),
   ),
+  /** Where this band's content sits across a 12-column grid, so a section can
+   *  occupy a SUBSET of the measure with the rest of the row deliberately
+   *  empty. That asymmetry is the whole editorial feel of a large family of
+   *  authored sites, and without it every imported band came back as the same
+   *  full-width slab.
+   *
+   *  Whole columns, 1-12; a span that would run off the right edge is clamped
+   *  (`lib/sections/columns.ts`), and anything outside the grid is dropped
+   *  rather than guessed at. Both absent - the default everywhere - means the
+   *  content fills the container exactly as it does today, with no extra
+   *  element in the tree.
+   *
+   *  Import-only today, like `parallax`: it is a composition the author
+   *  measured, not a knob the owner tunes. */
+  columnStart: v.optional(v.number()),
+  columnSpan: v.optional(v.number()),
 });
 export type SectionLayout = Infer<typeof sectionLayoutValidator>;

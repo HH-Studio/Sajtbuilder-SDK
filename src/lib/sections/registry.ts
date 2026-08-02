@@ -87,6 +87,19 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
         label: { sv: "Centrerad", en: "Centered", pl: "Wyśrodkowane" },
       },
       { key: "split", label: { sv: "Delad", en: "Split", pl: "Podzielone" } },
+      {
+        key: "split-bleed",
+        label: {
+          sv: "Delad, bild ut i kanten",
+          en: "Split, image to the edge",
+          pl: "Podzielone, zdjęcie do krawędzi",
+        },
+        description: {
+          sv: "Samma delade hjälte som \"Delad\", men bilden går ut i sidkanten och fyller hela höjden i stället för att sitta i en ruta.",
+          en: "The same split hero as \"Split\", but the photo runs out to the page edge and fills the full height instead of sitting in a box.",
+          pl: "Ten sam podzielony hero co \"Podzielone\", ale zdjęcie wychodzi do krawędzi strony i wypełnia całą wysokość zamiast siedzieć w ramce.",
+        },
+      },
       { key: "minimal", label: { sv: "Enkel", en: "Minimal", pl: "Proste" } },
       {
         key: "overlay",
