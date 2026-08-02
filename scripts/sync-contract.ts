@@ -46,7 +46,10 @@ export async function buildSdkContract() {
     },
     caps: PORTABLE_CAPS,
     sections: {
-      types: [...SECTION_TYPES],
+      // SORTED, matching the app exporter. Unsorted, two repos with the same
+      // section types in a different order hashed differently while every
+      // field matched — and the mirror gate could then only say "hash".
+      types: [...SECTION_TYPES].sort(),
       variants: Object.fromEntries(
         [...SECTION_TYPES].sort().map((type) => [
           type,
