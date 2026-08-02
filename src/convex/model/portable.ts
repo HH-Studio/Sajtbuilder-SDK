@@ -122,6 +122,22 @@ export const portableSiteV1 = v.object({
     // the list afterward.
     languages: v.optional(v.array(siteLocaleValidator)),
     theme: themeTokens,
+    /** Where this bundle was authored FROM, when there is a live page to point
+     *  at. Optional and additive: a bundle without it imports exactly as it
+     *  does today.
+     *
+     *  With it, the importer renders that page and lays the measurement
+     *  UNDERNEATH `theme` — everything the developer stated wins, the
+     *  measurement only fills gaps (`lib/import/measuredTheme.ts`). Without it,
+     *  the bundle lane was the one import that never measured anything, so a
+     *  developer who did not hand-write a `customPalette` got our preset while
+     *  pasting the same page's URL into the import box got the page's real
+     *  colours. The better path produced the worse result. */
+    provenance: v.optional(
+      v.object({
+        sourceUrl: v.optional(v.string()),
+      }),
+    ),
     contact: v.object({
       phone: v.optional(v.string()),
       email: v.optional(v.string()),
