@@ -69,6 +69,23 @@ describe("snabbsajt skills", () => {
     }
   });
 
+  // `--json` exists for exactly one audience: a script or a coding agent calling
+  // JSON.parse. Bun's `console.error` wraps everything it prints in ANSI red
+  // whenever the environment allows colour, so the error object arrived as
+  // `\x1b[0m\x1b[31m{...` and did not parse — in a terminal, and in any agent
+  // harness that allocates a pty. CI has no TTY, which is why 15 tests in this
+  // file failed locally and passed in CI. Backlog 1798.
+  it("writes machine-readable errors with no ANSI escapes, even with colour forced on", () => {
+    const root = fixture();
+    const result = run(["skills", "install", "--agent", "auto", "--json"], root, {
+      FORCE_COLOR: "1",
+    });
+
+    expect(result.stderr).not.toContain("\u001b[");
+    expect(() => JSON.parse(result.stderr)).not.toThrow();
+    expect(JSON.parse(result.stderr)).toMatchObject({ ok: false });
+  });
+
   it("reports no detected agent without inventing a project target", () => {
     const root = fixture();
     const result = run(["skills", "install", "--agent", "auto", "--json"], root);

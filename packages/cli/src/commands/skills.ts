@@ -5,8 +5,7 @@ import { fileURLToPath } from "node:url";
 import { detectSkillTargets, type AgentChoice } from "../skills/detect";
 import { inspectSkills, installSkills } from "../skills/install";
 import { assertManifestCompatible, loadManifest, SkillsError } from "../skills/verify";
-
-type Output = { stdout(message: string): void; stderr(message: string): void };
+import { consoleOutput, type Output } from "../output";
 
 function cliVersion(): string {
   let current = dirname(fileURLToPath(import.meta.url));
@@ -46,7 +45,7 @@ function emit(output: Output, asJson: boolean, value: Record<string, unknown>, m
 
 export async function runSkillsCommand(
   rawArgs: string[],
-  output: Output = { stdout: console.log, stderr: console.error },
+  output: Output = consoleOutput,
 ): Promise<number> {
   const asJson = rawArgs.includes("--json");
   const args = rawArgs.filter((arg) => arg !== "--json");

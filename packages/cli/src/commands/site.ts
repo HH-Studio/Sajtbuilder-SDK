@@ -32,11 +32,7 @@ import {
 import { readBoundedLocalFiles } from "@snabbsajt/site-kit/local-files";
 import { importHtmlToDirectory } from "./site/import-html";
 import { importWordpressToDirectory } from "./site/import-wordpress";
-
-type Output = {
-  stdout(message: string): void;
-  stderr(message: string): void;
-};
+import { consoleOutput, type Output } from "../output";
 
 class CliError extends Error {}
 
@@ -437,7 +433,7 @@ function emitValidation(
 
 export async function runSiteCommand(
   rawArgs: string[],
-  output: Output = { stdout: console.log, stderr: console.error },
+  output: Output = consoleOutput,
 ): Promise<number> {
   const asJson = rawArgs.includes("--json");
   const args = rawArgs.filter((arg) => arg !== "--json");

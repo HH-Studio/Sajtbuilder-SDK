@@ -4,9 +4,10 @@ import { runAdminCommand } from "./commands/admin";
 import { runConnectCommand } from "./commands/connect";
 import { cliVersion, runSiteCommand } from "./commands/site";
 import { runSkillsCommand } from "./commands/skills";
+import { consoleOutput } from "./output";
 
 function usage(): void {
-  console.log(`SnabbSajt CLI
+  consoleOutput.stdout(`SnabbSajt CLI
 
 Usage:
   snabbsajt --version
@@ -51,9 +52,9 @@ async function main(): Promise<number> {
   // not turn a version check into an error.
   if (["--version", "-v", "version"].includes(args[0]!)) {
     try {
-      console.log(cliVersion());
+      consoleOutput.stdout(cliVersion());
     } catch {
-      console.error("snabbsajt: could not resolve the installed CLI version");
+      consoleOutput.stderr("snabbsajt: could not resolve the installed CLI version");
       return 1;
     }
     return 0;
@@ -65,7 +66,7 @@ async function main(): Promise<number> {
   // the credential rules are the thing a reader needs at that moment.
   if (namespace === "admin") return runAdminCommand(rest);
   if (namespace !== "site" && namespace !== "skills") {
-    console.error(`snabbsajt: unknown command "${namespace}"`);
+    consoleOutput.stderr(`snabbsajt: unknown command "${namespace}"`);
     return 1;
   }
   if (rest.length === 0 || ["help", "--help", "-h"].includes(rest[0])) {

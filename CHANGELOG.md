@@ -14,6 +14,20 @@ that validated against an older CLI still validates against a newer one.
 
 ### Fixed
 
+- **`--json` errors were not JSON in a colour-capable terminal.** `snabbsajt
+  skills … --json` writes its error object to stderr, and Bun's `console.error`
+  wraps everything it prints in ANSI red (`\x1b[0m\x1b[31m{…`) whenever the
+  environment allows colour. `--json` exists for exactly one audience — a script
+  or a coding agent calling `JSON.parse` — and that audience got a string that
+  does not parse, in a terminal and in any agent harness that allocates a pty.
+  CI has no TTY, which is why 15 of this suite's tests failed locally and passed
+  in CI, and why the bug survived into the published 0.2.0 and 0.3.0. The four
+  command modules now share one `Output` definition (`packages/cli/src/output.ts`)
+  whose default writes raw lines straight to the streams, so output is
+  byte-identical under Bun and Node and no path can colour a machine-readable
+  one again. Pinned by a test that forces `FORCE_COLOR=1` and asserts stderr
+  contains no escape sequence at all.
+
 - **The mirrored app model had drifted 40%, and everything an author could not
   express was downstream of that.** `src/convex/model/theme.ts` was 13 kB
   against the app's 22 kB: no `customMotion` at all (nor its `enterY`,

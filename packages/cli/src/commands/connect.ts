@@ -17,6 +17,7 @@ import {
   writeDeliveryToken,
   writeProjectConfig,
 } from "./connect/project";
+import { consoleOutput, type Output } from "../output";
 
 // ---------------------------------------------------------------------------
 // `snabbsajt connect` and `snabbsajt pull`.
@@ -29,11 +30,6 @@ import {
 // Neither command can change the customer's site. The credential involved is
 // read-only and single-site by construction — there is no write path here.
 // ---------------------------------------------------------------------------
-
-type Output = {
-  stdout(message: string): void;
-  stderr(message: string): void;
-};
 
 const DEFAULT_PULL_TARGET = "snabbsajt/published.json";
 
@@ -219,7 +215,7 @@ is read-only and scoped to one site; neither command can change the site.`);
 
 export async function runConnectCommand(
   rawArgs: string[],
-  output: Output = { stdout: console.log, stderr: console.error },
+  output: Output = consoleOutput,
   deps: DeviceAuthOptions & { fetch?: typeof globalThis.fetch } = {},
 ): Promise<number> {
   const asJson = rawArgs.includes("--json");

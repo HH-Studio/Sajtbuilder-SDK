@@ -22,6 +22,7 @@ import {
   type ScopedPairOptions,
 } from "./admin/scopedPairing";
 import { cliVersion } from "./site";
+import { consoleOutput, type Output } from "../output";
 
 // ---------------------------------------------------------------------------
 // `snabbsajt admin` — the one namespace in this CLI that holds a credential with
@@ -38,11 +39,6 @@ import { cliVersion } from "./site";
 // whole tool layer instead of hardcoding ~45 verbs, so a capability the app gains
 // tomorrow is reachable today with no CLI change.
 // ---------------------------------------------------------------------------
-
-type Output = {
-  stdout(message: string): void;
-  stderr(message: string): void;
-};
 
 export type AdminDeps = ScopedPairOptions & {
   /** Overrides the app origin the MCP client talks to. */
@@ -339,7 +335,7 @@ unattended, whatever scopes it holds.`);
 
 export async function runAdminCommand(
   rawArgs: string[],
-  output: Output = { stdout: console.log, stderr: console.error },
+  output: Output = consoleOutput,
   deps: AdminDeps = {},
 ): Promise<number> {
   const asJson = rawArgs.includes("--json");
