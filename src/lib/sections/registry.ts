@@ -2114,6 +2114,36 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
     }),
   },
 
+  "imported": {
+    type: "imported",
+    label: { sv: "Från din gamla sida", en: "From your old site", pl: "Z Twojej starej strony" },
+    // `restricted`, and for the same reason `illustration` is: there is no way
+    // to author one. It only ever arrives from an import, which captured a real
+    // page's own layout. An owner adding it from the picker would get an empty
+    // block with nothing to fill it from.
+    availability: "restricted",
+    whenToUse: {
+      sv: "En del av din gamla hemsida, precis som den såg ut. Texter, bilder och länkar går att ändra som vanligt – men själva formen kommer från originalet.",
+      en: "A piece of your old website, exactly as it looked. Text, images and links edit as usual — the shape itself comes from the original.",
+      pl: "Fragment Twojej starej strony, dokładnie taki, jaki był. Tekst, obrazy i linki edytujesz normalnie — sam układ pochodzi z oryginału.",
+    },
+    category: "content",
+    icon: "FileText",
+    variants: [
+      { key: "default", label: { sv: "Standard", en: "Default", pl: "Standard" } },
+    ],
+    defaultVariant: "default",
+    defaultTone: "light",
+    // One tone only: the capture brings its OWN background. Painting a tone
+    // surface behind it would either be invisible or fight it.
+    allowedTones: ["light"],
+    defaultContent: () => ({
+      type: "imported",
+      nodes: [],
+      slots: {},
+    }),
+  },
+
   // section:new-registry-anchor — `bun run section:new <type>` inserts
   // registry entries above. Do not remove or rename this comment.
 };

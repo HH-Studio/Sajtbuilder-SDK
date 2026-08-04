@@ -527,6 +527,76 @@ export const sectionContent = v.union(
   // blocks (paragraph, subheading, bullet list). No raw HTML; the generic
   // editor edits each block's text, so formatting stays bounded. Primarily used
   // by news/blog posts, but available to any page.
+  // ---------------------------------------------------------------------
+  // An EXACT capture of a source page's own layout (plan
+  // docs/plans/open/2026-08-03-exact-import-editable.md).
+  //
+  // Open in STRUCTURE, closed in VOCABULARY: the tree is whatever the source
+  // page's layout was - we do not try to express it as one of the 40 typed
+  // sections - but every tag, attribute and declaration in it has been through
+  // an allow-list (`lib/import/capturedTree.ts`, `capturedCss.ts`) before it
+  // can be written here.
+  //
+  // FLAT, with parent indices, for three reasons: a Convex validator cannot
+  // express a recursive type; a parent index that must be LOWER than the node's
+  // own makes a cycle unrepresentable; and rendering is then one pass with no
+  // recursion.
+  //
+  // This is not an authoring model. Nothing in the editor creates one of these
+  // - they only ever arrive from an import, and the owner edits them through
+  // `slots`. The 2026-07-26 "the advanced editor is not Webflow" decision
+  // stands: there is no box model here.
+  // ---------------------------------------------------------------------
+  v.object({
+    type: v.literal("imported"),
+    /** Owner-facing label for the section list ("Hero", "Om oss"). */
+    label: v.optional(v.string()),
+    nodes: v.array(
+      v.object({
+        el: v.string(),
+        /** Index of the parent node; -1 for a root. Always < this node's own
+         *  index - enforced by the sanitizer, relied on by the renderer. */
+        parent: v.number(),
+        attrs: v.optional(v.record(v.string(), v.string())),
+        /** Sanitised inline declarations (`color:red;gap:8px`). */
+        style: v.optional(v.string()),
+        /** Which slot supplies this node's content. */
+        slot: v.optional(v.string()),
+      }),
+    ),
+    /** The editable surface. Everything an owner can change lives here, which
+     *  is what makes an exact capture editable rather than a screenshot. */
+    slots: v.record(
+      v.string(),
+      v.union(
+        v.object({ kind: v.literal("text"), value: v.string() }),
+        v.object({
+          kind: v.literal("image"),
+          assetId: v.optional(v.string()),
+          src: v.optional(v.string()),
+          alt: v.string(),
+        }),
+        v.object({
+          kind: v.literal("link"),
+          href: v.string(),
+          label: v.string(),
+        }),
+      ),
+    ),
+    /** The source's own stylesheet: trimmed to matched rules, sanitised, and
+     *  rendered inside a shadow root so it cannot reach our chrome. */
+    css: v.optional(v.string()),
+    /** `@font-face` lifted out of `css`: a face declared inside a shadow root
+     *  does not apply to it, so these are hoisted to the document. */
+    fontFaces: v.optional(v.string()),
+    /** Webfont stylesheets the source loaded that we could not READ - a
+     *  cross-origin kit throws on `cssRules`. Re-linked at document level so
+     *  the block renders in the source's own typeface rather than a fallback
+     *  with different glyph widths, which re-breaks every line. Host-restricted
+     *  to font services (`FONT_STYLESHEET_HOSTS`). */
+    fontLinks: v.optional(v.array(v.string())),
+  }),
+
   v.object({
     type: v.literal("rich-text"),
     heading: v.optional(v.string()),
@@ -784,6 +854,7 @@ export const SECTION_TYPES = [
   "scroll-tabs",
   "comparison-slider",
   "illustration",
+  "imported",
   // section:new-type-anchor — the scaffolder inserts new type literals above.
 ] as const;
 
