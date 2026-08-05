@@ -15,6 +15,16 @@ git tag -a v0.3.0 -m "SnabbSajt Site Kit and CLI 0.3.0"
 git push origin v0.3.0
 ```
 
+> **⚠️ This path cannot currently succeed, and that is why 0.2.0 and 0.3.0 were
+> both published by hand with no provenance.** The two jobs demand two different
+> tags: `release` (`.github/workflows/release.yml:26`) requires the tag to equal
+> `v${skills/manifest.json releaseVersion}`, today `v1.1.0`, while `npm`
+> (`:86`, and it `needs: release`) requires `v${package version}`, today
+> `v0.3.1`. No tag satisfies both, so the npm job never runs. Written up with
+> the decision it needs — split the triggers, or make the manifest track the
+> package version — in the app repo's backlog `1810`. Until that is settled,
+> use the hand path below and accept the missing attestation.
+
 The workflow verifies the tag against both package versions and the CLI's
 dependency range, builds the skill archives, creates the GitHub release, then
 publishes site-kit followed by cli. **It needs the `NPM_TOKEN` repository secret**
@@ -30,9 +40,10 @@ Use this only when CI cannot run. **A hand-published version has no provenance.*
 Publish `@snabbsajt/site-kit` first. The CLI has an exact dependency on the
 same Site Kit version, so reversing the order creates a broken install window.
 
-The version numbers below are written as `0.2.0` throughout because that was the
-release this runbook was written for. Substitute the version you are actually
-publishing.
+The steps below read the version from `package.json` into `$VERSION` rather
+than naming one. They used to spell `0.2.0` throughout, and by 0.3.0 the runbook
+was verifying a release two versions old — the substitution was documented and
+still nobody made it.
 
 ## One-time npm setup
 
@@ -82,14 +93,18 @@ Run from the repository root on `main` with a clean tree:
 ```bash
 git pull --ff-only
 bun install --frozen-lockfile
+# Every step below reads the version from the manifest instead of naming one,
+# so this runbook cannot go stale between releases the way it did at 0.2.0.
+VERSION="$(node -p "require('./package.json').version")"
+
 bun run check
 bun run release:assets
 npm pack --dry-run --json --cache "$TMPDIR/npm-cache"
 npm pack --dry-run --json --workspace packages/cli --cache "$TMPDIR/npm-cache"
 ```
 
-Confirm both manifests say `0.2.0`, the CLI dependency is exactly
-`@snabbsajt/site-kit: 0.2.0`, and neither tarball contains fixtures, source
+Confirm both manifests say `$VERSION`, the CLI dependency is exactly
+`@snabbsajt/site-kit: $VERSION`, and neither tarball contains fixtures, source
 credentials, customer data, or local configuration.
 
 ## 1. Publish Site Kit
@@ -99,20 +114,20 @@ private `packages/site-kit` workspace link.
 
 ```bash
 npm publish --access public --cache "$TMPDIR/npm-cache"
-npm view @snabbsajt/site-kit@0.2.0 version dist.integrity --json --prefer-online --cache "$TMPDIR/npm-cache"
+npm view @snabbsajt/site-kit@$VERSION version dist.integrity --json --prefer-online --cache "$TMPDIR/npm-cache"
 ```
 
-Stop if the registry verification does not return `0.2.0` and an integrity
+Stop if the registry verification does not return `$VERSION` and an integrity
 hash. Do not publish the CLI against a missing dependency.
 
 ## 2. Publish the CLI
 
 ```bash
 npm publish --workspace packages/cli --access public --cache "$TMPDIR/npm-cache"
-npm view @snabbsajt/cli@0.2.0 version dependencies bin dist.integrity --json --prefer-online --cache "$TMPDIR/npm-cache"
+npm view @snabbsajt/cli@$VERSION version dependencies bin dist.integrity --json --prefer-online --cache "$TMPDIR/npm-cache"
 ```
 
-The response must show the `snabbsajt` binary and the exact Site Kit `0.2.0`
+The response must show the `snabbsajt` binary and the exact Site Kit `$VERSION`
 dependency.
 
 `--prefer-online` matters immediately after the first publication. Without it,
@@ -125,22 +140,22 @@ contains the package.
 tmp="$(mktemp -d)"
 cd "$tmp"
 npm init -y --cache "$TMPDIR/npm-cache"
-npm install @snabbsajt/site-kit@0.2.0 @snabbsajt/cli@0.2.0 --cache "$TMPDIR/npm-cache"
-npx @snabbsajt/cli@0.2.0 site doctor --json
-npx @snabbsajt/cli@0.2.0 site init ./example --template html
-npx @snabbsajt/cli@0.2.0 site validate ./example
-npx @snabbsajt/cli@0.2.0 skills install --agent codex
-npx @snabbsajt/cli@0.2.0 skills doctor --agent codex
+npm install @snabbsajt/site-kit@$VERSION @snabbsajt/cli@$VERSION --cache "$TMPDIR/npm-cache"
+npx @snabbsajt/cli@$VERSION site doctor --json
+npx @snabbsajt/cli@$VERSION site init ./example --template html
+npx @snabbsajt/cli@$VERSION site validate ./example
+npx @snabbsajt/cli@$VERSION skills install --agent codex
+npx @snabbsajt/cli@$VERSION skills doctor --agent codex
 ```
 
 Only after that passes, create and push the matching Git tag and GitHub release:
 
 ```bash
-git tag -a v0.2.0 -m "SnabbSajt Site Kit and CLI 0.2.0"
-git push origin v0.2.0
-gh release create v0.2.0 release-assets/*.zip release-assets/SHA256SUMS.txt \
-  --title "SnabbSajt Site Kit and CLI 0.2.0" --generate-notes
+git tag -a "v$VERSION" -m "SnabbSajt Site Kit and CLI $VERSION"
+git push origin "v$VERSION"
+gh release create "v$VERSION" release-assets/*.zip release-assets/SHA256SUMS.txt \
+  --title "SnabbSajt Site Kit and CLI $VERSION" --generate-notes
 ```
 
 Do not reuse or move an existing tag. npm versions are immutable; a broken
-release is fixed with a new patch version, never by overwriting `0.2.0`.
+release is fixed with a new patch version, never by overwriting one already on npm.

@@ -11,16 +11,15 @@ SnabbSajt's typed sections, validate it locally, and pack it as a safe bundle.
 
 | | Version |
 | --- | --- |
-| **Published on npm** (what `npm install` gives you) | **`0.2.0`** |
-| This source tree | `0.3.0` — not yet published |
+| **Published on npm** (what `npm install` gives you) | **`0.3.0`** |
+| This source tree | `0.3.1` — not yet published |
 
 The package format, validator, HTML/WordPress converters, CLI, skills, and
 bundle format match the production SnabbSajt importer.
 
-**The features listed next are `0.3.0` and are therefore not on npm yet.** To use
-them today, build from this tree (see [Install](#install)); `npm install` still
-resolves `0.2.0`. `0.3.0` catches the mirrored contract up to the app, so that
-everything the importer already accepted becomes expressible from Site Kit:
+**Everything listed next is on npm.** `npm install` gives you `0.3.0`, which
+caught the mirrored contract up to the app, so that everything the importer
+already accepted became expressible from Site Kit:
 
 - **Your own brand.** `theme.customPalette` carries 13 raw CSS colours per
   light/dark surface, `customFonts` carries your typefaces, `customBrandHex`
@@ -35,6 +34,11 @@ everything the importer already accepted becomes expressible from Site Kit:
   may set `bgVideo`.
 - **No hand-written order keys.** Section `order` is optional — omit it and the
   importer orders by array position.
+
+`0.3.1` is one fix on top and is **not** published yet: `--json` errors were
+written to stderr through a call that wraps them in ANSI colour, so anything
+parsing them got a string that is not JSON. It only matters if you script the
+CLI's failure path; if you do, build from this tree until it ships.
 
 ## Install
 
