@@ -2,6 +2,7 @@ import { v, type Infer } from "convex/values";
 import { themeTokens } from "./theme";
 import { resolvedSiteFonts } from "./fonts";
 import { sectionContent, sectionTypeLiteral, sectionLayoutValidator } from "./sections";
+import { sectionStyleOverrides } from "./slotStyle";
 import {
   address,
   assetRef,
@@ -59,6 +60,7 @@ export const snapshotSection = v.object({
   // exactly like the draft did. Absent = inherit the snapshot theme's motion.
   motion: v.optional(sectionMotionValidator),
   layout: v.optional(sectionLayoutValidator),
+  styleOverrides: v.optional(sectionStyleOverrides),
   anchorId: v.optional(v.string()),
   content: sectionContent,
 });

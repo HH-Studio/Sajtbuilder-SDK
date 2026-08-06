@@ -1,5 +1,7 @@
 import { v, type Infer } from "convex/values";
 
+import { slotPresets } from "./slotStyle";
+
 // ---------------------------------------------------------------------------
 // Theme tokens - a small, constrained set of choices. Users never pick raw
 // hex; they pick from these enumerated, pre-validated options. The renderer
@@ -388,6 +390,12 @@ export const themeTokens = v.object({
   customType: v.optional(customType),
   customLayout: v.optional(customLayout),
   customMotion: v.optional(customMotion),
+  // Named slot-style presets (advanced editor, Phase 4). Site-wide design
+  // vocabulary in the same sense `customType` is, which is why they live here
+  // rather than in their own table: publish snapshots, portable export/import
+  // and the whole-theme undo inverse already carry the theme, so a preset
+  // rides all three for free. Absent on every site that has never saved one.
+  slotPresets: v.optional(slotPresets),
 });
 
 export type ThemeTokens = Infer<typeof themeTokens>;

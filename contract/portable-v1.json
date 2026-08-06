@@ -16,7 +16,7 @@
     "maxTotalAssetBytes": 209715200
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:7c26e6de3c721df534cf793ae6d5ff8db8d360ce5a2cfe458055a119f257a706",
+  "hash": "sha256:7ca25fb78365bdbe36995e131c48afd99935ce75f4e4cd91feb5ca4af48276af",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1211,6 +1211,1029 @@
                     "type": "string"
                   },
                   "optional": false
+                },
+                "styleOverrides": {
+                  "fieldType": {
+                    "keys": {
+                      "type": "string"
+                    },
+                    "type": "record",
+                    "values": {
+                      "fieldType": {
+                        "type": "object",
+                        "value": {
+                          "base": {
+                            "fieldType": {
+                              "type": "object",
+                              "value": {
+                                "align": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "start"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "center"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "end"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "columns": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "fit": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "cover"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "contain"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "gapStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "ink": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "default"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "muted"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "primary"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "onMedia"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "lineHeight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "radius": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "none"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "sm"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "md"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lg"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "full"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "ratio": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "auto"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "1/1"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "4/3"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "3/2"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "16/9"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "21/9"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "sizeStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "spaceBottomStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "spaceTopStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "trackingStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "transform": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "none"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "uppercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lowercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "capitalize"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "weight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                }
+                              }
+                            },
+                            "optional": true
+                          },
+                          "focusVisible": {
+                            "fieldType": {
+                              "type": "object",
+                              "value": {
+                                "align": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "start"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "center"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "end"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "columns": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "fit": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "cover"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "contain"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "gapStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "ink": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "default"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "muted"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "primary"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "onMedia"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "lineHeight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "radius": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "none"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "sm"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "md"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lg"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "full"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "ratio": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "auto"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "1/1"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "4/3"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "3/2"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "16/9"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "21/9"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "sizeStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "spaceBottomStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "spaceTopStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "trackingStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "transform": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "none"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "uppercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lowercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "capitalize"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "weight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                }
+                              }
+                            },
+                            "optional": true
+                          },
+                          "hover": {
+                            "fieldType": {
+                              "type": "object",
+                              "value": {
+                                "align": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "start"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "center"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "end"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "columns": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "fit": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "cover"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "contain"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "gapStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "ink": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "default"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "muted"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "primary"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "onMedia"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "lineHeight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "radius": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "none"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "sm"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "md"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lg"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "full"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "ratio": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "auto"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "1/1"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "4/3"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "3/2"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "16/9"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "21/9"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "sizeStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "spaceBottomStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "spaceTopStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "trackingStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "transform": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "none"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "uppercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lowercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "capitalize"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "weight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                }
+                              }
+                            },
+                            "optional": true
+                          },
+                          "lg": {
+                            "fieldType": {
+                              "type": "object",
+                              "value": {
+                                "align": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "start"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "center"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "end"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "columns": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "fit": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "cover"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "contain"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "gapStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "ink": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "default"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "muted"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "primary"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "onMedia"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "lineHeight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "radius": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "none"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "sm"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "md"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lg"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "full"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "ratio": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "auto"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "1/1"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "4/3"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "3/2"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "16/9"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "21/9"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "sizeStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "spaceBottomStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "spaceTopStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "trackingStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "transform": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "none"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "uppercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lowercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "capitalize"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "weight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                }
+                              }
+                            },
+                            "optional": true
+                          },
+                          "md": {
+                            "fieldType": {
+                              "type": "object",
+                              "value": {
+                                "align": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "start"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "center"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "end"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "columns": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "fit": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "cover"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "contain"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "gapStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "ink": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "default"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "muted"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "primary"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "onMedia"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "lineHeight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "radius": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "none"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "sm"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "md"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lg"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "full"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "ratio": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "auto"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "1/1"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "4/3"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "3/2"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "16/9"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "21/9"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "sizeStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "spaceBottomStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "spaceTopStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "trackingStep": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "transform": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "none"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "uppercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lowercase"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "capitalize"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "weight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                }
+                              }
+                            },
+                            "optional": true
+                          },
+                          "preset": {
+                            "fieldType": {
+                              "type": "string"
+                            },
+                            "optional": true
+                          }
+                        }
+                      },
+                      "optional": false
+                    }
+                  },
+                  "optional": true
                 },
                 "tone": {
                   "fieldType": {
@@ -3811,6 +4834,1037 @@
                         ]
                       },
                       "optional": false
+                    },
+                    "slotPresets": {
+                      "fieldType": {
+                        "keys": {
+                          "type": "string"
+                        },
+                        "type": "record",
+                        "values": {
+                          "fieldType": {
+                            "type": "object",
+                            "value": {
+                              "name": {
+                                "fieldType": {
+                                  "type": "string"
+                                },
+                                "optional": false
+                              },
+                              "style": {
+                                "fieldType": {
+                                  "type": "object",
+                                  "value": {
+                                    "base": {
+                                      "fieldType": {
+                                        "type": "object",
+                                        "value": {
+                                          "align": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "start"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "center"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "end"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "columns": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "fit": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "cover"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "contain"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "gapStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "ink": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "default"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "muted"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "primary"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "onMedia"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "lineHeight": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "radius": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "none"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "sm"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "md"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "lg"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "full"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "ratio": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "auto"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "1/1"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "4/3"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "3/2"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "16/9"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "21/9"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "sizeStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "spaceBottomStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "spaceTopStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "trackingStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "transform": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "none"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "uppercase"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "lowercase"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "capitalize"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "weight": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          }
+                                        }
+                                      },
+                                      "optional": true
+                                    },
+                                    "focusVisible": {
+                                      "fieldType": {
+                                        "type": "object",
+                                        "value": {
+                                          "align": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "start"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "center"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "end"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "columns": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "fit": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "cover"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "contain"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "gapStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "ink": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "default"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "muted"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "primary"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "onMedia"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "lineHeight": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "radius": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "none"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "sm"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "md"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "lg"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "full"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "ratio": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "auto"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "1/1"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "4/3"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "3/2"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "16/9"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "21/9"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "sizeStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "spaceBottomStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "spaceTopStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "trackingStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "transform": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "none"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "uppercase"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "lowercase"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "capitalize"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "weight": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          }
+                                        }
+                                      },
+                                      "optional": true
+                                    },
+                                    "hover": {
+                                      "fieldType": {
+                                        "type": "object",
+                                        "value": {
+                                          "align": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "start"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "center"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "end"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "columns": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "fit": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "cover"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "contain"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "gapStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "ink": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "default"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "muted"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "primary"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "onMedia"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "lineHeight": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "radius": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "none"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "sm"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "md"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "lg"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "full"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "ratio": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "auto"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "1/1"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "4/3"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "3/2"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "16/9"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "21/9"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "sizeStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "spaceBottomStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "spaceTopStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "trackingStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "transform": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "none"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "uppercase"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "lowercase"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "capitalize"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "weight": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          }
+                                        }
+                                      },
+                                      "optional": true
+                                    },
+                                    "lg": {
+                                      "fieldType": {
+                                        "type": "object",
+                                        "value": {
+                                          "align": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "start"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "center"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "end"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "columns": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "fit": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "cover"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "contain"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "gapStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "ink": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "default"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "muted"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "primary"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "onMedia"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "lineHeight": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "radius": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "none"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "sm"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "md"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "lg"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "full"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "ratio": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "auto"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "1/1"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "4/3"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "3/2"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "16/9"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "21/9"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "sizeStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "spaceBottomStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "spaceTopStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "trackingStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "transform": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "none"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "uppercase"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "lowercase"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "capitalize"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "weight": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          }
+                                        }
+                                      },
+                                      "optional": true
+                                    },
+                                    "md": {
+                                      "fieldType": {
+                                        "type": "object",
+                                        "value": {
+                                          "align": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "start"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "center"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "end"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "columns": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "fit": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "cover"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "contain"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "gapStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "ink": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "default"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "muted"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "primary"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "onMedia"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "lineHeight": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "radius": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "none"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "sm"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "md"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "lg"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "full"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "ratio": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "auto"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "1/1"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "4/3"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "3/2"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "16/9"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "21/9"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "sizeStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "spaceBottomStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "spaceTopStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "trackingStep": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "transform": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "none"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "uppercase"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "lowercase"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "capitalize"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "weight": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          }
+                                        }
+                                      },
+                                      "optional": true
+                                    }
+                                  }
+                                },
+                                "optional": false
+                              }
+                            }
+                          },
+                          "optional": false
+                        }
+                      },
+                      "optional": true
                     },
                     "typeScale": {
                       "fieldType": {

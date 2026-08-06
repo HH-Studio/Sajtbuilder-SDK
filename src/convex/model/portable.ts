@@ -1,6 +1,7 @@
 import { v, type Infer } from "convex/values";
 import { themeTokens } from "./theme";
 import { sectionTypeLiteral, sectionLayoutValidator } from "./sections";
+import { sectionStyleOverrides } from "./slotStyle";
 import {
   address,
   navLink,
@@ -278,6 +279,7 @@ export const portableSiteV1 = v.object({
       // bundle valid; absent = inherit the site's theme.motion on import.
       motion: v.optional(sectionMotionValidator),
       layout: v.optional(sectionLayoutValidator),
+      styleOverrides: v.optional(sectionStyleOverrides),
       // Fractional-indexing key, preserved verbatim when present. OPTIONAL
       // (SDK feedback #4): hand-authoring these keys is a footgun — omit it
       // and the import assigns valid keys in array position.

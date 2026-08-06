@@ -274,15 +274,19 @@ export function safeLength(value: string | undefined): string | undefined {
   return SAFE_LENGTH.test(trimmed) ? trimmed : undefined;
 }
 
-/** A CSS font-weight: 1..1000, integers only. */
-function safeWeight(value: number | undefined): string | undefined {
+/** A CSS font-weight: 1..1000, integers only.
+ *
+ *  Exported so the WRITE path (`lib/sections/themeDesign.ts`, the advanced
+ *  editor's design panel) refuses exactly what this renderer would drop. A
+ *  value stored here but rejected there is a knob that silently does nothing. */
+export function safeWeight(value: number | undefined): string | undefined {
   if (typeof value !== "number" || !Number.isInteger(value)) return undefined;
   return value >= 1 && value <= 1000 ? String(value) : undefined;
 }
 
 /** A unitless line-height ratio. Bounded so a measured outlier (or a hostile
  *  bundle) cannot produce a page kilometres tall. */
-function safeRatio(value: number | undefined): string | undefined {
+export function safeRatio(value: number | undefined): string | undefined {
   if (typeof value !== "number" || !Number.isFinite(value)) return undefined;
   return value >= 0.5 && value <= 4 ? String(Number(value.toFixed(3))) : undefined;
 }
@@ -331,9 +335,19 @@ function roleDefaults(
   // Literal, never `var(--site-weight-body)`: the `body` ROLE emits that very
   // name, so a var() default would be self-referential and drop to
   // invalid-at-computed-value-time (i.e. inherited weight) on every paragraph.
+  //
+  // `0em` and NOT the `normal` keyword, for the same class of reason: the
+  // primitives now read this var inside `calc(var(--site-tracking-body) +
+  // var(--slot-tracking,0em))`, and `calc(normal + 0em)` is invalid. An invalid
+  // declaration is discarded, and `letter-spacing` INHERITS — so every
+  // paragraph on every published page silently took its ancestor's tracking
+  // instead of resetting, and the slot tracking control was inert on body text.
+  // `0em` is what `normal` computes to for these faces, so no page moves.
+  // `safeLength` already rejects keywords, which means every emitted
+  // `--site-tracking-<role>` is now a real length by construction.
   const bodyish = {
     weight: "400",
-    tracking: "normal",
+    tracking: "0em",
     transform: "none",
     family: bodyFamily,
   };
@@ -432,7 +446,7 @@ const MOTION_EASING_CSS: Record<string, string> = {
 
 /** A measured millisecond count, bounded. A source page that reported 90000
  *  (or a hostile bundle that says so) must clamp, not ship a minute-long fade. */
-function safeMs(
+export function safeMs(
   value: number | undefined,
   min: number,
   max: number,
@@ -443,7 +457,7 @@ function safeMs(
 }
 
 /** A measured percentage 0..90, for where in a band's entry the reveal starts. */
-function safePercent(value: number | undefined): string | undefined {
+export function safePercent(value: number | undefined): string | undefined {
   if (typeof value !== "number" || !Number.isFinite(value)) return undefined;
   if (value < 0 || value > 90) return undefined;
   return `${Number(value.toFixed(2))}%`;
@@ -513,7 +527,21 @@ export function hasLoadReveal(tokens: ThemeTokens): boolean {
  *  `heroMaxHeight`). Returns undefined unless BOTH ends measured cleanly and
  *  the hero has a usable image aspect — a half-specified band is worse than
  *  the text-sized default, because it changes the layout without matching the
- *  source either. `vh` is deliberate over `svh`: the source rules these are
+ *  source either.
+ *
+ *  The middle term is `cqw`, for the same reason the type scale above uses it:
+ *  `vw` measures the browser WINDOW, and the editor's device frame is a fixed-
+ *  width `<div>`, not an iframe. On a 1440px screen the "Mobil" preview sized
+ *  an imported hero's band from 1440px while the real phone gives 390px — the
+ *  preview lying about the first thing on the page. `cqw` resolves against
+ *  `ThemeProvider`'s `@container` root, so the frame and the phone agree. On a
+ *  public site the root spans the viewport, so `cqw === vw` and nothing about
+ *  the live page changes.
+ *
+ *  The `vh` floor stays: `@container` is `container-type: inline-size`, so
+ *  there is no container HEIGHT unit to express it with (`cqh` would resolve
+ *  against nothing). It is allowlisted in `scripts/design-audit.ts` for exactly
+ *  that reason. `vh` over `svh` is also deliberate — the source rules these are
  *  measured from are written in `vh`. */
 export function heroBandMinHeight(
   custom: ThemeTokens["customLayout"],
@@ -525,7 +553,7 @@ export function heroBandMinHeight(
   if (typeof minVh !== "number" || !(minVh > 0) || minVh > 100) return undefined;
   if (!media || !(media.width > 0) || !(media.height > 0)) return undefined;
   const ratio = Math.min(3, Math.max(0.2, media.height / media.width));
-  return `clamp(${minVh}vh, calc(100vw * ${ratio.toFixed(4)}), ${max})`;
+  return `clamp(${minVh}vh, calc(100cqw * ${ratio.toFixed(4)}), ${max})`;
 }
 
 /** One role's measured size: a plain length, or the full `clamp()` ramp when
