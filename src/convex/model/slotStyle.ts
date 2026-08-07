@@ -104,6 +104,51 @@ export const slotTokens = v.object({
   /** Columns for a slot that lays its children out in a row (cards, logos,
    *  gallery items). 1..6 — past six, a card is a logo. */
   columns: v.optional(v.number()),
+
+  // --- motion (Phase 5: interactions v1) ------------------------------------
+  // Two triggers only, and they are the two the plan named as the safe subset:
+  // scroll-into-view and hover. Both are pure CSS, driven the same way the
+  // section-level reveal already is (`animation-timeline: view()`), so they add
+  // ZERO client JavaScript to a customer's public site, ship inside the publish
+  // snapshot by construction, and a browser without scroll-driven animations
+  // simply renders the finished page.
+  //
+  // No free durations, distances or easings on purpose. An owner picks a NAMED
+  // motion; how far and how fast it moves comes from the site's own motion
+  // tokens (`theme.customMotion`), so a page cannot end up with one part
+  // easing over 1.2s beside another snapping in 80ms.
+  /** How this part moves as the page scrolls. Absent means it does not animate
+   *  on its own — it still rides its section's reveal, which is what every
+   *  existing site does.
+   *
+   *  ONE motion per part, not a stack. Every value here compiles to a single
+   *  `animation` on one element, so there is no composition order to reason
+   *  about and no way for two choices to fight over `transform` — the same
+   *  discipline that keeps a slot to one preset. The three reveals are
+   *  scroll-into-view (Phase 5); the two drifts are scroll-LINKED (Phase 6) and
+   *  are the per-part generalisation of `section.layout.parallax`. */
+  motion: v.optional(
+    v.union(
+      v.literal("rise"),
+      v.literal("fade"),
+      v.literal("zoom"),
+      v.literal("driftUp"),
+      v.literal("driftDown"),
+    ),
+  ),
+  /** Start N steps after the band does — the stagger a designer reaches for so
+   *  an eyebrow, a headline and a button do not arrive as one slab. 0..6, in
+   *  the same 4%-of-the-entry-window units the section-level child stagger
+   *  already uses. Meaningless on a drift, which is linked to scroll position
+   *  rather than triggered by it, and the panel hides it there. */
+  motionDelayStep: v.optional(v.number()),
+  /** How far this part lifts under the pointer. Hover only — never the sole
+   *  affordance for anything, suppressed on a coarse pointer (where `:hover`
+   *  sticks after a tap), and driven by `translate` rather than `transform` so
+   *  it can never fight a scroll animation on the same element. */
+  hoverLift: v.optional(
+    v.union(v.literal("sm"), v.literal("md"), v.literal("lg")),
+  ),
 });
 export type SlotTokens = Infer<typeof slotTokens>;
 

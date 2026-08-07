@@ -16,7 +16,7 @@
     "maxTotalAssetBytes": 209715200
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:7ca25fb78365bdbe36995e131c48afd99935ce75f4e4cd91feb5ca4af48276af",
+  "hash": "sha256:58cc8d2080526450bc8ea12d270bd30ed7419336b155c0bae6fd0d12c6fe946a",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1274,6 +1274,26 @@
                                   },
                                   "optional": true
                                 },
+                                "hoverLift": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "sm"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "md"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lg"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
                                 "ink": {
                                   "fieldType": {
                                     "type": "union",
@@ -1299,6 +1319,40 @@
                                   "optional": true
                                 },
                                 "lineHeight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "motion": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "rise"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "fade"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "zoom"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "driftUp"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "driftDown"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "motionDelayStep": {
                                   "fieldType": {
                                     "type": "number"
                                   },
@@ -1474,6 +1528,26 @@
                                   },
                                   "optional": true
                                 },
+                                "hoverLift": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "sm"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "md"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lg"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
                                 "ink": {
                                   "fieldType": {
                                     "type": "union",
@@ -1499,6 +1573,40 @@
                                   "optional": true
                                 },
                                 "lineHeight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "motion": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "rise"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "fade"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "zoom"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "driftUp"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "driftDown"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "motionDelayStep": {
                                   "fieldType": {
                                     "type": "number"
                                   },
@@ -1674,6 +1782,26 @@
                                   },
                                   "optional": true
                                 },
+                                "hoverLift": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "sm"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "md"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lg"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
                                 "ink": {
                                   "fieldType": {
                                     "type": "union",
@@ -1699,6 +1827,40 @@
                                   "optional": true
                                 },
                                 "lineHeight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "motion": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "rise"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "fade"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "zoom"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "driftUp"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "driftDown"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "motionDelayStep": {
                                   "fieldType": {
                                     "type": "number"
                                   },
@@ -1874,6 +2036,26 @@
                                   },
                                   "optional": true
                                 },
+                                "hoverLift": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "sm"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "md"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lg"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
                                 "ink": {
                                   "fieldType": {
                                     "type": "union",
@@ -1899,6 +2081,40 @@
                                   "optional": true
                                 },
                                 "lineHeight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "motion": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "rise"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "fade"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "zoom"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "driftUp"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "driftDown"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "motionDelayStep": {
                                   "fieldType": {
                                     "type": "number"
                                   },
@@ -2074,6 +2290,26 @@
                                   },
                                   "optional": true
                                 },
+                                "hoverLift": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "sm"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "md"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "lg"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
                                 "ink": {
                                   "fieldType": {
                                     "type": "union",
@@ -2099,6 +2335,40 @@
                                   "optional": true
                                 },
                                 "lineHeight": {
+                                  "fieldType": {
+                                    "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "motion": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "rise"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "fade"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "zoom"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "driftUp"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "driftDown"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "motionDelayStep": {
                                   "fieldType": {
                                     "type": "number"
                                   },
@@ -4907,6 +5177,26 @@
                                             },
                                             "optional": true
                                           },
+                                          "hoverLift": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "sm"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "md"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "lg"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
                                           "ink": {
                                             "fieldType": {
                                               "type": "union",
@@ -4932,6 +5222,40 @@
                                             "optional": true
                                           },
                                           "lineHeight": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "motion": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "rise"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "fade"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "zoom"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "driftUp"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "driftDown"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "motionDelayStep": {
                                             "fieldType": {
                                               "type": "number"
                                             },
@@ -5107,6 +5431,26 @@
                                             },
                                             "optional": true
                                           },
+                                          "hoverLift": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "sm"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "md"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "lg"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
                                           "ink": {
                                             "fieldType": {
                                               "type": "union",
@@ -5132,6 +5476,40 @@
                                             "optional": true
                                           },
                                           "lineHeight": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "motion": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "rise"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "fade"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "zoom"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "driftUp"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "driftDown"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "motionDelayStep": {
                                             "fieldType": {
                                               "type": "number"
                                             },
@@ -5307,6 +5685,26 @@
                                             },
                                             "optional": true
                                           },
+                                          "hoverLift": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "sm"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "md"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "lg"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
                                           "ink": {
                                             "fieldType": {
                                               "type": "union",
@@ -5332,6 +5730,40 @@
                                             "optional": true
                                           },
                                           "lineHeight": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "motion": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "rise"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "fade"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "zoom"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "driftUp"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "driftDown"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "motionDelayStep": {
                                             "fieldType": {
                                               "type": "number"
                                             },
@@ -5507,6 +5939,26 @@
                                             },
                                             "optional": true
                                           },
+                                          "hoverLift": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "sm"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "md"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "lg"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
                                           "ink": {
                                             "fieldType": {
                                               "type": "union",
@@ -5532,6 +5984,40 @@
                                             "optional": true
                                           },
                                           "lineHeight": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "motion": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "rise"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "fade"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "zoom"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "driftUp"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "driftDown"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "motionDelayStep": {
                                             "fieldType": {
                                               "type": "number"
                                             },
@@ -5707,6 +6193,26 @@
                                             },
                                             "optional": true
                                           },
+                                          "hoverLift": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "sm"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "md"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "lg"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
                                           "ink": {
                                             "fieldType": {
                                               "type": "union",
@@ -5732,6 +6238,40 @@
                                             "optional": true
                                           },
                                           "lineHeight": {
+                                            "fieldType": {
+                                              "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "motion": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "rise"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "fade"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "zoom"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "driftUp"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "driftDown"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "motionDelayStep": {
                                             "fieldType": {
                                               "type": "number"
                                             },
