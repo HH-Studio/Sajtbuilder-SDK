@@ -16,7 +16,7 @@
     "maxTotalAssetBytes": 209715200
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:71cd48d1272dea9036450ea495254f18293c101509f63115cc3edba50df9400e",
+  "hash": "sha256:ea96419cf4864b188384eec388dc90413f33a88bb64d64ae8c472e7829c30424",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -6627,6 +6627,7 @@
       "banner": [
         "bar",
         "card",
+        "notice",
         "split"
       ],
       "before-after": [

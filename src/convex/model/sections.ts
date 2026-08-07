@@ -540,6 +540,11 @@ export const sectionContent = v.union(
     type: v.literal("banner"),
     text: v.string(),
     cta: v.optional(ctaRef),
+    // "notice" only - the small chip that opens the strip ("NYHET", "REA").
+    // A label for the message, not a claim about the business: it says what
+    // KIND of notice this is, so it must stay owner-written. The other three
+    // banner variants ignore it.
+    badge: v.optional(v.string()),
   }),
 
   // Video. Either an EMBED (provider youtube|vimeo + id - the renderer builds the

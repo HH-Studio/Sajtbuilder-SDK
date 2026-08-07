@@ -36,7 +36,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | Type | Variants |
 | --- | --- |
 | `about` | `collage`, `image-left`, `showcase`, `split-head`, `story-stats`, `text-image`, `text-only`, `wide` |
-| `banner` | `bar`, `card`, `split` |
+| `banner` | `bar`, `card`, `notice`, `split` |
 | `before-after` | `side-by-side`, `slider`, `stacked`, `wide` |
 | `bento` | `bento`, `list`, `mosaic`, `portfolio`, `rail`, `uniform` |
 | `booking` | `button`, `inline` |

@@ -2083,6 +2083,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           pl: "Na większych ekranach wiadomość jest po lewej, a przycisk po prawej.",
         },
       },
+      {
+        key: "notice",
+        label: { sv: "Notis", en: "Notice", pl: "Notka" },
+        description: {
+          sv: "En liten etikett (”NYHET”) inleder raden, sedan meddelandet och en länk. Tunn linje under i stället för färgad platta.",
+          en: "A small label (“NEW”) opens the line, then the message and a link. A thin rule underneath instead of a coloured band.",
+          pl: "Wiersz zaczyna mała etykieta („NOWOŚĆ”), potem wiadomość i link. Pod spodem cienka linia zamiast kolorowego pasa.",
+        },
+      },
     ],
     defaultVariant: "bar",
     defaultTone: "dark",
