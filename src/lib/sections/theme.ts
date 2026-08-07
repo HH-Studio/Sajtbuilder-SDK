@@ -8,7 +8,7 @@ import {
   type TypeRole,
 } from "../../convex/model/theme";
 import { SITE_LOGO_CLASS } from "../appearance/logoImage";
-import { PALETTES, type Surface } from "../palettes";
+import { PALETTES, brandSurface, type Surface } from "../palettes";
 
 // ---------------------------------------------------------------------------
 // Maps constrained theme tokens to CSS custom properties consumed by the site
@@ -17,7 +17,11 @@ import { PALETTES, type Surface } from "../palettes";
 // applies a tone-specific surface (light / clear / dark) onto itself.
 // ---------------------------------------------------------------------------
 
-export type SectionTone = "light" | "clear" | "dark";
+/** Three steps of one canvas — `light` (the page), `clear` (a neutral step),
+ *  `dark` (the inverse) — plus `brand`: the palette's accent used as a FIELD.
+ *  See the header of `lib/palettes.ts` for why the first three are neutral and
+ *  the fourth is where a site's colour actually lives. */
+export type SectionTone = "light" | "clear" | "dark" | "brand";
 
 /** Typeface family of the heading font - drives optical line-height / tracking /
  *  weight so serif and grotesk headings each read correctly (sizes stay shared).
@@ -702,17 +706,25 @@ export function appearanceToneSurfaces(
   custom?: { light: Surface; dark: Surface },
 ): Record<SectionTone, Surface> {
   const p = safeCustomPalette(custom) ?? PALETTES[palette];
+  // `brand` does NOT flip with appearance. It is the site's colour, and a dark
+  // site's coloured band is the same coloured band — flipping it would make the
+  // one place the palette is visible disappear in dark mode. An imported custom
+  // palette has no authored brand fill, so it falls back to the built-in
+  // palette's; that keeps a brand band legible rather than dropping it.
+  const brand = brandSurface(PALETTES[palette].brand);
   if (appearance === "dark") {
     return {
       light: p.dark, // base surface
-      clear: { ...p.dark, bg: p.dark.muted, card: p.dark.bg }, // tinted dark band
+      clear: { ...p.dark, bg: p.dark.muted, card: p.dark.bg }, // neutral dark step
       dark: p.light, // emphasis band → light, for contrast
+      brand,
     };
   }
   return {
     light: p.light,
     clear: { ...p.light, bg: p.light.muted, card: p.light.bg },
     dark: p.dark,
+    brand,
   };
 }
 
@@ -883,9 +895,16 @@ function schemeBlock(
     surfaceCss("s-light", tones.light) +
     surfaceCss("s-clear", tones.clear) +
     surfaceCss("s-dark", tones.dark) +
+    surfaceCss("s-brand", tones.brand) +
     buttonCss("s-light", tones.light, buttonStyle) +
     buttonCss("s-clear", tones.clear, buttonStyle) +
     buttonCss("s-dark", tones.dark, buttonStyle) +
+    // On a brand field the primary action is always a SOLID near-white plate.
+    // `outline` and `underline` are legible choices on a neutral canvas and
+    // near-invisible on a saturated one — a hairline outline on a blue band is
+    // the page-builder default this whole surface exists to replace. The site's
+    // buttonStyle is honoured everywhere else.
+    buttonCss("s-brand", tones.brand, "solid") +
     // base surface used by the root element itself (sections override it)
     surfaceCss("site", tones.light) +
     buttonCss("site", tones.light, buttonStyle)

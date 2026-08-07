@@ -23,6 +23,12 @@ export const PALETTE_KEYS = [
   "plum", // deep aubergine (elegant, refined)
   "midnight", // deep navy (premium, trustworthy)
   "amber", // warm gold (craft, hospitality)
+  // Three reference palettes supplied by the owner on 2026-08-07, reproduced
+  // from their shadcn/tweakcn token sets. See lib/palettes.ts for the two
+  // places each one had to move to clear the AA guard.
+  "graphite", // pure neutral, near-black primary (shadcn default)
+  "indigo", // violet-indigo on cool white (tweakcn "Clean Slate")
+  "azure", // saturated blue on pure white (tweakcn "Modern Minimal")
 ] as const;
 
 export const FONT_PAIR_KEYS = [

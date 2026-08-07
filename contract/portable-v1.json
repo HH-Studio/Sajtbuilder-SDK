@@ -16,7 +16,7 @@
     "maxTotalAssetBytes": 209715200
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:58cc8d2080526450bc8ea12d270bd30ed7419336b155c0bae6fd0d12c6fe946a",
+  "hash": "sha256:71cd48d1272dea9036450ea495254f18293c101509f63115cc3edba50df9400e",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2520,6 +2520,10 @@
                       {
                         "type": "literal",
                         "value": "dark"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "brand"
                       }
                     ]
                   },
@@ -3172,6 +3176,12 @@
                     "bufferMin": {
                       "fieldType": {
                         "type": "number"
+                      },
+                      "optional": true
+                    },
+                    "busyFeedUrl": {
+                      "fieldType": {
+                        "type": "string"
                       },
                       "optional": true
                     },
@@ -5080,6 +5090,18 @@
                           {
                             "type": "literal",
                             "value": "amber"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "graphite"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "indigo"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "azure"
                           }
                         ]
                       },
@@ -6593,7 +6615,11 @@
     ],
     "variants": {
       "about": [
+        "collage",
         "image-left",
+        "showcase",
+        "split-head",
+        "story-stats",
         "text-image",
         "text-only",
         "wide"
@@ -6605,12 +6631,16 @@
       ],
       "before-after": [
         "side-by-side",
+        "slider",
         "stacked",
         "wide"
       ],
       "bento": [
         "bento",
         "list",
+        "mosaic",
+        "portfolio",
+        "rail",
         "uniform"
       ],
       "booking": [
@@ -6625,6 +6655,7 @@
       "comparison": [
         "cards",
         "features",
+        "plans",
         "table"
       ],
       "comparison-slider": [
@@ -6640,6 +6671,8 @@
         "boxed",
         "centered",
         "gradient",
+        "showpiece",
+        "slab",
         "split"
       ],
       "documents": [
@@ -6653,6 +6686,8 @@
         "accordion",
         "accordion-cta",
         "cards",
+        "filled-rows",
+        "numbered",
         "split",
         "two-column"
       ],
@@ -6663,6 +6698,8 @@
         "centered",
         "columns",
         "contact",
+        "inset",
+        "ruled",
         "simple"
       ],
       "gallery": [
@@ -6670,10 +6707,12 @@
         "full-bleed",
         "grid-3",
         "grid-4",
-        "masonry"
+        "masonry",
+        "mosaic"
       ],
       "hero": [
         "centered",
+        "duo",
         "gradient",
         "image-left",
         "image-right",
@@ -6682,15 +6721,27 @@
         "overlay-full",
         "overlay-left",
         "overlay-light",
+        "panel",
+        "poster",
+        "scatter",
         "split",
-        "split-bleed"
+        "split-bleed",
+        "spotlight",
+        "stage"
       ],
       "highlights": [
+        "accent",
         "alternating",
+        "figures",
         "grid-2",
         "grid-3",
+        "icon-circles",
         "icon-list",
-        "plain"
+        "pillars",
+        "plain",
+        "split-icons",
+        "stat-cards",
+        "values"
       ],
       "illustration": [
         "default",
@@ -6713,7 +6764,8 @@
       "lead-form": [
         "card",
         "stacked",
-        "two-column"
+        "two-column",
+        "underline"
       ],
       "legal": [
         "centered",
@@ -6728,6 +6780,7 @@
       "logos": [
         "grid",
         "marquee",
+        "numbered-grid",
         "row"
       ],
       "newsletter": [
@@ -6741,6 +6794,8 @@
         "table"
       ],
       "pricing": [
+        "packages",
+        "rows",
         "simple-list",
         "single",
         "tiers-3",
@@ -6748,6 +6803,7 @@
       ],
       "process": [
         "numbered-cards",
+        "steps-cta",
         "steps-horizontal",
         "steps-vertical",
         "timeline"
@@ -6766,7 +6822,9 @@
         "prose"
       ],
       "scroll-tabs": [
+        "overlay",
         "pinned",
+        "pinned-text",
         "stacked",
         "tabs"
       ],
@@ -6781,24 +6839,34 @@
         "stacked"
       ],
       "services": [
+        "feature-cards",
         "grid-2",
         "grid-3",
         "icon-grid",
         "icon-grid-cta",
+        "labelled-cards",
         "list",
+        "media-list",
+        "menu-grid",
         "numbered",
         "numbered-split",
-        "split"
+        "photo-bento",
+        "ruled-grid",
+        "split",
+        "tiles"
       ],
       "social-proof": [
         "cards",
+        "divided",
         "inline",
+        "split-grid",
         "stats"
       ],
       "statement": [
         "bordered",
         "centered",
         "framed",
+        "lede",
         "rule"
       ],
       "team": [
@@ -6812,6 +6880,8 @@
         "logos-quote",
         "marquee",
         "plain",
+        "portrait",
+        "ragged",
         "single"
       ],
       "video": [

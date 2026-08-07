@@ -46,12 +46,35 @@ export const sectionContent = v.union(
     videoControls: v.optional(v.boolean()),
     primaryCta: v.optional(ctaRef),
     secondaryCta: v.optional(ctaRef),
+    // "spotlight" only - small labelled chips floated over the hero media
+    // ("Office cleaning", "Bathroom cleaning"). Names of things the business
+    // does, not links: a chip that navigates competes with the two CTAs
+    // directly under it.
+    tags: v.optional(
+      v.array(v.object({ label: v.string(), icon: v.optional(siteIconKey) })),
+    ),
+    // The EXTRA photo set: the ring around the headline in "scatter", the row
+    // under it in "stage". Separate from `media` on purpose - `media` is the ONE
+    // hero photo every other layout renders, and a layout that needs nine of
+    // them must not quietly redefine what that single field means for the
+    // fifteen variants that share it.
+    scatterImages: v.optional(v.array(assetRef)),
+    // "duo" only - the second, smaller photo inset over the first. Two photos
+    // is the layout; a variant that needs a second one must say so rather than
+    // borrowing the first item of `scatterImages`, which means something else.
+    secondaryMedia: v.optional(assetRef),
   }),
 
   v.object({
     type: v.literal("services"),
+    /** @see rich-text's `eyebrow`. "feature-cards" only - the small label
+     *  above the heading ("Our services"). */
+    eyebrow: v.optional(v.string()),
     heading: v.string(),
     intro: v.optional(v.string()),
+    /** "feature-cards" only - one section-level photo beside the cards. Per
+     *  ITEM photos stay on `items[].media`; this is the band's own image. */
+    media: v.optional(assetRef),
     items: v.array(
       v.object({
         title: v.string(),
@@ -66,6 +89,10 @@ export const sectionContent = v.union(
         // Optional owner-entered display price from the canonical services menu.
         // Kept as text because services can be "from", hourly, or quote-only.
         priceText: v.optional(v.string()),
+        // Short "what's included" labels rendered as a checked list under the
+        // description ("Floors", "Restrooms"). Only "feature-cards" renders
+        // them - the other variants would turn a card into a spec sheet.
+        bullets: v.optional(v.array(v.string())),
         icon: v.optional(siteIconKey),
         media: v.optional(assetRef),
         cta: v.optional(ctaRef),
@@ -107,10 +134,24 @@ export const sectionContent = v.union(
 
   v.object({
     type: v.literal("about"),
+    /** @see rich-text's `eyebrow`. "showcase" only - the small label above the
+     *  statement ("Learn about us"). Every other variant ignores it. */
+    eyebrow: v.optional(v.string()),
     heading: v.string(),
     body: v.string(),
     media: v.optional(assetRef),
     signatureName: v.optional(v.string()),
+    /** "showcase" only - the one button under the statement. */
+    cta: v.optional(ctaRef),
+    // "collage" only - the second photo. Two photos at deliberate offsets is
+    // the layout; every other About cut renders `media` alone.
+    secondaryMedia: v.optional(assetRef),
+    // "story-stats" only - a short pair of figures under the story. Kept here
+    // rather than pointing at the `social-proof` block because these belong TO
+    // the story ("22+ years", "489+ cleaners") and read as part of it.
+    stats: v.optional(
+      v.array(v.object({ value: v.string(), label: v.string() })),
+    ),
   }),
 
   v.object({
@@ -152,12 +193,17 @@ export const sectionContent = v.union(
 
   v.object({
     type: v.literal("gallery"),
+    /** @see rich-text's `eyebrow`. Rendered by "mosaic"; other gallery
+     *  variants show the heading alone. */
+    eyebrow: v.optional(v.string()),
     heading: v.optional(v.string()),
     images: v.array(assetRef), // capped (≤24) in the editor
   }),
 
   v.object({
     type: v.literal("before-after"),
+    /** @see rich-text's `eyebrow`. Rendered by "slider". */
+    eyebrow: v.optional(v.string()),
     heading: v.optional(v.string()),
     pairs: v.array(
       v.object({
@@ -189,6 +235,13 @@ export const sectionContent = v.union(
         features: v.array(v.string()),
         cta: v.optional(ctaRef),
         highlighted: v.optional(v.boolean()),
+        // "packages" only. The icon is decoration that tells the three tiers
+        // apart at a glance; the badge is the owner's own words for why one is
+        // singled out ("Most popular"). Deliberately a FIELD, not derived from
+        // `highlighted`: printing "most popular" on a tier because it is styled
+        // differently would be inventing a claim about their business.
+        icon: v.optional(siteIconKey),
+        badge: v.optional(v.string()),
       }),
     ),
   }),
@@ -216,6 +269,8 @@ export const sectionContent = v.union(
   v.object({
     type: v.literal("process"),
     heading: v.string(),
+    /** @see rich-text's `eyebrow` */
+    eyebrow: v.optional(v.string()),
     steps: v.array(
       v.object({
         title: v.string(),
@@ -223,6 +278,11 @@ export const sectionContent = v.union(
         icon: v.optional(siteIconKey),
       }),
     ),
+    // "steps-cta" variant only - a trailing card that closes the sequence with
+    // an action, in the same grid as the steps. Same shape `team` and `faq`
+    // already use for their trailing bands.
+    footerHeading: v.optional(v.string()),
+    footerCta: v.optional(ctaRef),
   }),
 
   v.object({
@@ -302,6 +362,8 @@ export const sectionContent = v.union(
 
   v.object({
     type: v.literal("cta-band"),
+    /** @see rich-text's `eyebrow`. Rendered by "showpiece". */
+    eyebrow: v.optional(v.string()),
     headline: v.string(),
     subtext: v.optional(v.string()),
     primaryCta: ctaRef,
@@ -432,12 +494,22 @@ export const sectionContent = v.union(
     type: v.literal("highlights"),
     heading: v.string(),
     intro: v.optional(v.string()),
+    // "values" only - one section-level photo beside the stacked cards. Per
+    // ITEM photos stay on `items[].media`; this is the band's own image.
+    media: v.optional(assetRef),
+    // "split-icons" only - one button under the heading column.
+    cta: v.optional(ctaRef),
     items: v.array(
       v.object({
         title: v.string(),
         description: v.string(),
         icon: v.optional(siteIconKey),
         media: v.optional(assetRef),
+        // "figures" only - the small line ABOVE the figure that says what is
+        // being counted ("Residences serviced"). The title is the number and
+        // the description is its note, so this is the third slot that layout
+        // needs and no other highlights variant renders.
+        label: v.optional(v.string()),
       }),
     ),
   }),
@@ -455,6 +527,10 @@ export const sectionContent = v.union(
         span: v.optional(
           v.union(v.literal("sm"), v.literal("md"), v.literal("lg")),
         ),
+        // "portfolio" only - the group this piece of work belongs to. It is
+        // both the line above the title and the filter chip the visitor picks,
+        // so the chips are DERIVED from the cells rather than stored twice.
+        category: v.optional(v.string()),
       }),
     ),
   }),
@@ -494,6 +570,11 @@ export const sectionContent = v.union(
       v.object({
         label: v.string(),
         highlighted: v.optional(v.boolean()),
+        // "plans" only - the price under the column name, and the line under
+        // that ("Hourly plan"). Text, like `pricing.price`, because a rate can
+        // be "from", hourly, or quote-only.
+        price: v.optional(v.string()),
+        priceNote: v.optional(v.string()),
       }),
     ),
     rows: v.array(
@@ -739,6 +820,9 @@ export const sectionContent = v.union(
         video: v.optional(assetRef),
       }),
     ),
+    // "pinned-text" only - one button at the foot of the pinned panel, so the
+    // step sequence ends on an action instead of trailing off.
+    cta: v.optional(ctaRef),
   }),
 
   // Restricted (client-specific): an interactive what-if comparison. The

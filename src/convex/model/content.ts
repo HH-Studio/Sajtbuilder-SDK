@@ -16,10 +16,17 @@ export type Socials = Infer<typeof socialsValidator>;
 
 /** Section surface tone - a separate, plain-language control from layout
  *  variant ("Standard" / palette clearLabel e.g. "Grå" / "Mörk"). */
+// `brand` is the palette's accent used as a FIELD — a whole band in the site's
+// colour, with the primary action inverted to a near-white plate on it (see
+// `BrandFill` in lib/palettes.ts). It is the fourth surface, not a fourth
+// neutral: light/clear/dark are three steps of one canvas, brand is the colour.
+// Widening a union is a safe Convex schema change (existing docs still
+// validate); nothing writes it until a recipe or an owner picks it.
 export const sectionToneValidator = v.union(
   v.literal("light"),
   v.literal("clear"),
   v.literal("dark"),
+  v.literal("brand"),
 );
 export type SectionToneValue = Infer<typeof sectionToneValidator>;
 
@@ -57,6 +64,19 @@ export type SiteIconKeyValue = Infer<typeof siteIconKey>;
 export const assetRef = v.object({
   assetId: v.id("assets"),
   alt: v.string(), // accessibility - nudged non-empty in the editor
+  /** This image carries no information: a background texture, a divider, a
+   *  decorative flourish. An EMPTY alt is the correct accessible markup for
+   *  one — a screen reader should skip it rather than announce it — so the
+   *  publish gate's `image_missing_alt` warning is wrong here, and the renderer
+   *  emits `alt=""` even where it would otherwise fall back to a person's or a
+   *  brand's name.
+   *
+   *  Owner-set only. It is never inferred from the section type: `image` and
+   *  `illustration` sections carry meaningful photos as often as decorative
+   *  ones, and guessing would either silence a real defect or keep nagging
+   *  about a real decoration (backlog 1940). Optional, so every existing
+   *  document keeps validating on one deploy. */
+  decorative: v.optional(v.boolean()),
   // Focal point for object-position cropping (0..1). The only positioning
   // control a user gets; it cannot break layout.
   focalX: v.optional(v.number()),
@@ -247,6 +267,15 @@ export const bookingConfigValidator = v.object({
   cancellationWindowHours: v.optional(v.number()),
   cancellationPolicy: v.optional(v.string()),
   confirmationMessage: v.optional(v.string()),
+  // A private ICS feed URL from the owner's real calendar (Google, iCloud and
+  // Outlook all publish one). Slots overlapping an event in that feed stop being
+  // offered, so the site is no longer an availability island (backlog 0889).
+  // Absent => no calendar is consulted, which is the default.
+  //
+  // Owner-supplied, so it is fetched ONLY through `lib/net/safeFetch.ts` and
+  // never rendered as a link: it is a bearer-style secret URL, and anyone
+  // holding it can read the owner's diary.
+  busyFeedUrl: v.optional(v.string()),
 });
 export type BookingConfig = Infer<typeof bookingConfigValidator>;
 

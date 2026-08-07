@@ -35,47 +35,47 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 
 | Type | Variants |
 | --- | --- |
-| `about` | `image-left`, `text-image`, `text-only`, `wide` |
+| `about` | `collage`, `image-left`, `showcase`, `split-head`, `story-stats`, `text-image`, `text-only`, `wide` |
 | `banner` | `bar`, `card`, `split` |
-| `before-after` | `side-by-side`, `stacked`, `wide` |
-| `bento` | `bento`, `list`, `uniform` |
+| `before-after` | `side-by-side`, `slider`, `stacked`, `wide` |
+| `bento` | `bento`, `list`, `mosaic`, `portfolio`, `rail`, `uniform` |
 | `booking` | `button`, `inline` |
 | `certifications` | `badges`, `grid`, `list` |
-| `comparison` | `cards`, `features`, `table` |
+| `comparison` | `cards`, `features`, `plans`, `table` |
 | `comparison-slider` | `default` |
 | `contact` | `form-info`, `info-cards`, `info-only`, `links` |
-| `cta-band` | `boxed`, `centered`, `gradient`, `split` |
+| `cta-band` | `boxed`, `centered`, `gradient`, `showpiece`, `slab`, `split` |
 | `documents` | `grid`, `list` |
 | `external-product-grid` | `default` |
-| `faq` | `accordion`, `accordion-cta`, `cards`, `split`, `two-column` |
+| `faq` | `accordion`, `accordion-cta`, `cards`, `filled-rows`, `numbered`, `split`, `two-column` |
 | `featured-product` | `default` |
-| `footer` | `centered`, `columns`, `contact`, `simple` |
-| `gallery` | `carousel`, `full-bleed`, `grid-3`, `grid-4`, `masonry` |
-| `hero` | `centered`, `gradient`, `image-left`, `image-right`, `minimal`, `overlay`, `overlay-full`, `overlay-left`, `overlay-light`, `split`, `split-bleed` |
-| `highlights` | `alternating`, `grid-2`, `grid-3`, `icon-list`, `plain` |
+| `footer` | `centered`, `columns`, `contact`, `inset`, `ruled`, `simple` |
+| `gallery` | `carousel`, `full-bleed`, `grid-3`, `grid-4`, `masonry`, `mosaic` |
+| `hero` | `centered`, `duo`, `gradient`, `image-left`, `image-right`, `minimal`, `overlay`, `overlay-full`, `overlay-left`, `overlay-light`, `panel`, `poster`, `scatter`, `split`, `split-bleed`, `spotlight`, `stage` |
+| `highlights` | `accent`, `alternating`, `figures`, `grid-2`, `grid-3`, `icon-circles`, `icon-list`, `pillars`, `plain`, `split-icons`, `stat-cards`, `values` |
 | `illustration` | `default`, `inline`, `wide` |
 | `image` | `full`, `inset`, `wide` |
 | `imported` | `default` |
 | `instagram` | `collage`, `grid`, `row` |
-| `lead-form` | `card`, `stacked`, `two-column` |
+| `lead-form` | `card`, `stacked`, `two-column`, `underline` |
 | `legal` | `centered`, `document`, `paper` |
 | `location` | `address-only`, `map-card`, `map-first` |
-| `logos` | `grid`, `marquee`, `row` |
+| `logos` | `grid`, `marquee`, `numbered-grid`, `row` |
 | `newsletter` | `boxed`, `centered`, `inline` |
 | `opening-hours` | `cards`, `compact`, `table` |
-| `pricing` | `simple-list`, `single`, `tiers-3`, `two-col` |
-| `process` | `numbered-cards`, `steps-horizontal`, `steps-vertical`, `timeline` |
+| `pricing` | `packages`, `rows`, `simple-list`, `single`, `tiers-3`, `two-col` |
+| `process` | `numbered-cards`, `steps-cta`, `steps-horizontal`, `steps-vertical`, `timeline` |
 | `product-grid` | `default` |
 | `quote-flow` | `card`, `inline` |
 | `rich-text` | `columns`, `narrow`, `paper`, `prose` |
-| `scroll-tabs` | `pinned`, `stacked`, `tabs` |
+| `scroll-tabs` | `overlay`, `pinned`, `pinned-text`, `stacked`, `tabs` |
 | `service-areas` | `cards`, `chips`, `list` |
 | `service-detail` | `media-left`, `media-right`, `stacked` |
-| `services` | `grid-2`, `grid-3`, `icon-grid`, `icon-grid-cta`, `list`, `numbered`, `numbered-split`, `split` |
-| `social-proof` | `cards`, `inline`, `stats` |
-| `statement` | `bordered`, `centered`, `framed`, `rule` |
+| `services` | `feature-cards`, `grid-2`, `grid-3`, `icon-grid`, `icon-grid-cta`, `labelled-cards`, `list`, `media-list`, `menu-grid`, `numbered`, `numbered-split`, `photo-bento`, `ruled-grid`, `split`, `tiles` |
+| `social-proof` | `cards`, `divided`, `inline`, `split-grid`, `stats` |
+| `statement` | `bordered`, `centered`, `framed`, `lede`, `rule` |
 | `team` | `cards`, `grid`, `grid-cta`, `list` |
-| `testimonials` | `cards`, `logos-quote`, `marquee`, `plain`, `single` |
+| `testimonials` | `cards`, `logos-quote`, `marquee`, `plain`, `portrait`, `ragged`, `single` |
 | `video` | `cinema`, `full`, `side` |
 
 ## Nested objects
@@ -205,7 +205,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `order?` | `string` |  |
 | `pageTmpId` | `string` |  |
 | `styleOverrides?` | `Record<string, object>` |  |
-| `tone?` | `"light" \| "clear" \| "dark"` |  |
+| `tone?` | `"light" \| "clear" \| "dark" \| "brand"` |  |
 | `type` | `"hero" \| "services" \| "service-detail" \| "about" \| "team" \| "testimonials" \| … (42 total)` |  |
 | `variant` | `string` |  |
 
@@ -298,6 +298,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | --- | --- | --- |
 | `availability` | `object[]` |  |
 | `bufferMin?` | `number` |  |
+| `busyFeedUrl?` | `string` |  |
 | `cancellationPolicy?` | `string` |  |
 | `cancellationWindowHours?` | `number` |  |
 | `closedDates?` | `string[]` |  |
@@ -361,7 +362,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `motion?` | `"none" \| "subtle" \| "full"` |  |
 | `navLayout?` | `"spread" \| "left" \| "center" \| "right" \| "brand-center"` |  |
 | `navOverlay?` | `"none" \| "transparent" \| "gradient"` |  |
-| `palette` | `"slate" \| "ocean" \| "forest" \| "clay" \| "sand" \| "mono" \| … (11 total)` |  |
+| `palette` | `"slate" \| "ocean" \| "forest" \| "clay" \| "sand" \| "mono" \| … (14 total)` |  |
 | `radius` | `"sharp" \| "soft" \| "round"` |  |
 | `slotPresets?` | `Record<string, object>` |  |
 | `typeScale?` | `"normal" \| "large"` |  |
