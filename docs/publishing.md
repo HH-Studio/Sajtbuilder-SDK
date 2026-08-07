@@ -8,26 +8,36 @@ Since 2026-07-27 the `Release` workflow publishes both packages with
 signed with the workflow's OIDC identity, so a package published by hand from a
 laptop can never carry one. Prefer this path.
 
+**There are two tag shapes, because there are two things to release.** They
+version independently on purpose — `minimumCliVersion` exists so the skill
+archives and the packages can move apart.
+
 ```bash
-# versions in package.json + packages/cli/package.json + skills/manifest.json
-# must already agree, and the CLI must depend on the exact Site Kit version
-git tag -a v0.3.0 -m "SnabbSajt Site Kit and CLI 0.3.0"
-git push origin v0.3.0
+# THE PACKAGES -> npm, with provenance.
+# package.json and packages/cli/package.json must already agree, and the CLI
+# must depend on the exact Site Kit version.
+git tag -a v0.3.1 -m "SnabbSajt Site Kit and CLI 0.3.1"
+git push origin v0.3.1
+
+# THE SKILL ARCHIVES -> a GitHub release carrying the zips + manifest.
+# Must equal skills/manifest.json releaseVersion.
+git tag -a skills-v1.1.0 -m "SnabbSajt skills 1.1.0"
+git push origin skills-v1.1.0
 ```
 
-> **⚠️ This path cannot currently succeed, and that is why 0.2.0 and 0.3.0 were
-> both published by hand with no provenance.** The two jobs demand two different
-> tags: `release` (`.github/workflows/release.yml:26`) requires the tag to equal
-> `v${skills/manifest.json releaseVersion}`, today `v1.1.0`, while `npm`
-> (`:86`, and it `needs: release`) requires `v${package version}`, today
-> `v0.3.1`. No tag satisfies both, so the npm job never runs. Written up with
-> the decision it needs — split the triggers, or make the manifest track the
-> package version — in the app repo's backlog `1810`. Until that is settled,
-> use the hand path below and accept the missing attestation.
+> **Until 2026-08-08 neither of these worked, which is why 0.2.0 and 0.3.0 were
+> published by hand with no provenance.** Both jobs triggered on `v*` and each
+> demanded the tag match a *different* number — the manifest's `releaseVersion`
+> in one, the package version in the other — with `npm` needing `release` first.
+> No tag could satisfy both, so nothing ever published. Split per the app repo's
+> backlog `1810` (owner delegated the call, 2026-08-08): `release` now runs only
+> for `skills-v*`, `npm` runs only for a package tag, and `needs: release` is
+> gone. `v*` cannot match `skills-v*` — the glob is anchored and one starts
+> with `s`.
 
-The workflow verifies the tag against both package versions and the CLI's
-dependency range, builds the skill archives, creates the GitHub release, then
-publishes site-kit followed by cli. **It needs the `NPM_TOKEN` repository secret**
+A package tag verifies both package versions and the CLI's dependency range,
+then publishes site-kit followed by cli. A `skills-v*` tag builds the archives
+and creates the GitHub release. Neither waits on the other. **It needs the `NPM_TOKEN` repository secret**
 (an `@snabbsajt` automation token). Without it the npm job is skipped with a
 warning and only the GitHub release ships.
 

@@ -1,14 +1,31 @@
 name: Release
 
+# TWO tag shapes, because there are two things to release and they version
+# independently on purpose (`minimumCliVersion` exists so the skill archives and
+# the packages can move apart):
+#
+#   v<pkg>          e.g. v0.3.1      -> npm publish, with provenance
+#   skills-v<man>   e.g. skills-v1.1.0 -> GitHub release with the skill archives
+#
+# They used to share one trigger, and the two jobs each demanded that the tag
+# match a DIFFERENT number - `skills/manifest.json` in one, the package version
+# in the other - with `npm` needing `release` first. No tag could satisfy both,
+# so the workflow could never publish anything and 0.2.0 and 0.3.0 went to npm
+# by hand, i.e. with no provenance attestation. Backlog 1810.
+#
+# `v*` cannot match `skills-v*`: the glob is anchored, and one starts with s.
+
 on:
   push:
-    tags: ["v*"]
+    tags: ["v*", "skills-v*"]
 
 permissions:
   contents: write
 
 jobs:
+  # The skill archives. Only ever runs for a skills-v tag.
   release:
+    if: ${{ startsWith(github.ref_name, 'skills-v') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,7 +40,7 @@ jobs:
           set -euo pipefail
           version=$(node -p "require('./skills/manifest.json').releaseVersion")
           [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "manifest releaseVersion must be stable semver" >&2; exit 1; }
-          [[ "$GITHUB_REF_NAME" = "v${version}" ]] || { echo "tag ${GITHUB_REF_NAME} does not match manifest v${version}" >&2; exit 1; }
+          [[ "$GITHUB_REF_NAME" = "skills-v${version}" ]] || { echo "tag ${GITHUB_REF_NAME} does not match manifest skills-v${version}" >&2; exit 1; }
       - name: Build versioned skill archives from canonical folders
         shell: bash
         run: |
@@ -56,8 +73,11 @@ jobs:
   # Requires the NPM_TOKEN secret (an automation token for the @snabbsajt org).
   # Without it the job is skipped rather than failing the release, so tagging
   # keeps producing GitHub skill archives while the token is being set up.
+  #
+  # No `needs: release` any more. The archives job only runs for a skills-v tag,
+  # so waiting on it is what made a package tag publish nothing at all.
   npm:
-    needs: release
+    if: ${{ !startsWith(github.ref_name, 'skills-v') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
