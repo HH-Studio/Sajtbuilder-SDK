@@ -1,0 +1,18 @@
+{
+  "assets": "Bundled image/logo/favicon/OG/video/document declarations.",
+  "contentCollections": "Blog or news collections.",
+  "exportedAt": "Package creation time.",
+  "folders": "Optional page hierarchy. Use `[]` when unused.",
+  "fonts": "Google, Adobe, or bundled custom fonts.",
+  "fontsAssignment": "References entries in `fonts`.",
+  "format": "Format discriminator.",
+  "legal": "\"p\", text }]`",
+  "pages": "Pages and posts.",
+  "redirects": "SEO-safe old-URL mappings. Validated against the page graph after pages exist.",
+  "rich-text": "p | ul]`; `heading?`",
+  "sections": "Ordered, typed content sections.",
+  "services": "Canonical services referenced by service sections.",
+  "site": "Business, locale, theme, contact, and site-wide settings.",
+  "version": "Schema version.",
+  "video": "\"vimeo\"`; `heading?`, `caption?`, `videoId?`"
+}

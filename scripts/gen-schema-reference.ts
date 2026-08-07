@@ -1,0 +1,241 @@
+import { readFileSync, writeFileSync } from "node:fs";
+
+// ---------------------------------------------------------------------------
+// Generate docs/schema-reference.md from contract/portable-v1.json.
+//
+// Backlog 0822 item 3. The reference used to be hand-written prose for a schema
+// whose whole contract is "unknown fields are rejected" - the one kind of doc
+// where drift is not cosmetic, it tells an integrator to send a field the
+// validator will refuse. The contract JSON is already generated from
+// SECTION_REGISTRY + the convex validators by scripts/sync-contract.ts, so this
+// renders the human-readable half from the same source rather than a second one.
+//
+//   bun scripts/gen-schema-reference.ts          # write the doc
+//   bun scripts/gen-schema-reference.ts --check  # fail if it is stale (CI)
+// ---------------------------------------------------------------------------
+
+const CONTRACT_URL = new URL("../contract/portable-v1.json", import.meta.url);
+const DOC_URL = new URL("../docs/schema-reference.md", import.meta.url);
+// Hand-written meanings, merged in by field name. The contract carries SHAPE
+// (names, types, optionality) and can never carry intent, so the prose lives
+// here instead of being lost to generation. A field with no entry renders blank
+// and is reported by --check, which is how a new field gets noticed.
+const DESCRIPTIONS_URL = new URL("../docs/schema-descriptions.json", import.meta.url);
+
+/** The validator JSON shape emitted by convex-helpers. */
+type FieldType =
+  | { type: "string" | "number" | "boolean" | "any" }
+  | { type: "literal"; value: string | number | boolean }
+  | { type: "array"; value: FieldType }
+  | { type: "record"; keys?: FieldType; values?: { fieldType: FieldType } }
+  | { type: "union"; value: FieldType[] }
+  | { type: "object"; value: Record<string, Field> };
+
+type Field = { fieldType: FieldType; optional?: boolean };
+
+type Contract = {
+  portable: { format: string; version: number; schema: FieldType };
+  sections: { types: string[]; variants: Record<string, string[]> };
+  caps: Record<string, unknown>;
+};
+
+/** Render a field type as a short, readable type expression. */
+function typeName(ft: FieldType, depth = 0): string {
+  switch (ft.type) {
+    case "string":
+    case "number":
+    case "boolean":
+    case "any":
+      return ft.type;
+    case "literal":
+      return typeof ft.value === "string" ? `"${ft.value}"` : String(ft.value);
+    case "array":
+      return `${typeName(ft.value, depth + 1)}[]`;
+    case "record":
+      return `Record<string, ${ft.values ? typeName(ft.values.fieldType, depth + 1) : "any"}>`;
+    case "union": {
+      const parts = ft.value.map((v) => typeName(v, depth + 1));
+      // A long literal union is unreadable inline; summarise it instead.
+      if (parts.length > 6 && ft.value.every((v) => v.type === "literal")) {
+        return `${parts.slice(0, 6).join(" \\| ")} \\| … (${parts.length} total)`;
+      }
+      return parts.join(" \\| ");
+    }
+    case "object":
+      // Nested objects get their own table below; keep the cell short.
+      return depth === 0 ? "object" : "object";
+    default:
+      return "unknown";
+  }
+}
+
+/** Every nested object worth its own table, keyed by a dotted path. */
+function collectObjects(
+  ft: FieldType,
+  path: string,
+  out: Map<string, Record<string, Field>>,
+): void {
+  if (ft.type === "object") {
+    if (!out.has(path)) out.set(path, ft.value);
+    for (const [key, field] of Object.entries(ft.value)) {
+      collectObjects(field.fieldType, path ? `${path}.${key}` : key, out);
+    }
+    return;
+  }
+  if (ft.type === "array") {
+    collectObjects(ft.value, `${path}[]`, out);
+    return;
+  }
+  if (ft.type === "union") {
+    for (const member of ft.value) collectObjects(member, path, out);
+  }
+}
+
+let DESCRIPTIONS: Record<string, string> = {};
+/** Field names rendered with no description, in document order. */
+const undescribed: string[] = [];
+
+function fieldTable(fields: Record<string, Field>): string {
+  const rows = Object.keys(fields)
+    .sort()
+    .map((key) => {
+      const field = fields[key]!;
+      const name = field.optional ? `\`${key}?\`` : `\`${key}\``;
+      const meaning = DESCRIPTIONS[key] ?? "";
+      if (!meaning && !undescribed.includes(key)) undescribed.push(key);
+      return `| ${name} | \`${typeName(field.fieldType, 1)}\` | ${meaning} |`;
+    });
+  return ["| Field | Type | Meaning |", "| --- | --- | --- |", ...rows].join("\n");
+}
+
+function render(contract: Contract): string {
+  const { portable, sections } = contract;
+  const objects = new Map<string, Record<string, Field>>();
+  collectObjects(portable.schema, "", objects);
+
+  const top = objects.get("");
+  const nested = [...objects.entries()]
+    .filter(([path]) => path !== "" && path.split(".").length <= 2)
+    .sort(([a], [b]) => a.localeCompare(b));
+
+  const variantRows = sections.types
+    .map((type) => {
+      const variants = sections.variants[type] ?? [];
+      const shown = variants.length ? variants.map((v) => `\`${v}\``).join(", ") : "—";
+      return `| \`${type}\` | ${shown} |`;
+    })
+    .join("\n");
+
+  return `<!-- GENERATED by scripts/gen-schema-reference.ts - do not edit by hand.
+     Run \`bun scripts/gen-schema-reference.ts\` after changing the contract. -->
+
+# Schema reference
+
+Site Kit uses one strict JSON envelope: \`${portable.format}\`, version
+\`${portable.version}\`. **Unknown fields are rejected** - the validator refuses a
+package carrying a field it does not know, so this reference is generated from the
+same contract the validator reads (\`contract/portable-v1.json\`, itself generated
+from the section registry and the Convex validators). Fields marked \`?\` are
+optional; every other field is required.
+
+## Top-level object
+
+${top ? fieldTable(top) : "_none_"}
+
+## Section types and their layout variants
+
+Every section carries a \`type\` from this list. \`variant\` must be one the type
+declares - an unknown variant is rejected server-side, not silently ignored.
+
+| Type | Variants |
+| --- | --- |
+${variantRows}
+
+## Nested objects
+
+${nested
+  .map(([path, fields]) => `### \`${path}\`\n\n${fieldTable(fields)}`)
+  .join("\n\n")}
+
+## A complete minimal package
+
+The smallest package the validator accepts: one page, one section, no assets.
+
+\`\`\`json
+{
+  "format": "${portable.format}",
+  "version": ${portable.version},
+  "exportedAt": "2026-08-07T10:00:00.000Z",
+  "site": {
+    "businessName": "Salong Nord",
+    "language": "sv",
+    "slug": "salong-nord"
+  },
+  "pages": [
+    { "tmpId": "p1", "slug": "", "title": "Hem", "order": 0 }
+  ],
+  "sections": [
+    {
+      "tmpId": "s1",
+      "pageTmpId": "p1",
+      "type": "hero",
+      "variant": "${sections.variants["hero"]?.[0] ?? "centered"}",
+      "order": 0,
+      "content": {
+        "type": "hero",
+        "heading": "Klippning i centrala Umeå",
+        "subheading": "Boka tid på under en minut."
+      }
+    }
+  ],
+  "assets": [],
+  "fonts": [],
+  "folders": []
+}
+\`\`\`
+`;
+}
+
+function main(): void {
+  const contract = JSON.parse(
+    readFileSync(CONTRACT_URL, "utf8"),
+  ) as Contract;
+  try {
+    DESCRIPTIONS = JSON.parse(readFileSync(DESCRIPTIONS_URL, "utf8")) as Record<
+      string,
+      string
+    >;
+  } catch {
+    DESCRIPTIONS = {};
+  }
+  const next = render(contract);
+
+  if (process.argv.includes("--check")) {
+    let current = "";
+    try {
+      current = readFileSync(DOC_URL, "utf8");
+    } catch {
+      // Missing file counts as stale.
+    }
+    if (current.trim() !== next.trim()) {
+      console.error(
+        "docs/schema-reference.md is stale. Run: bun scripts/gen-schema-reference.ts",
+      );
+      process.exit(1);
+    }
+    console.log("docs/schema-reference.md is up to date.");
+    return;
+  }
+
+  writeFileSync(DOC_URL, next);
+  console.log("Wrote docs/schema-reference.md");
+  if (undescribed.length) {
+    // Not a failure: shape is still correct and complete. But an undescribed
+    // field is the signal that the contract grew and nobody said what it means.
+    console.log(
+      `${undescribed.length} field(s) have no entry in docs/schema-descriptions.json: ${undescribed.slice(0, 12).join(", ")}${undescribed.length > 12 ? ", …" : ""}`,
+    );
+  }
+}
+
+main();
