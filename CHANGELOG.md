@@ -12,6 +12,45 @@ that validated against an older CLI still validates against a newer one.
 
 ## [Unreleased]
 
+### Added
+
+- **`snabbsajt link` — pick your site in the terminal, with the arrow keys.**
+  `connect` sends you to the browser to choose a site; `link` sends you to the
+  browser to approve the *terminal*, then lists the sites you own right here.
+  It prints the directory it is about to write to before it writes anything,
+  says how many workspaces it searched, shows `workspace / slug` with when each
+  site was last published, and offers **"Not one of these sites"** as a normal
+  answer that exits 0. Re-running in a linked directory offers keep / choose a
+  different site / unlink. Flags: `--site <slug|id>`, `--yes`, `--relink`,
+  `--status`, `--json`.
+
+  The credential story is unchanged, which is the point: the server-side pairing
+  row is a single-use ticket that lives ten minutes and can mint exactly one
+  read-only, single-site delivery token — the same token `connect` has always
+  produced. Nothing account-scoped is stored on the machine, and the two files
+  written are the two `connect` already writes.
+
+- **`snabbsajt unlink`** — revokes the delivery token (a delivery token may
+  revoke *itself*, and nothing else), then removes `.snabbsajt.json` and only
+  our line from `.env.local`. When the revoke call cannot reach the server it
+  says the key may still be live rather than implying it is dead.
+
+- **`snabbsajt upgrade`, and an update notice.** After a command — never before,
+  never blocking — an out-of-date CLI prints `Update available … (vX → vY)` on
+  **stderr**, cached 24 h in `~/.snabbsajt/update-check.json` behind a 1.5 s
+  timeout that swallows every error. Silent under `--json`, without a TTY, in
+  CI, with `SNABBSAJT_NO_UPDATE_CHECK=1`, and after a command that already
+  failed. Versions are compared as semver, so `0.10.0` is newer than `0.9.0`.
+  After `link` and `connect` it also offers to upgrade — **defaulting to no**,
+  and printing the exact command either way. `upgrade` detects how the CLI was
+  installed (npx, global npm/pnpm/yarn/bun, or a repo dependency) and never
+  edits anyone's `package.json`.
+
+- **`src/prompt.ts`** — `select()` and `confirm()` with no dependency: raw-mode
+  arrow keys with a sliding ten-row window, a numbered-list fallback wherever
+  raw mode is unavailable, terminal state restored in a `finally`, and exit
+  code 130 on Ctrl-C with nothing written.
+
 ### Fixed
 
 - **`--json` errors were not JSON in a colour-capable terminal.** `snabbsajt

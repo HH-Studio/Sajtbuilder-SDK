@@ -103,12 +103,20 @@ export async function postJson(
   fetchImpl: typeof globalThis.fetch,
   url: string,
   body: unknown,
+  /** Extra headers. Only ever used to present a credential the caller already
+   *  holds (`snabbsajt unlink` revoking its own delivery token); the pairing
+   *  exchanges themselves are unauthenticated by design. */
+  headers: Record<string, string> = {},
 ): Promise<{ status: number; body: unknown }> {
   let response: Response;
   try {
     response = await fetchImpl(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        ...headers,
+      },
       body: JSON.stringify(body),
     });
   } catch (cause) {

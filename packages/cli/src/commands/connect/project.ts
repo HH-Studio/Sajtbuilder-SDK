@@ -1,5 +1,5 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 
 // ---------------------------------------------------------------------------
 // Where a paired project keeps its wiring.
@@ -158,4 +158,51 @@ export function writeDeliveryToken(cwd: string, token: string): TokenWriteResult
 
 export function readDeliveryToken(cwd: string): string | undefined {
   return readEnvVar(cwd, TOKEN_ENV_VAR);
+}
+
+/** Drop one variable from `.env.local`, leaving every other line — and the
+ *  file's own permissions — untouched.
+ *
+ *  `unlink` needs this. Rewriting the file wholesale, or deleting it, would
+ *  take the developer's other secrets with it. */
+export function removeEnvVar(cwd: string, key: string): boolean {
+  const path = join(cwd, ENV_FILE);
+  if (!existsSync(path)) return false;
+  const existing = readFileSync(path, "utf8");
+  const lines = existing.split(/\r?\n/);
+  const kept = lines.filter((line) => !line.trimStart().startsWith(`${key}=`));
+  if (kept.length === lines.length) return false;
+  // Preserve whether the file ended with a newline: a diff that only moves the
+  // last byte is noise in someone else's review.
+  const joined = kept.join("\n").replace(/\n+$/, "");
+  writeFileSync(path, joined === "" ? "" : `${joined}\n`, "utf8");
+  return true;
+}
+
+/** Remove `.snabbsajt.json`. Returns false when there was nothing to remove, so
+ *  `unlink` can be idempotent without pretending it did something. */
+export function removeProjectConfig(cwd: string): boolean {
+  const path = projectConfigPath(cwd);
+  if (!existsSync(path)) return false;
+  rmSync(path);
+  return true;
+}
+
+/** The nearest `.snabbsajt.json` in a PARENT directory, if any.
+ *
+ *  Not a root-walk that would then act on it — `link` deliberately only ever
+ *  writes to the directory you ran it in. This exists so the one genuinely
+ *  confusing monorepo case ("I linked the repo root last week and I am now in
+ *  apps/web") produces a sentence instead of a second config nobody expected.
+ *  Stops at the filesystem root and at any `.git`, which is where a repo ends. */
+export function findAncestorProjectConfig(cwd: string): string | undefined {
+  let dir = dirname(cwd);
+  let previous = cwd;
+  while (dir !== previous) {
+    if (existsSync(join(dir, PROJECT_FILE))) return dir;
+    if (existsSync(join(dir, ".git"))) return undefined;
+    previous = dir;
+    dir = dirname(dir);
+  }
+  return undefined;
 }
