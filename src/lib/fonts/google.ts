@@ -64,6 +64,15 @@ export const GOOGLE_FONTS: readonly GoogleFont[] = [
   { family: "Bricolage Grotesque", weights: [400, 600, 700], available: [200, 300, 400, 500, 600, 700, 800], category: "display" },
   { family: "Archivo", weights: [400, 600, 700], available: [100, 200, 300, 400, 500, 600, 700, 800, 900], category: "display" },
   { family: "Syne", weights: [400, 600, 700], available: [400, 500, 600, 700, 800], category: "display" },
+  // The one CONDENSED face, added 2026-08-08. Nothing in the other 29 is
+  // narrower than normal width, so an imported site whose headings were set in
+  // a condensed grotesk (DIN Condensed, Oswald, Bebas, Anton, United Sans — the
+  // standard uppercase-heading look on an agency-built site) had no nearer
+  // match than Inter, and came back visibly wider and quieter than its source.
+  // Barlow Condensed rather than Oswald because DIN is what most of them
+  // actually are, and Barlow's skeleton is the DIN one; Oswald is taller and
+  // tighter. Weights probed 2026-08-08 with a browser UA, like the rest.
+  { family: "Barlow Condensed", weights: [400, 500, 700], available: [100, 200, 300, 400, 500, 600, 700, 800, 900], category: "display" },
   // Mono
   { family: "JetBrains Mono", weights: [400, 500, 700], available: [100, 200, 300, 400, 500, 600, 700, 800], category: "mono" },
   { family: "Space Mono", weights: [400, 700], available: [400, 700], category: "mono" },
