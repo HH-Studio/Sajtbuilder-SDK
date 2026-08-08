@@ -409,10 +409,15 @@ function roleVars(
     out[`--site-tracking-${role}`] = safeLength(o?.tracking) ?? d.tracking;
     out[`--site-transform-${role}`] = safeTransform(o?.transform) ?? d.transform;
     out[`--site-family-${role}`] = familyVar(o?.family) ?? d.family;
-    // A role's own ink, when the source page set one. `currentColor` is the
-    // no-op default: it is exactly what the text inherits today, so a theme
-    // with no measured colour emits a declaration that changes nothing.
-    out[`--site-ink-${role}`] = safeColor(o?.color) ?? "currentColor";
+    // A role's own ink, when the source page set one. Emitted ONLY when a
+    // colour was measured and survived validation: each role's renderer falls
+    // back to what it has always used (`currentColor` for a heading, the muted
+    // token for an eyebrow or muted body), and those fallbacks differ. Pinning
+    // an unmeasured role to `currentColor` — which this did until 2026-08-08 —
+    // is not a no-op for the muted roles, so the var has to be ABSENT rather
+    // than neutral for the `var(--x, fallback)` chain to mean anything.
+    const ink = safeColor(o?.color);
+    if (ink) out[`--site-ink-${role}`] = ink;
   }
   return out;
 }
