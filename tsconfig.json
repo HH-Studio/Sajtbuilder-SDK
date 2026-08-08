@@ -8,7 +8,9 @@
     "esModuleInterop": true,
     "ignoreDeprecations": "6.0",
     "skipLibCheck": true,
-    "types": ["node", "vitest/globals"]
+    "types": ["node", "vitest/globals"],
+    "baseUrl": ".",
+    "paths": { "@snabbsajt/site-kit": ["./src/index.ts"] }
   },
   "include": ["src", "test", "examples", "scripts", "vitest.config.ts"]
 }

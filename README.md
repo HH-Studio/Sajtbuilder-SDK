@@ -12,7 +12,7 @@ SnabbSajt's typed sections, validate it locally, and pack it as a safe bundle.
 | | Version |
 | --- | --- |
 | **Published on npm** (what `npm install` gives you) | **`0.3.0`** |
-| This source tree | `0.3.1` — not yet published |
+| This source tree | `0.4.0` — not yet published |
 
 The package format, validator, HTML/WordPress converters, CLI, skills, and
 bundle format match the production SnabbSajt importer.
@@ -35,10 +35,10 @@ already accepted became expressible from Site Kit:
 - **No hand-written order keys.** Section `order` is optional — omit it and the
   importer orders by array position.
 
-`0.3.1` is one fix on top and is **not** published yet: `--json` errors were
-written to stderr through a call that wraps them in ANSI colour, so anything
-parsing them got a string that is not JSON. It only matters if you script the
-CLI's failure path; if you do, build from this tree until it ships.
+`0.4.0` is **not** published yet. It includes the `--json` error fix plus the
+multilingual contract, terminal site linking, scoped admin commands and update
+flow listed under Unreleased in the changelog. Build from this tree if you need
+those changes before the npm release.
 
 ## Install
 
@@ -136,6 +136,14 @@ export const site = defineSite({
 `defineSite()` ties each section's outer type to its discriminated content type
 and rejects unknown object-literal fields in TypeScript. `snabbsajt site validate`
 then runs the same runtime validators and caps used by the production importer.
+
+For authored multilingual sites, declare every locale in `site.languages`, give
+each primary section a `tmpId`, and add `localizations[]` with the same pages and
+sections keyed by `pageTmpId` and `sectionTmpId`. Localized entries may change
+prose, page titles/SEO and page slugs; structure, asset ids and CTA kinds stay
+identical. This works for creating a site. Locale-aware merge updates are
+rejected instead of silently dropping a language. Local validation enforces the
+same locale membership, identity, slug and structural rules as production.
 
 ## Starter template
 

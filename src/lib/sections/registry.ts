@@ -421,6 +421,38 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
     }),
   },
 
+  "restaurant-menu": {
+    type: "restaurant-menu",
+    label: { sv: "Restaurangmeny", en: "Restaurant menu", pl: "Menu restauracji" },
+    whenToUse: {
+      sv: "Visa restaurangens bekräftade rätter och priser, ordnade i menyer och kategorier.",
+      en: "Show the restaurant's confirmed dishes and prices, organized into menus and categories.",
+      pl: "Pokaż potwierdzone dania i ceny restauracji, uporządkowane w menu i kategorie.",
+    },
+    category: "services",
+    icon: "ClipboardList",
+    variants: [
+      {
+        key: "columns",
+        label: { sv: "Kategorier i spalter", en: "Category columns", pl: "Kategorie w kolumnach" },
+      },
+      {
+        key: "stacked",
+        label: { sv: "En spalt", en: "Single column", pl: "Jedna kolumna" },
+      },
+    ],
+    defaultVariant: "columns",
+    defaultTone: "light",
+    allowedTones: ["light", "clear"],
+    // Empty is intentional. Dishes, prices and allergen guidance are owner
+    // facts; the add-section fallback must never invent publishable examples.
+    defaultContent: (lang) => ({
+      type: "restaurant-menu",
+      heading: pick(lang, "Meny", "Menu", "Menu"),
+      menus: [],
+    }),
+  },
+
   "service-detail": {
     type: "service-detail",
     label: { sv: "Tjänst i detalj", en: "Service detail", pl: "Usługa w szczegółach" },
@@ -1818,6 +1850,115 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "En stor kontaktyta följs av e-post, nyhetsbrev, länkar och juridisk text i en sammanhållen sidfot.",
           en: "A large contact banner is followed by email, newsletter signup, links, and legal copy in one continuous footer.",
           pl: "Duży baner kontaktowy łączy się z e-mailem, newsletterem, linkami i informacją prawną w jednej stopce.",
+        },
+      },
+      {
+        key: "photo-newsletter",
+        label: {
+          sv: "Foto och nyhetsbrev",
+          en: "Photo and newsletter",
+          pl: "Zdjęcie i newsletter",
+        },
+        description: {
+          sv: "Ett brett foto följs av företagets namn, fyra länkspalter, ett nyhetsbrevsfält och en juridisk rad i en sammanhållen sidfot.",
+          en: "A wide photo is followed by the business name, four link columns, a newsletter signup, and a legal line in one continuous footer.",
+          pl: "Szerokie zdjęcie łączy się z nazwą firmy, czterema kolumnami linków, zapisem do newslettera i wierszem prawnym w jednej stopce.",
+        },
+      },
+      {
+        key: "wordmark-newsletter",
+        label: {
+          sv: "Ordmärke och nyhetsbrev",
+          en: "Wordmark and newsletter",
+          pl: "Nazwa i newsletter",
+        },
+        description: {
+          sv: "En rundad färgyta samlar företagets namn, tre länkspalter, nyhetsbrev och kontakt, med ett mycket stort beskuret ordmärke längst ner.",
+          en: "A rounded colour panel holds the business name, three link columns, newsletter and contact details, ending in a huge cropped wordmark.",
+          pl: "Zaokrąglony panel łączy nazwę firmy, trzy kolumny linków, newsletter i kontakt, a na dole kończy się ogromną przyciętą nazwą.",
+        },
+      },
+      {
+        key: "wordmark-cta",
+        label: {
+          sv: "Ordmärke och knapp",
+          en: "Wordmark and button",
+          pl: "Nazwa i przycisk",
+        },
+        description: {
+          sv: "En sidfot med rundad ovankant, beskrivning och knapp till vänster, fyra länkspalter till höger och företagets namn mycket stort längst ner.",
+          en: "A top-rounded footer with a description and button on the left, four link columns on the right, and the business name set very large along the bottom.",
+          pl: "Stopka zaokrąglona u góry, z opisem i przyciskiem po lewej, czterema kolumnami linków po prawej i bardzo dużą nazwą firmy na dole.",
+        },
+      },
+      {
+        key: "wordmark-contact",
+        label: {
+          sv: "Ordmärke och kontakt",
+          en: "Wordmark and contact",
+          pl: "Nazwa i kontakt",
+        },
+        description: {
+          sv: "Företagets namn, beskrivning och riktiga e-post står till vänster, tre länkspalter till höger och ett tonat stort ordmärke längst ner mellan streckade linjer.",
+          en: "The business name, description, and real email sit on the left, three link columns on the right, and a tinted giant wordmark closes the dashed frame.",
+          pl: "Nazwa firmy, opis i prawdziwy e-mail są po lewej, trzy kolumny linków po prawej, a cieniowana duża nazwa zamyka przerywaną ramę.",
+        },
+      },
+      {
+        key: "wordmark-directory",
+        label: {
+          sv: "Ordmärke och katalog",
+          en: "Wordmark and directory",
+          pl: "Nazwa i katalog",
+        },
+        description: {
+          sv: "En separat namnrad följs av fyra tydliga länkspalter, ett mycket stort företagsnamn och juridisk text längst ner.",
+          en: "A separate brand row is followed by four clear link columns, a very large business name, and legal copy at the bottom.",
+          pl: "Oddzielny wiersz marki prowadzi do czterech kolumn linków, bardzo dużej nazwy firmy i tekstu prawnego na dole.",
+        },
+      },
+      {
+        key: "backdrop-newsletter",
+        label: {
+          sv: "Bakgrundsbild och nyhetsbrev",
+          en: "Backdrop and newsletter",
+          pl: "Tło i newsletter",
+        },
+        description: {
+          sv: "En stor bakgrundsbild fyller hela sidfoten med tydliga sidlänkar, nyhetsbrev, ett mycket stort företagsnamn och juridisk text ovanpå.",
+          en: "A large background image fills the footer with prominent page links, newsletter signup, a very large business name, and legal copy layered above it.",
+          pl: "Duże zdjęcie wypełnia stopkę, a na nim znajdują się wyraźne linki, zapis do newslettera, bardzo duża nazwa firmy i tekst prawny.",
+        },
+      },
+      {
+        key: "photo-directory-cta",
+        label: {
+          sv: "Foto, katalog och knapp",
+          en: "Photo, directory and CTA",
+          pl: "Zdjęcie, katalog i przycisk",
+        },
+        description: {
+          sv: "Ett brett foto följs av företagsbeskrivning och knapp, upp till fyra länkgrupper och juridisk text.",
+          en: "A wide photo leads into a business description and CTA, up to four link groups, and legal copy.",
+          pl: "Szerokie zdjęcie prowadzi do opisu firmy i przycisku, maksymalnie czterech grup linków oraz tekstu prawnego.",
+        },
+      },
+      {
+        key: "nested-card",
+        label: { sv: "Kort i kort", en: "Nested card", pl: "Karta w karcie" },
+        description: {
+          sv: "Ett inramat kort med logotyp och beskrivning till vänster, tre länkgrupper till höger och juridisk text i en egen bottenrad.",
+          en: "A framed card with logo and description on the left, three link groups on the right, and legal copy in its own bottom rail.",
+          pl: "Obramowana karta z logo i opisem po lewej, trzema grupami linków po prawej i tekstem prawnym w osobnym dolnym pasku.",
+        },
+      },
+      {
+        key: "backdrop-contact",
+        label: { sv: "Bakgrund och kontakt", en: "Backdrop and contact", pl: "Tło i kontakt" },
+        description: {
+          sv: "En stor bakgrundsbild med en mycket stor e-postlänk, företagsuppgifter, sidlänkar och juridisk text ovanpå.",
+          en: "A large background image with an oversized email link, business details, page links, and legal copy layered above it.",
+          pl: "Duże zdjęcie w tle z bardzo dużym adresem e-mail, danymi firmy, linkami i tekstem prawnym.",
         },
       },
     ],

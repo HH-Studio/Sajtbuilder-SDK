@@ -108,16 +108,37 @@ describe("public Site Kit API", () => {
   it("accepts authored secondary-language copy and per-locale slugs", () => {
     const site = createStarterSite();
     site.site.languages = ["en", "sv"];
-    site.sections[0].tmpId = "hero";
+    site.sections.forEach((section, index) => { section.tmpId = `section-${index}`; });
     site.localizations = [{
       locale: "sv",
       pages: [{ pageTmpId: "home", slug: "", title: "Hem" }],
-      sections: [{
-        sectionTmpId: "hero",
-        content: { ...site.sections[0].content, headline: "Välkommen" },
-      }],
+      sections: site.sections.map((section, index) => ({
+        sectionTmpId: `section-${index}`,
+        content: index === 0
+          ? { ...section.content, headline: "Välkommen" }
+          : section.content,
+      })),
     }];
     expect(validateSitePackage(site).ok).toBe(true);
+  });
+
+  it("rejects localization payloads that production would reject", () => {
+    const site = createStarterSite();
+    site.site.languages = ["en", "sv"];
+    site.sections.forEach((section, index) => { section.tmpId = `section-${index}`; });
+    site.localizations = [{
+      locale: "sv",
+      pages: [{ pageTmpId: "home", slug: "news", title: "Hem" }],
+      sections: site.sections.map((section, index) => ({
+        sectionTmpId: `section-${index}`,
+        content: section.content,
+      })),
+    }] as typeof site.localizations;
+
+    expect(validateSitePackage(site)).toMatchObject({
+      ok: false,
+      issues: [{ path: "localizations", message: expect.stringContaining("duplicate_slug") }],
+    });
   });
 
   it.each([

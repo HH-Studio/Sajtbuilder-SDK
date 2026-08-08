@@ -50,7 +50,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `external-product-grid` | `default` |
 | `faq` | `accordion`, `accordion-cta`, `beside-photo`, `cards`, `dashed`, `filled-rows`, `filtered`, `grouped`, `header-cta`, `numbered`, `outlined`, `split`, `two-column` |
 | `featured-product` | `default` |
-| `footer` | `centered`, `columns`, `contact`, `inset`, `newsletter-box`, `promo-newsletter`, `ruled`, `simple` |
+| `footer` | `backdrop-contact`, `backdrop-newsletter`, `centered`, `columns`, `contact`, `inset`, `nested-card`, `newsletter-box`, `photo-directory-cta`, `photo-newsletter`, `promo-newsletter`, `ruled`, `simple`, `wordmark-contact`, `wordmark-cta`, `wordmark-directory`, `wordmark-newsletter` |
 | `gallery` | `carousel`, `full-bleed`, `grid-3`, `grid-4`, `masonry`, `mosaic` |
 | `hero` | `centered`, `duo`, `gradient`, `image-left`, `image-right`, `minimal`, `overlay`, `overlay-full`, `overlay-left`, `overlay-light`, `panel`, `poster`, `scatter`, `split`, `split-bleed`, `spotlight`, `stage` |
 | `highlights` | `accent`, `alternating`, `checklist`, `chip-cards`, `figures`, `grid-2`, `grid-3`, `icon-circles`, `icon-list`, `panel-cards`, `pillars`, `plain`, `split-icons`, `stat-cards`, `values` |
@@ -68,6 +68,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `process` | `numbered-cards`, `steps-cta`, `steps-horizontal`, `steps-vertical`, `timeline` |
 | `product-grid` | `default` |
 | `quote-flow` | `card`, `inline` |
+| `restaurant-menu` | `columns`, `stacked` |
 | `rich-text` | `columns`, `narrow`, `paper`, `prose` |
 | `scroll-tabs` | `overlay`, `pinned`, `pinned-text`, `stacked`, `tabs` |
 | `service-areas` | `cards`, `chips`, `list` |
@@ -158,6 +159,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | --- | --- | --- |
 | `author?` | `string` |  |
 | `excerpt?` | `string` |  |
+| `job?` | `object` |  |
 | `navLabel?` | `string` |  |
 | `pageTmpId` | `string` |  |
 | `seo?` | `object` |  |
@@ -184,9 +186,10 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `featuredImage?` | `object` |  |
 | `firstPublishedAt?` | `number` |  |
 | `folderTmpId?` | `string` |  |
+| `job?` | `object` |  |
 | `navLabel?` | `string` |  |
 | `order` | `number` |  |
-| `pageType?` | `"page" \| "post"` |  |
+| `pageType?` | `"page" \| "post" \| "job"` |  |
 | `plannedFor?` | `number` |  |
 | `seo?` | `object` |  |
 | `showInNav` | `boolean` |  |
@@ -202,6 +205,24 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `assetId` | `string` |  |
 | `focalX?` | `number` |  |
 | `focalY?` | `number` |  |
+
+### `pages[].job`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `applyUrl?` | `string` |  |
+| `country?` | `string` |  |
+| `deadlineAt?` | `number` |  |
+| `description?` | `string` |  |
+| `employmentType?` | `"full_time" \| "part_time" \| "contract" \| "temporary" \| "internship" \| "other"` |  |
+| `hoursText?` | `string` |  |
+| `location?` | `string` |  |
+| `publishedAt?` | `number` |  |
+| `requirements?` | `string[]` |  |
+| `salaryText?` | `string` |  |
+| `status` | `"open" \| "closed"` |  |
+| `summary?` | `string` |  |
+| `workplaceType?` | `"onsite" \| "hybrid" \| "remote"` |  |
 
 ### `pages[].seo`
 
@@ -235,7 +256,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `styleOverrides?` | `Record<string, object>` |  |
 | `tmpId?` | `string` |  |
 | `tone?` | `"light" \| "clear" \| "dark" \| "brand"` |  |
-| `type` | `"hero" \| "services" \| "service-detail" \| "about" \| "team" \| "testimonials" \| … (42 total)` |  |
+| `type` | `"hero" \| "services" \| "restaurant-menu" \| "service-detail" \| "about" \| "team" \| … (43 total)` |  |
 | `variant` | `string` |  |
 
 ### `sections[].layout`
@@ -386,7 +407,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `customPalette?` | `object` |  |
 | `customType?` | `object` |  |
 | `density` | `"compact" \| "comfortable" \| "spacious"` |  |
-| `fontPair` | `"modern" \| "classic" \| "friendly" \| "premium" \| "editorial" \| "grotesk"` |  |
+| `fontPair` | `"modern" \| "classic" \| "friendly" \| "premium" \| "editorial" \| "grotesk" \| … (10 total)` |  |
 | `headingAlign?` | `"start" \| "center"` |  |
 | `headingCase?` | `"none" \| "uppercase"` |  |
 | `motion?` | `"none" \| "subtle" \| "full"` |  |

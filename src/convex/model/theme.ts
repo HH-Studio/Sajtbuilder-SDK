@@ -38,6 +38,10 @@ export const FONT_PAIR_KEYS = [
   "premium", // high-contrast serif display + sans
   "editorial", // serif heading + grotesk body
   "grotesk", // grotesk heading + grotesk body (bold)
+  "clean", // crisp geometric sans throughout
+  "soft", // warm serif heading + clean sans body
+  "condensed", // narrow bold heading + clean sans body
+  "timeless", // warm serif throughout
 ] as const;
 
 export const DENSITY_KEYS = ["compact", "comfortable", "spacious"] as const;

@@ -16,7 +16,7 @@
     "maxTotalAssetBytes": 209715200
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:5b988c4b8d6892ba4f9483f74a16b15d357c5e40e16e9d3d1c8d023db9022454",
+  "hash": "sha256:bf657ca8d03c35b1e76bad73907d5cba424ac69ced39952e9190fcd783867623",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -884,6 +884,53 @@
                           },
                           "optional": true
                         },
+                        "job": {
+                          "fieldType": {
+                            "type": "object",
+                            "value": {
+                              "description": {
+                                "fieldType": {
+                                  "type": "string"
+                                },
+                                "optional": true
+                              },
+                              "hoursText": {
+                                "fieldType": {
+                                  "type": "string"
+                                },
+                                "optional": true
+                              },
+                              "location": {
+                                "fieldType": {
+                                  "type": "string"
+                                },
+                                "optional": true
+                              },
+                              "requirements": {
+                                "fieldType": {
+                                  "type": "array",
+                                  "value": {
+                                    "type": "string"
+                                  }
+                                },
+                                "optional": true
+                              },
+                              "salaryText": {
+                                "fieldType": {
+                                  "type": "string"
+                                },
+                                "optional": true
+                              },
+                              "summary": {
+                                "fieldType": {
+                                  "type": "string"
+                                },
+                                "optional": true
+                              }
+                            }
+                          },
+                          "optional": true
+                        },
                         "navLabel": {
                           "fieldType": {
                             "type": "string"
@@ -1099,6 +1146,145 @@
                   },
                   "optional": true
                 },
+                "job": {
+                  "fieldType": {
+                    "type": "object",
+                    "value": {
+                      "applyUrl": {
+                        "fieldType": {
+                          "type": "string"
+                        },
+                        "optional": true
+                      },
+                      "country": {
+                        "fieldType": {
+                          "type": "string"
+                        },
+                        "optional": true
+                      },
+                      "deadlineAt": {
+                        "fieldType": {
+                          "type": "number"
+                        },
+                        "optional": true
+                      },
+                      "description": {
+                        "fieldType": {
+                          "type": "string"
+                        },
+                        "optional": true
+                      },
+                      "employmentType": {
+                        "fieldType": {
+                          "type": "union",
+                          "value": [
+                            {
+                              "type": "literal",
+                              "value": "full_time"
+                            },
+                            {
+                              "type": "literal",
+                              "value": "part_time"
+                            },
+                            {
+                              "type": "literal",
+                              "value": "contract"
+                            },
+                            {
+                              "type": "literal",
+                              "value": "temporary"
+                            },
+                            {
+                              "type": "literal",
+                              "value": "internship"
+                            },
+                            {
+                              "type": "literal",
+                              "value": "other"
+                            }
+                          ]
+                        },
+                        "optional": true
+                      },
+                      "hoursText": {
+                        "fieldType": {
+                          "type": "string"
+                        },
+                        "optional": true
+                      },
+                      "location": {
+                        "fieldType": {
+                          "type": "string"
+                        },
+                        "optional": true
+                      },
+                      "publishedAt": {
+                        "fieldType": {
+                          "type": "number"
+                        },
+                        "optional": true
+                      },
+                      "requirements": {
+                        "fieldType": {
+                          "type": "array",
+                          "value": {
+                            "type": "string"
+                          }
+                        },
+                        "optional": true
+                      },
+                      "salaryText": {
+                        "fieldType": {
+                          "type": "string"
+                        },
+                        "optional": true
+                      },
+                      "status": {
+                        "fieldType": {
+                          "type": "union",
+                          "value": [
+                            {
+                              "type": "literal",
+                              "value": "open"
+                            },
+                            {
+                              "type": "literal",
+                              "value": "closed"
+                            }
+                          ]
+                        },
+                        "optional": false
+                      },
+                      "summary": {
+                        "fieldType": {
+                          "type": "string"
+                        },
+                        "optional": true
+                      },
+                      "workplaceType": {
+                        "fieldType": {
+                          "type": "union",
+                          "value": [
+                            {
+                              "type": "literal",
+                              "value": "onsite"
+                            },
+                            {
+                              "type": "literal",
+                              "value": "hybrid"
+                            },
+                            {
+                              "type": "literal",
+                              "value": "remote"
+                            }
+                          ]
+                        },
+                        "optional": true
+                      }
+                    }
+                  },
+                  "optional": true
+                },
                 "navLabel": {
                   "fieldType": {
                     "type": "string"
@@ -1122,6 +1308,10 @@
                       {
                         "type": "literal",
                         "value": "post"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "job"
                       }
                     ]
                   },
@@ -2773,6 +2963,10 @@
                       {
                         "type": "literal",
                         "value": "services"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "restaurant-menu"
                       },
                       {
                         "type": "literal",
@@ -5214,6 +5408,22 @@
                           {
                             "type": "literal",
                             "value": "grotesk"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "clean"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "soft"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "condensed"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "timeless"
                           }
                         ]
                       },
@@ -6894,6 +7104,7 @@
       "process",
       "product-grid",
       "quote-flow",
+      "restaurant-menu",
       "rich-text",
       "scroll-tabs",
       "service-areas",
@@ -6999,14 +7210,23 @@
         "default"
       ],
       "footer": [
+        "backdrop-contact",
+        "backdrop-newsletter",
         "centered",
         "columns",
         "contact",
         "inset",
+        "nested-card",
         "newsletter-box",
+        "photo-directory-cta",
+        "photo-newsletter",
         "promo-newsletter",
         "ruled",
-        "simple"
+        "simple",
+        "wordmark-contact",
+        "wordmark-cta",
+        "wordmark-directory",
+        "wordmark-newsletter"
       ],
       "gallery": [
         "carousel",
@@ -7124,6 +7344,10 @@
       "quote-flow": [
         "card",
         "inline"
+      ],
+      "restaurant-menu": [
+        "columns",
+        "stacked"
       ],
       "rich-text": [
         "columns",

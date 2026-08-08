@@ -60,9 +60,8 @@ const FONT_PAIRS: Record<
     body: "var(--font-site-humanist)",
     category: "humanist",
   },
-  // Premium was typographically identical to classic (same Fraunces heading on
-  // the same body) - "premium" and "trust" sites were indistinguishable. It now
-  // uses a real display serif so boutique/high-end positioning reads as such.
+  // Stored key kept for existing sites. The owner-facing name is now Elegant,
+  // and Playfair replaces the overly delicate Cormorant cut.
   premium: {
     heading: "var(--font-site-serif-display)",
     body: "var(--font-geist-sans)",
@@ -79,6 +78,26 @@ const FONT_PAIRS: Record<
     heading: "var(--font-site-grotesk)",
     body: "var(--font-site-grotesk)",
     category: "groteskBold",
+  },
+  clean: {
+    heading: "var(--font-site-clean)",
+    body: "var(--font-site-clean)",
+    category: "grotesk",
+  },
+  soft: {
+    heading: "var(--font-site-soft-serif)",
+    body: "var(--font-geist-sans)",
+    category: "serif",
+  },
+  condensed: {
+    heading: "var(--font-site-condensed)",
+    body: "var(--font-geist-sans)",
+    category: "groteskBold",
+  },
+  timeless: {
+    heading: "var(--font-site-soft-serif)",
+    body: "var(--font-site-soft-serif)",
+    category: "serif",
   },
 };
 
@@ -174,9 +193,8 @@ const CATEGORY_TYPE: Record<
       measureHeading: "24ch",
     },
   },
-  // Display serif (Cormorant Garamond): smaller x-height needs a heavier
-  // weight to hold its color AND more size than a grotesk at the same role;
-  // tight editorial leading; sentence-case kicker.
+  // Display serif: larger than a grotesk at the same role, with tight
+  // editorial leading and a sentence-case kicker.
   displaySerif: {
     leadingHeading: "1.1",
     leadingDisplay: "1.04",
@@ -842,10 +860,21 @@ export function onMediaVars(
 ): CSSProperties {
   const out: Record<string, string> = {
     "--site-fg": "#ffffff",
+    "--site-primary": "#ffffff",
     "--site-primary-text": "#ffffff",
-    "--site-muted": "rgb(255 255 255 / 16%)",
-    "--site-accent": "rgb(255 255 255 / 26%)",
+    "--site-muted-fg": "#ffffff",
+    "--site-muted": "rgb(0 0 0 / 72%)",
+    "--site-card": "rgb(0 0 0 / 72%)",
+    "--site-card-fg": "#ffffff",
+    "--site-border": "rgb(255 255 255 / 70%)",
+    "--site-accent": "rgb(0 0 0 / 82%)",
+    "--site-accent-fg": "#ffffff",
   };
+  // Imported/measured typography may carry its own role ink. Photo overlays
+  // are the one surface where those colours cannot remain authoritative: the
+  // owner can replace the image at any time, so every text role uses the
+  // contrast-safe on-media ink instead.
+  for (const role of TYPE_ROLE_KEYS) out[`--site-ink-${role}`] = "#ffffff";
   for (const [name, value] of Object.entries(
     buttonValues({ primary: "#ffffff", primaryFg: "#111111" }, buttonStyle),
   )) {
@@ -982,10 +1011,34 @@ function safeFamily(name: string | undefined): string | undefined {
 
 /** Wrap a sanitized custom family in quotes and append the built-in pair font
  *  as a fallback, so a failed font load never yields unstyled/invisible text. */
+/** Tail appended to every site font stack so Arabic and Persian text has a
+ *  DECIDED fallback instead of whatever the browser reaches for first.
+ *
+ *  Costs nothing: a font stack is consulted per CODEPOINT, so a Swedish site
+ *  never touches these — its Latin glyphs are found in the families ahead of
+ *  them — and no extra file is downloaded, because every name here is a font
+ *  the reader's own device already has. Ordered by platform: Apple, then
+ *  Windows, then the Noto families Android and most Linux ship.
+ *
+ *  This is a floor, not the answer. The site's chosen typeface is still Latin
+ *  only, so an Arabic page is set in the system face and does not carry the
+ *  brand's letterforms. Shipping a branded Arabic face means loading,
+ *  subsetting and licensing one — see `docs/i18n-rtl.md`. */
+const RTL_SYSTEM_FALLBACKS =
+  '"SF Arabic", "Geeza Pro", "Segoe UI", "Noto Sans Arabic", "Noto Naskh Arabic", "Vazirmatn", "Tahoma"';
+
 function fontStack(custom: string | undefined, fallback: string): string {
   const safe = safeFamily(custom);
   return safe ? `"${safe}", ${fallback}` : fallback;
 }
+
+/** A stack with the script fallbacks appended. Applied to the two ROOT roles
+ *  only. The display role resolves through `--site-font-heading`, so it inherits
+ *  the tail already — appending a second copy there would also have broken the
+ *  "an unsafe display family falls back to exactly the heading var" guarantee
+ *  that `measuredDesign.test.ts` pins, which is a sanitiser test, not cosmetics. */
+const withScriptFallbacks = (stack: string): string =>
+  `${stack}, ${RTL_SYSTEM_FALLBACKS}`;
 
 /** Non-color root vars (fonts, radius, density, type + spacing scales). The site
  *  root applies these inline; its COLORS come from the scoped scheme stylesheet
@@ -1005,8 +1058,8 @@ export function rootChromeVars(
     // Empty for every theme without `customMotion`, so the emitted var set is
     // unchanged for every site that has one measured (see `motionVars`).
     ...motionVars(tokens.customMotion),
-    "--site-font-heading": fontStack(cf?.heading, fonts.heading),
-    "--site-font-body": fontStack(cf?.body, fonts.body),
+    "--site-font-heading": withScriptFallbacks(fontStack(cf?.heading, fonts.heading)),
+    "--site-font-body": withScriptFallbacks(fontStack(cf?.body, fonts.body)),
     // Third role. Falls back to the heading stack (not the pair's heading font)
     // so a site with no display face renders its display role exactly as before.
     "--site-font-display": cf?.display

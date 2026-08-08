@@ -14,6 +14,14 @@ that validated against an older CLI still validates against a newer one.
 
 ### Added
 
+- **Authored multilingual packages.** `PortableSiteV1.localizations` pairs
+  translated pages and section content to stable `tmpId`s, including per-locale
+  page slugs. The app keeps the author's copy instead of replacing it with AI.
+  Local validation rejects the same incomplete, structurally different, or
+  route-conflicting locale payloads as the production importer.
+  The contract mirror also catches up with the app's current locales, section
+  variants and measured layout fields.
+
 - **`snabbsajt link` — pick your site in the terminal, with the arrow keys.**
   `connect` sends you to the browser to choose a site; `link` sends you to the
   browser to approve the *terminal*, then lists the sites you own right here.
@@ -128,7 +136,10 @@ that validated against an older CLI still validates against a newer one.
   from this source tree, because it previously listed unreleased 0.3.0 features
   directly above an `npm install` that resolves 0.2.0.
 
-## [0.3.0] — unreleased
+## [0.3.0] — 2026-08-08
+
+Published to npm without provenance. The release workflow was not usable for
+this version, so no matching git tag exists.
 
 Catches the mirrored contract up to the app: everything the production importer
 already accepted became expressible from Site Kit.
@@ -193,6 +204,17 @@ repository, which is why this file exists.
 
 - The canonical app contract is pinned to a full commit SHA and verified in CI,
   so a contract can never drift silently against the app it mirrors.
+
+### Changed
+
+- **Release verification no longer needs a publishing tag.** Agents can dispatch
+  the package or skills lane with an explicit version to run build and contract
+  checks. Manual dispatches cannot publish npm packages or create a GitHub
+  release; those actions still require their dedicated version tag. The SDK
+  typecheck resolves starter-fixture imports against the local Site Kit source,
+  so the release gate does not depend on an already-published future version.
+  Package publishing prefers OIDC with a granular-token fallback, and retries
+  skip an exact existing version only after its npm provenance is verified.
 
 ## [0.1.0] — 2026-07-13
 

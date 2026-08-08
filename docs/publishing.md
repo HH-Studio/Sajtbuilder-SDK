@@ -15,9 +15,9 @@ archives and the packages can move apart.
 ```bash
 # THE PACKAGES -> npm, with provenance.
 # package.json and packages/cli/package.json must already agree, and the CLI
-# must depend on the exact Site Kit version.
-git tag -a v0.3.1 -m "SnabbSajt Site Kit and CLI 0.3.1"
-git push origin v0.3.1
+# dependency range must begin at that Site Kit version.
+git tag -a v0.4.0 -m "SnabbSajt Site Kit and CLI 0.4.0"
+git push origin v0.4.0
 
 # THE SKILL ARCHIVES -> a GitHub release carrying the zips + manifest.
 # Must equal skills/manifest.json releaseVersion.
@@ -37,18 +37,44 @@ git push origin skills-v1.1.0
 
 A package tag verifies both package versions and the CLI's dependency range,
 then publishes site-kit followed by cli. A `skills-v*` tag builds the archives
-and creates the GitHub release. Neither waits on the other. **It needs the `NPM_TOKEN` repository secret**
-(an `@snabbsajt` automation token). Without it the npm job is skipped with a
-warning and only the GitHub release ships.
+and creates the GitHub release. Neither waits on the other. Package publishing
+prefers npm trusted publishing for this repository and `release.yml`; the
+optional `NPM_TOKEN` fallback must be a granular write token with bypass 2FA.
+The independent `skills-v*` lane is the only path that creates a GitHub release.
+The workflow pins npm 11.5.1 because trusted publishing requires npm 11.5.1 or
+newer (and Node 22.14 or newer; the hosted Node 22 runner satisfies that floor).
+
+Each publish step queries the exact package version first. It skips only when
+npm already records a provenance attestation for that version. The retry guard
+matches its signed package digest, repository, release workflow, tag, and commit;
+missing or unexpected provenance fails closed. The release then runs npm's
+cryptographic signature audit for both installed packages. This makes a retry safe when Site Kit
+published successfully but the later CLI publish failed.
 
 Afterwards, confirm the provenance badge is present on both package pages.
+
+### Agent-safe verification before a tag exists
+
+An agent may verify either lane without creating a tag, release or npm version:
+
+```bash
+gh workflow run Release --ref main -f release_kind=packages -f version=0.4.0
+# or: release_kind=skills -f version=1.1.0
+```
+
+`workflow_dispatch` runs the same install, build and version-contract checks but
+hard-disables `npm publish` and the GitHub release action. Only a pushed tag can
+publish. A release-tag push still requires a current owner instruction naming
+the exact tag; the app repository's narrow
+`SAJT_ALLOW_SDK_RELEASE_TAG_PUSH=1` guard permits only that one stable-semver
+refspec and never authorizes a branch, force push or second tag.
 
 ## Fallback: publishing by hand
 
 Use this only when CI cannot run. **A hand-published version has no provenance.**
 
-Publish `@snabbsajt/site-kit` first. The CLI has an exact dependency on the
-same Site Kit version, so reversing the order creates a broken install window.
+Publish `@snabbsajt/site-kit` first. The CLI dependency range begins at the same
+Site Kit version, so reversing the order creates a broken install window.
 
 The steps below read the version from `package.json` into `$VERSION` rather
 than naming one. They used to spell `0.2.0` throughout, and by 0.3.0 the runbook
@@ -59,8 +85,13 @@ still nobody made it.
 
 1. Sign in at <https://www.npmjs.com/> and create or join the `snabbsajt`
    organization. The account must be allowed to publish public scoped packages.
-2. Enable two-factor authentication for writes.
-3. From this repository, authenticate with the same account:
+2. Configure `HH-Studio/Sajtbuilder-SDK` and `.github/workflows/release.yml` as
+   the trusted publisher for both packages. If trusted publishing cannot be
+   enabled, create a short-lived granular write token with bypass 2FA and store
+   it as the GitHub Actions secret `NPM_TOKEN`. Legacy automation tokens no
+   longer exist.
+3. Enable two-factor authentication for writes.
+4. From this repository, authenticate with the same account:
 
    ```bash
    npm login --cache "$TMPDIR/npm-cache"
@@ -89,9 +120,9 @@ or run the interactive command below, then retry Site Kit:
 npm profile enable-2fa auth-and-writes --cache "$TMPDIR/npm-cache"
 ```
 
-Do not continue to the CLI after a failed Site Kit publication. The CLI has an
-exact Site Kit dependency and cannot install correctly until Site Kit exists in
-the registry.
+Do not continue to the CLI after a failed Site Kit publication. The CLI's Site
+Kit dependency range starts at the release version and cannot install correctly
+until that version exists in the registry.
 
 Never put an npm token in this repository, `.npmrc`, a screenshot, or a command
 that will be committed. A future CI release should use npm trusted publishing.
@@ -113,8 +144,8 @@ npm pack --dry-run --json --cache "$TMPDIR/npm-cache"
 npm pack --dry-run --json --workspace packages/cli --cache "$TMPDIR/npm-cache"
 ```
 
-Confirm both manifests say `$VERSION`, the CLI dependency is exactly
-`@snabbsajt/site-kit: $VERSION`, and neither tarball contains fixtures, source
+Confirm both manifests say `$VERSION`, the CLI dependency is either `$VERSION`
+or the caret range `^$VERSION`, and neither tarball contains fixtures, source
 credentials, customer data, or local configuration.
 
 ## 1. Publish Site Kit
@@ -137,8 +168,8 @@ npm publish --workspace packages/cli --access public --cache "$TMPDIR/npm-cache"
 npm view @snabbsajt/cli@$VERSION version dependencies bin dist.integrity --json --prefer-online --cache "$TMPDIR/npm-cache"
 ```
 
-The response must show the `snabbsajt` binary and the exact Site Kit `$VERSION`
-dependency.
+The response must show the `snabbsajt` binary and a Site Kit dependency equal to
+`$VERSION` or `^$VERSION`.
 
 `--prefer-online` matters immediately after the first publication. Without it,
 npm can reuse a cached pre-publication `E404` even though the registry already

@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -121,7 +122,27 @@ async function main() {
     if (canonical !== generated) {
       throw new Error("SDK mirrors do not match the canonical app contract");
     }
+    const commit = execFileSync("git", ["-C", appRoot, "rev-parse", "HEAD"], {
+      encoding: "utf8",
+    }).trim();
+    const committedCanonical = execFileSync(
+      "git",
+      ["-C", appRoot, "show", `${commit}:${CANONICAL_PATH}`],
+      { encoding: "utf8" },
+    );
+    if (committedCanonical !== canonical) {
+      throw new Error(
+        "Canonical app contract has uncommitted changes; commit it before updating SDK provenance",
+      );
+    }
+    const source: AppContractSource = {
+      repository: CANONICAL_REPOSITORY,
+      commit,
+      path: CANONICAL_PATH,
+      sha256: createHash("sha256").update(canonical).digest("hex"),
+    };
     writeFileSync(CONTRACT_URL, canonical);
+    writeFileSync(APP_SOURCE_URL, canonicalJson(source));
     return;
   }
   if (process.argv.includes("--check")) {

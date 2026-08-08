@@ -14,6 +14,7 @@ import {
 import { CONTENT_TYPES } from "../../lib/content/contentTypes";
 import { siteLocaleValidator } from "./business";
 import { publishedVisitorAssistantConfigValidator } from "./visitorAssistant";
+import { jobOpeningFieldsValidator } from "./jobOpening";
 
 const contentTypeValidator = v.union(...CONTENT_TYPES.map((t) => v.literal(t)));
 import { trackingConfig } from "./tracking";
@@ -53,6 +54,9 @@ export const resolvedAsset = v.object({
 export type ResolvedAsset = Infer<typeof resolvedAsset>;
 
 export const snapshotSection = v.object({
+  // Stable draft identity used to overlay an imported authored translation.
+  // Stripped from public/headless delivery together with sourcePageId.
+  sourceSectionId: v.optional(v.id("sections")),
   type: sectionTypeLiteral,
   variant: v.string(),
   tone: v.optional(sectionToneValidator),
@@ -78,7 +82,10 @@ export const snapshotPage = v.object({
   // Page kind, frozen at publish. Absent => "page" (back-compat with snapshots
   // written before news/blog existed). "post" pages render under /news/<slug>,
   // are listed on /news, and are excluded from top-level page routing + nav.
-  pageType: v.optional(v.union(v.literal("page"), v.literal("post"))),
+  pageType: v.optional(
+    v.union(v.literal("page"), v.literal("post"), v.literal("job")),
+  ),
+  job: v.optional(jobOpeningFieldsValidator),
   // Post-only, frozen at publish: list/article summary, lead image (resolved via
   // resolvedAssets like any assetRef), and the stable publication date (sort +
   // JSON-LD datePublished).
@@ -117,6 +124,12 @@ export const siteSnapshot = v.object({
   // locale's snapshot so the public renderer can show a language switcher +
   // emit hreflang without an extra read. Absent => single-language.
   languages: v.optional(v.array(siteLocaleValidator)),
+  // primary slug -> locale slug. Routing metadata needs this map on every locale's
+  // snapshot so a language switch can preserve page identity when `/kursen`
+  // becomes `/en/course`.
+  localizedPageSlugs: v.optional(
+    v.record(v.string(), v.record(v.string(), v.string())),
+  ),
   theme: themeTokens,
   // Resolved custom fonts (heading/body) - present only when assigned; absent
   // snapshots simply render the theme's built-in fontPair.

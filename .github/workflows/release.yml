@@ -4,7 +4,7 @@ name: Release
 # independently on purpose (`minimumCliVersion` exists so the skill archives and
 # the packages can move apart):
 #
-#   v<pkg>          e.g. v0.3.1      -> npm publish, with provenance
+#   v<pkg>          e.g. v0.4.0      -> npm publish, with provenance
 #   skills-v<man>   e.g. skills-v1.1.0 -> GitHub release with the skill archives
 #
 # They used to share one trigger, and the two jobs each demanded that the tag
@@ -18,22 +18,101 @@ name: Release
 on:
   push:
     tags: ["v*", "skills-v*"]
+  workflow_dispatch:
+    inputs:
+      release_kind:
+        description: Verify one release lane without publishing
+        required: true
+        type: choice
+        options: [packages, skills]
+      version:
+        description: Stable semver without a prefix
+        required: true
+        type: string
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  # The skill archives. Only ever runs for a skills-v tag.
-  release:
-    if: ${{ startsWith(github.ref_name, 'skills-v') }}
+  # Manual runs are verification-only and intentionally receive no OIDC token,
+  # npm secret, or write-capable GitHub token.
+  verify:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
+      - name: Read canonical app contract source
+        id: app_contract
+        run: |
+          commit=$(node -p "require('./contract/app-source.json').commit")
+          [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || { echo "app contract ref must be a full commit SHA" >&2; exit 1; }
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+      - name: Check out pinned canonical app contract
+        uses: actions/checkout@v4
+        with:
+          repository: HH-Studio/simple-site-builder
+          ref: ${{ steps.app_contract.outputs.commit }}
+          path: .canonical-app
+      - name: Verify immutable app checkout
+        run: test "$(git -C .canonical-app rev-parse HEAD)" = "${{ steps.app_contract.outputs.commit }}"
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.10
       - run: bun install --frozen-lockfile
       - run: bun run check
+      - run: bun scripts/sync-contract.ts --check-app-contract .canonical-app
+      - name: Verify requested release version
+        shell: bash
+        env:
+          DISPATCH_VERSION: ${{ inputs.version }}
+          RELEASE_KIND: ${{ inputs.release_kind }}
+        run: |
+          set -euo pipefail
+          [[ "$DISPATCH_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "requested version must be stable semver" >&2; exit 1; }
+          if [[ "$RELEASE_KIND" = "skills" ]]; then
+            expected=$(node -p "require('./skills/manifest.json').releaseVersion")
+          else
+            expected=$(node -p "require('./package.json').version")
+            cli=$(node -p "require('./packages/cli/package.json').version")
+            [[ "$expected" = "$cli" ]] || { echo "site-kit ($expected) and cli ($cli) must share a version" >&2; exit 1; }
+            dep=$(node -p "require('./packages/cli/package.json').dependencies['@snabbsajt/site-kit']")
+            [[ "$dep" = "^${expected}" || "$dep" = "$expected" ]] || { echo "cli depends on site-kit '$dep', expected ${expected}" >&2; exit 1; }
+          fi
+          [[ "$DISPATCH_VERSION" = "$expected" ]] || { echo "requested version ${DISPATCH_VERSION} does not match ${expected}" >&2; exit 1; }
+      - name: Build skill archives
+        if: ${{ inputs.release_kind == 'skills' }}
+        run: bun run release:assets
+
+  # The skill archives. Only ever runs for a skills-v tag.
+  release:
+    if: ${{ github.event_name == 'push' && startsWith(github.ref_name, 'skills-v') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read canonical app contract source
+        id: app_contract
+        run: |
+          commit=$(node -p "require('./contract/app-source.json').commit")
+          [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || { echo "app contract ref must be a full commit SHA" >&2; exit 1; }
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+      - name: Check out pinned canonical app contract
+        uses: actions/checkout@v4
+        with:
+          repository: HH-Studio/simple-site-builder
+          ref: ${{ steps.app_contract.outputs.commit }}
+          path: .canonical-app
+      - name: Verify immutable app checkout
+        run: test "$(git -C .canonical-app rev-parse HEAD)" = "${{ steps.app_contract.outputs.commit }}"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+      - run: bun scripts/sync-contract.ts --check-app-contract .canonical-app
       - name: Verify release tag matches the skill manifest
         shell: bash
         run: |
@@ -68,54 +147,84 @@ jobs:
   # Publishing from CI is what makes npm provenance possible at all: the
   # attestation is signed with the workflow's OIDC identity, so a package
   # published by hand from a laptop can never carry one. Ordered site-kit first
-  # because @snabbsajt/cli depends on the exact version being published.
+  # because @snabbsajt/cli's dependency range starts at the version being published.
   #
-  # Requires the NPM_TOKEN secret (an automation token for the @snabbsajt org).
-  # Without it the job is skipped rather than failing the release, so tagging
-  # keeps producing GitHub skill archives while the token is being set up.
+  # Authentication prefers npm trusted publishing (OIDC). NPM_TOKEN remains an
+  # optional fallback and must be a granular write token with bypass 2FA. Skill
+  # archives and GitHub releases are created only by an independent skills-v tag.
   #
   # No `needs: release` any more. The archives job only runs for a skills-v tag,
   # so waiting on it is what made a package tag publish nothing at all.
   npm:
-    if: ${{ !startsWith(github.ref_name, 'skills-v') }}
+    if: ${{ github.event_name == 'push' && !startsWith(github.ref_name, 'skills-v') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write # required for provenance
-    # Job-level, because a step's own `env:` is not visible to that step's `if:`.
-    env:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - uses: actions/checkout@v4
+      - name: Read canonical app contract source
+        id: app_contract
+        run: |
+          commit=$(node -p "require('./contract/app-source.json').commit")
+          [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || { echo "app contract ref must be a full commit SHA" >&2; exit 1; }
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+      - name: Check out pinned canonical app contract
+        uses: actions/checkout@v4
+        with:
+          repository: HH-Studio/simple-site-builder
+          ref: ${{ steps.app_contract.outputs.commit }}
+          path: .canonical-app
+      - name: Verify immutable app checkout
+        run: test "$(git -C .canonical-app rev-parse HEAD)" = "${{ steps.app_contract.outputs.commit }}"
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.10
-      - uses: actions/setup-node@v4
+      # v7 does not write an empty NODE_AUTH_TOKEN placeholder, which would
+      # suppress npm's trusted-publishing OIDC exchange when no fallback token
+      # is configured.
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
+      # Trusted publishing requires npm >=11.5.1; pin the minimum known-good CLI
+      # instead of depending on whichever npm happens to ship with Node 22.
+      - run: npm install --global npm@11.5.1
       - run: bun install --frozen-lockfile
-      - run: bun run build
+      - run: bun run check
+      - run: bun scripts/sync-contract.ts --check-app-contract .canonical-app
       - name: Verify the tag matches both package versions
         shell: bash
         run: |
           set -euo pipefail
-          root=$(node -p "require('./package.json').version")
+          version=$(node -p "require('./package.json').version")
           cli=$(node -p "require('./packages/cli/package.json').version")
-          [[ "$root" = "$cli" ]] || { echo "site-kit ($root) and cli ($cli) must share a version" >&2; exit 1; }
-          [[ "$GITHUB_REF_NAME" = "v${root}" ]] || { echo "tag ${GITHUB_REF_NAME} does not match version ${root}" >&2; exit 1; }
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "package version must be stable semver" >&2; exit 1; }
+          [[ "$version" = "$cli" ]] || { echo "site-kit ($version) and cli ($cli) must share a version" >&2; exit 1; }
+          [[ "$GITHUB_REF_NAME" = "v${version}" ]] || { echo "tag ${GITHUB_REF_NAME} does not match version ${version}" >&2; exit 1; }
           dep=$(node -p "require('./packages/cli/package.json').dependencies['@snabbsajt/site-kit']")
-          [[ "$dep" = "^${root}" || "$dep" = "$root" ]] || { echo "cli depends on site-kit '$dep', expected ${root}" >&2; exit 1; }
-      - name: Skip note
-        if: ${{ env.NPM_TOKEN == '' }}
-        run: echo "::warning::NPM_TOKEN is not set — skipping npm publish. The GitHub release still shipped."
+          [[ "$dep" = "^${version}" || "$dep" = "$version" ]] || { echo "cli depends on site-kit '$dep', expected ${version}" >&2; exit 1; }
+      - name: Configure npm token fallback
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [[ -n "$NPM_TOKEN" ]]; then
+            npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
+          fi
       - name: Publish @snabbsajt/site-kit
-        if: ${{ env.NPM_TOKEN != '' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
-        run: npm publish --provenance --access public
+        if: ${{ github.event_name == 'push' }}
+        run: bun scripts/publish-package.ts .
       - name: Publish @snabbsajt/cli
-        if: ${{ env.NPM_TOKEN != '' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
-        run: npm publish --provenance --access public ./packages/cli
+        if: ${{ github.event_name == 'push' }}
+        run: bun scripts/publish-package.ts ./packages/cli
+      - name: Cryptographically verify published package attestations
+        if: ${{ github.event_name == 'push' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./package.json').version")
+          verify_dir=$(mktemp -d)
+          cd "$verify_dir"
+          npm init --yes >/dev/null
+          npm install --ignore-scripts --save-exact "@snabbsajt/site-kit@${version}" "@snabbsajt/cli@${version}"
+          npm audit signatures

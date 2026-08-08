@@ -37,6 +37,7 @@ import { NEWS_SEGMENT } from "../site/news";
 import { validateRedirectMap } from "../site/redirects";
 import { isValidOrderKey } from "../editor/fractionalIndex";
 import { looksLikeTrialFont } from "../../convex/model/fonts";
+import { validatePortableLocalizations } from "../portability/localizations";
 
 // One validator per section type, keyed by the discriminant - so a content
 // error is reported against the RIGHT member's fields (SDK feedback #3).
@@ -121,6 +122,10 @@ export function validateSitePackage(
     redirects: site.redirects,
   });
   if (cap) err(issues, cap === "too_many_redirects" ? "redirects" : "$", `payload exceeds import cap: ${cap}`);
+  const localizationIssue = validatePortableLocalizations(site);
+  if (localizationIssue) {
+    err(issues, "localizations", `localization payload is invalid: ${localizationIssue}`);
+  }
 
   // 3. Id uniqueness + shape.
   const pageIds = checkUnique(issues, site.pages.map((p) => p.tmpId), "pages", "page tmpId");

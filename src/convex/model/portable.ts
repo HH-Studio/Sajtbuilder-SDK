@@ -21,6 +21,10 @@ import {
 import { fontSource, fontStyle, fontLicense } from "./fonts";
 import { verticalValidator, goalValidator, siteLocaleValidator } from "./business";
 import { CONTENT_TYPES } from "../../lib/content/contentTypes";
+import {
+  jobOpeningDraftFieldsValidator,
+  localizedJobOpeningFieldsValidator,
+} from "./jobOpening";
 
 const contentTypeValidator = v.union(...CONTENT_TYPES.map((t) => v.literal(t)));
 
@@ -230,7 +234,10 @@ export const portableSiteV1 = v.object({
       // News/blog post fields. `featuredImage.assetId` is the export-local asset
       // id string (like content image refs), remapped to a fresh id on import -
       // never a `v.id` (would break cross-deployment import).
-      pageType: v.optional(v.union(v.literal("page"), v.literal("post"))),
+      pageType: v.optional(
+        v.union(v.literal("page"), v.literal("post"), v.literal("job")),
+      ),
+      job: v.optional(jobOpeningDraftFieldsValidator),
       // Which contentCollections entry (by tmpId, above) this post belongs to.
       // Undefined = not in any collection, same meaning as the live schema.
       collectionTmpId: v.optional(v.string()),
@@ -267,6 +274,9 @@ export const portableSiteV1 = v.object({
 
   sections: v.array(
     v.object({
+      // Stable export-local identity used by authored locale payloads. Optional
+      // keeps every older V1 bundle valid; a localization may only target a
+      // section that declares it.
       tmpId: v.optional(v.string()),
       pageTmpId: v.string(),
       // Incremental import: stable per-section key, unique within the bundle
@@ -291,6 +301,11 @@ export const portableSiteV1 = v.object({
     }),
   ),
 
+  // Authored secondary-language content. This is intentionally separate from
+  // the ordinary draft: import stores it as a publish seed, then the first
+  // publish materialises a complete localized snapshot. Structure stays
+  // identical to the primary site; only page copy/slug and section content may
+  // differ. Optional keeps pre-localization V1 bundles fully compatible.
   localizations: v.optional(
     v.array(
       v.object({
@@ -303,11 +318,15 @@ export const portableSiteV1 = v.object({
             navLabel: v.optional(v.string()),
             excerpt: v.optional(v.string()),
             author: v.optional(v.string()),
+            job: v.optional(localizedJobOpeningFieldsValidator),
             seo: portableSeo,
           }),
         ),
         sections: v.array(
-          v.object({ sectionTmpId: v.string(), content: v.any() }),
+          v.object({
+            sectionTmpId: v.string(),
+            content: v.any(),
+          }),
         ),
       }),
     ),

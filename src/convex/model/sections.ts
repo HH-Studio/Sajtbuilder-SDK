@@ -9,6 +9,7 @@ import {
   siteIconKey,
   richBlock,
 } from "./content";
+import { restaurantMenuValidator } from "./restaurantMenu";
 
 // ---------------------------------------------------------------------------
 // Section content model. `sectionContent` is a discriminated union keyed by
@@ -133,6 +134,19 @@ export const sectionContent = v.union(
     ),
     // "icon-grid-cta" variant only - a call-to-action row under the grid.
     footerCta: v.optional(ctaRef),
+  }),
+
+  // Public projection of the canonical restaurant-menu draft. The nested
+  // menu/category/item validators are shared with restaurantMenus so preview
+  // and published snapshots cannot drift into a second menu shape. All text
+  // here is already localized before rendering. Allergen guidance is the one
+  // fixed visitor-chrome sentence: content stores only explicit confirmation,
+  // never authored or AI-generated allergen claims.
+  v.object({
+    type: v.literal("restaurant-menu"),
+    heading: v.string(),
+    menus: v.array(restaurantMenuValidator),
+    allergenNoticeConfirmed: v.optional(v.literal(true)),
   }),
 
   v.object({
@@ -498,6 +512,11 @@ export const sectionContent = v.union(
     type: v.literal("footer"),
     businessName: v.string(),
     tagline: v.optional(v.string()),
+    // Image-led footer variants (`photo-newsletter`, `photo-directory-cta`,
+    // `backdrop-newsletter`, `backdrop-contact`).
+    // Optional keeps every existing footer valid; the shared Media renderer
+    // owns focal point, alt text and attribution.
+    media: v.optional(assetRef),
     // "contact" variant only - one free-typed line (address · phone · email).
     contactLine: v.optional(v.string()),
     columns: v.optional(
@@ -522,9 +541,10 @@ export const sectionContent = v.union(
         consentText: v.optional(v.string()),
       }),
     ),
-    // "promo-newsletter" only. The CTA is typed, so the prominent banner can
-    // never persist a dead hash link or unsafe URL. Contact uses the website's
-    // real email at render time instead of duplicating it in section content.
+    // CTA-led footer variants. `promo-newsletter` uses the full object;
+    // `wordmark-cta` and `photo-directory-cta` reuse only the typed CTA so they
+    // can never persist a dead hash link or unsafe URL. Contact uses the
+    // website's real email at render time instead of duplicating it in content.
     promo: v.optional(
       v.object({
         eyebrow: v.optional(v.string()),
@@ -975,6 +995,7 @@ export type ContentOf<T extends SectionType> = Extract<SectionContent, { type: T
 export const SECTION_TYPES = [
   "hero",
   "services",
+  "restaurant-menu",
   "service-detail",
   "about",
   "team",
