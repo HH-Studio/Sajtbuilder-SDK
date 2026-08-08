@@ -105,6 +105,21 @@ describe("public Site Kit API", () => {
     expect(validateSitePackage(site).issues.filter((issue) => issue.level === "error")).toEqual([]);
   });
 
+  it("accepts authored secondary-language copy and per-locale slugs", () => {
+    const site = createStarterSite();
+    site.site.languages = ["en", "sv"];
+    site.sections[0].tmpId = "hero";
+    site.localizations = [{
+      locale: "sv",
+      pages: [{ pageTmpId: "home", slug: "", title: "Hem" }],
+      sections: [{
+        sectionTmpId: "hero",
+        content: { ...site.sections[0].content, headline: "Välkommen" },
+      }],
+    }];
+    expect(validateSitePackage(site).ok).toBe(true);
+  });
+
   it.each([
     [[{ fromPath: "", toPath: "contact" }], "redirects[0].fromPath"],
     [[{ fromPath: "old", toPath: "old" }], "redirects[0].toPath"],

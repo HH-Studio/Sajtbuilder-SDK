@@ -93,6 +93,15 @@ export const ctaTarget = v.union(
   v.object({ kind: v.literal("email"), value: v.string() }),
   v.object({ kind: v.literal("external"), url: v.string() }), // https-validated in app logic
   v.object({ kind: v.literal("booking") }),
+  // "Ta betalt" for a canonical service (backlog 0025, Option B). Resolves to
+  // the site's own /betala/<slug>/<serviceId> page, which starts the same
+  // Stripe Connect checkout a product uses. A target rather than a bespoke
+  // button so every services variant that already renders `item.cta` renders
+  // this too - the alternative was a pay button hand-added to fifteen layouts.
+  // The amount is NOT here: it lives on the item as `payAmount`, stamped at
+  // publish, because a price belongs where the page can show it and a checkout
+  // can verify it, not inside a link.
+  v.object({ kind: v.literal("service-pay"), serviceId: v.id("services") }),
 );
 export type CtaTarget = Infer<typeof ctaTarget>;
 
@@ -215,6 +224,10 @@ export const bookingService = v.object({
   // 09:00 → 09:45 → 10:30 and never lands on the half hour).
   slotIntervalMin: v.optional(v.number()),
   closedDates: v.optional(v.array(v.string())), // per-service holidays override
+  // Which resources (chairs/rooms/staff) can deliver this service, as ids into
+  // the section's `resources` list (backlog 0952). Absent/empty => the whole
+  // pool, which for a site with no resources is one implicit resource.
+  resourceIds: v.optional(v.array(v.string())),
   // Questions asked at booking time - reuses the constrained lead-form allow-list.
   intake: v.optional(v.array(formField)),
   // Structured price (minor units) for online pay + invoice prefill.
@@ -308,6 +321,23 @@ export const bookingSource = v.union(
     // that publish materialises back into the inline list here, so booking
     // resolution still reads the snapshot unchanged.
     serviceIds: v.optional(v.array(v.id("services"))),
+    // The business's capacity units (backlog 0952) — how many appointments can
+    // run at the same time, and when each unit works. Materialised from
+    // `bookingResources` at publish. Absent/empty => one implicit resource,
+    // which is every site that predates the feature.
+    //
+    // Deliberately UNNAMED in the snapshot: the snapshot is public, the widget
+    // only needs "how many lanes and when does each one work", and a staff
+    // roster is the business's own information. The owner-facing name lives in
+    // the draft table.
+    resources: v.optional(
+      v.array(
+        v.object({
+          id: v.string(),
+          availability: v.optional(v.array(openingDay)),
+        }),
+      ),
+    ),
     availability: v.array(openingDay), // reuse the weekly opening-hours shape
     timezone: v.string(), // IANA, default "Europe/Stockholm"
     leadTimeHours: v.optional(v.number()), // earliest bookable lead time

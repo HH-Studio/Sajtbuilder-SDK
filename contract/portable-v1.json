@@ -16,7 +16,7 @@
     "maxTotalAssetBytes": 209715200
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:72d6e18f0054f52549542c300c8adff8f0d16610bd92192b6e60a2521397caa9",
+  "hash": "sha256:5b988c4b8d6892ba4f9483f74a16b15d357c5e40e16e9d3d1c8d023db9022454",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -804,6 +804,181 @@
           },
           "optional": false
         },
+        "localizations": {
+          "fieldType": {
+            "type": "array",
+            "value": {
+              "type": "object",
+              "value": {
+                "locale": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "literal",
+                        "value": "sv"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "en"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "pl"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "de"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "da"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "no"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "fi"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "fr"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "es"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "tr"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "ar"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "fa"
+                      }
+                    ]
+                  },
+                  "optional": false
+                },
+                "pages": {
+                  "fieldType": {
+                    "type": "array",
+                    "value": {
+                      "type": "object",
+                      "value": {
+                        "author": {
+                          "fieldType": {
+                            "type": "string"
+                          },
+                          "optional": true
+                        },
+                        "excerpt": {
+                          "fieldType": {
+                            "type": "string"
+                          },
+                          "optional": true
+                        },
+                        "navLabel": {
+                          "fieldType": {
+                            "type": "string"
+                          },
+                          "optional": true
+                        },
+                        "pageTmpId": {
+                          "fieldType": {
+                            "type": "string"
+                          },
+                          "optional": false
+                        },
+                        "seo": {
+                          "fieldType": {
+                            "type": "object",
+                            "value": {
+                              "canonical": {
+                                "fieldType": {
+                                  "type": "string"
+                                },
+                                "optional": true
+                              },
+                              "metaDescription": {
+                                "fieldType": {
+                                  "type": "string"
+                                },
+                                "optional": true
+                              },
+                              "metaTitle": {
+                                "fieldType": {
+                                  "type": "string"
+                                },
+                                "optional": true
+                              },
+                              "noindex": {
+                                "fieldType": {
+                                  "type": "boolean"
+                                },
+                                "optional": true
+                              },
+                              "sourceUrl": {
+                                "fieldType": {
+                                  "type": "string"
+                                },
+                                "optional": true
+                              }
+                            }
+                          },
+                          "optional": true
+                        },
+                        "slug": {
+                          "fieldType": {
+                            "type": "string"
+                          },
+                          "optional": false
+                        },
+                        "title": {
+                          "fieldType": {
+                            "type": "string"
+                          },
+                          "optional": false
+                        }
+                      }
+                    }
+                  },
+                  "optional": false
+                },
+                "sections": {
+                  "fieldType": {
+                    "type": "array",
+                    "value": {
+                      "type": "object",
+                      "value": {
+                        "content": {
+                          "fieldType": {
+                            "type": "any"
+                          },
+                          "optional": false
+                        },
+                        "sectionTmpId": {
+                          "fieldType": {
+                            "type": "string"
+                          },
+                          "optional": false
+                        }
+                      }
+                    }
+                  },
+                  "optional": false
+                }
+              }
+            }
+          },
+          "optional": true
+        },
         "pages": {
           "fieldType": {
             "type": "array",
@@ -1105,6 +1280,58 @@
                         "fieldType": {
                           "type": "literal",
                           "value": true
+                        },
+                        "optional": true
+                      },
+                      "measured": {
+                        "fieldType": {
+                          "type": "object",
+                          "value": {
+                            "align": {
+                              "fieldType": {
+                                "type": "union",
+                                "value": [
+                                  {
+                                    "type": "literal",
+                                    "value": "start"
+                                  },
+                                  {
+                                    "type": "literal",
+                                    "value": "center"
+                                  },
+                                  {
+                                    "type": "literal",
+                                    "value": "end"
+                                  }
+                                ]
+                              },
+                              "optional": true
+                            },
+                            "gap": {
+                              "fieldType": {
+                                "type": "string"
+                              },
+                              "optional": true
+                            },
+                            "maxWidth": {
+                              "fieldType": {
+                                "type": "string"
+                              },
+                              "optional": true
+                            },
+                            "paddingBottom": {
+                              "fieldType": {
+                                "type": "string"
+                              },
+                              "optional": true
+                            },
+                            "paddingTop": {
+                              "fieldType": {
+                                "type": "string"
+                              },
+                              "optional": true
+                            }
+                          }
                         },
                         "optional": true
                       },
@@ -2505,6 +2732,12 @@
                   },
                   "optional": true
                 },
+                "tmpId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
                 "tone": {
                   "fieldType": {
                     "type": "union",
@@ -3381,6 +3614,18 @@
                     {
                       "type": "literal",
                       "value": "es"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "tr"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "ar"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "fa"
                     }
                   ]
                 },
@@ -3427,6 +3672,18 @@
                       {
                         "type": "literal",
                         "value": "es"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "tr"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "ar"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "fa"
                       }
                     ]
                   }
@@ -3558,6 +3815,25 @@
                                   "fieldType": {
                                     "type": "literal",
                                     "value": "booking"
+                                  },
+                                  "optional": false
+                                }
+                              }
+                            },
+                            {
+                              "type": "object",
+                              "value": {
+                                "kind": {
+                                  "fieldType": {
+                                    "type": "literal",
+                                    "value": "service-pay"
+                                  },
+                                  "optional": false
+                                },
+                                "serviceId": {
+                                  "fieldType": {
+                                    "tableName": "services",
+                                    "type": "id"
                                   },
                                   "optional": false
                                 }
@@ -6542,6 +6818,22 @@
                     },
                     {
                       "type": "literal",
+                      "value": "autoshop"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "retail"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "school"
+                    },
+                    {
+                      "type": "literal",
+                      "value": "animals"
+                    },
+                    {
+                      "type": "literal",
                       "value": "generic"
                     }
                   ]
@@ -6711,6 +7003,8 @@
         "columns",
         "contact",
         "inset",
+        "newsletter-box",
+        "promo-newsletter",
         "ruled",
         "simple"
       ],
@@ -6801,7 +7095,8 @@
       "newsletter": [
         "boxed",
         "centered",
-        "inline"
+        "inline",
+        "orbits"
       ],
       "opening-hours": [
         "cards",

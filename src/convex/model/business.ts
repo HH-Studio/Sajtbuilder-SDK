@@ -19,6 +19,42 @@ export const VERTICALS = [
   "coach",
   "therapist",
   "freelancer",
+  // Added 2026-08-08 (backlog 0209). The catalogue had already shipped an
+  // `auto-repair` kit filed under `handyman` — the exact failure that ticket
+  // warned about. A garage is not a ROT trade: the work is not deductible, it
+  // is booked rather than quoted, and "hantverkare" is not what a customer with
+  // a broken car is looking for. Adding a literal only, so every existing row
+  // stays valid and no migration is needed.
+  "autoshop",
+  // Added 2026-08-08 (backlog 0209), the second of the three verticals that
+  // ticket's 2026-07-27 note named. `shop` and `florist` were filed under
+  // `generic`, which is not a trade but the absence of one: they got the office
+  // page recipe and, in `lib/kits/imagery.ts`, a photograph of an open-plan
+  // office as the hero of a flower shop. A shop is neither booked nor quoted —
+  // it is visited — so opening hours, the address and what is actually in stock
+  // are the page, and that shape has no home among the other eleven. Adding a
+  // literal only, so every existing row stays valid and no migration is needed.
+  "retail",
+  // Added 2026-08-08 (backlog 0209), the last of the three verticals that
+  // ticket's 2026-07-27 note named. `driving-school` was filed under `coach`,
+  // which sells a conversation to one client at a time; a trafikskola sells a
+  // sequence of lessons that ends in something the pupil can do, and it is the
+  // steps — not the coaching relationship — that the page has to explain. The
+  // shape covers any teaching business: körskola, kursgård, musik- och
+  // språkskola. Adding a literal only, so every existing row stays valid and
+  // no migration is needed.
+  "school",
+  // Added 2026-08-08 (backlog 0209). `dog-care` was the last kit left on
+  // `generic`, and it is the kit that ticket's own 2026-07-27 note names as the
+  // warning case — filed under the nearest vertical it once shipped hairdresser
+  // copy. A grooming salon is booked and priced by the ANIMAL: size, coat and
+  // temperament decide the slot and the price, and the customer is not the one
+  // being worked on. Nothing in the other twelve carries that. `veterinarian`
+  // deliberately stays on `clinic`: its shape (booking, hours, what we treat)
+  // is already right, and moving it would mean rebuilding its emergency path
+  // for no gain. Adding a literal only, so every existing row stays valid and
+  // no migration is needed.
+  "animals",
   "generic",
 ] as const;
 export type Vertical = (typeof VERTICALS)[number];
@@ -125,6 +161,12 @@ export const SKIP_GOAL_BY_VERTICAL: Partial<Record<Vertical, Goal>> = {
   fitness: "get_bookings",
   therapist: "get_bookings",
   restaurant: "get_bookings",
+  // A pupil who lands on a driving school's page with no goal set is trying to
+  // start, and starting means booking a first lesson (backlog 0209).
+  school: "get_bookings",
+  // A dog groomer with no goal chosen is being looked up by someone who wants a
+  // slot, not a brochure (backlog 2257).
+  animals: "get_bookings",
   handyman: "get_calls",
   cleaning: "get_calls",
   consultant: "get_calls",

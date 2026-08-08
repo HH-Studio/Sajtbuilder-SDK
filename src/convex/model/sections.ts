@@ -99,6 +99,18 @@ export const sectionContent = v.union(
         // Phase S: optional link to a canonical `services` row. Additive - manual
         // items omit it; the editor/publish use it to keep one source of truth.
         serviceId: v.optional(v.id("services")),
+        // "Ta betalt" (backlog 0025 Option B). Set by publish-time
+        // materialization for a linked service whose primaryAction is `pay` and
+        // whose price is a real amount; absent for every other item, which is
+        // what makes the pay button appear on exactly the services the owner
+        // priced. This is a MACHINE price in minor units - `priceText` stays the
+        // display string ("från 500 kr") and is not something a checkout can be
+        // built on. Living in the section content is the point: the amount the
+        // visitor was quoted is frozen in the published snapshot, so checkout
+        // charges what the page promised rather than whatever the draft says
+        // today.
+        payAmount: v.optional(v.number()),
+        payCurrency: v.optional(v.string()),
         // Optional grouping label ("Förrätter", "Take away", "Catering"),
         // mirrored from `services.category`. The renderer prints a subheading
         // before each contiguous run that shares one - which is how a restaurant
@@ -497,6 +509,30 @@ export const sectionContent = v.union(
       ),
     ),
     legalText: v.optional(v.string()),
+    // Newsletter footer variants. One optional OBJECT rather than six unrelated
+    // strings: selecting the layout seeds it whole, so a footer can never
+    // persist a working email field with missing button/success copy.
+    newsletter: v.optional(
+      v.object({
+        heading: v.string(),
+        description: v.string(),
+        placeholder: v.string(),
+        submitLabel: v.string(),
+        successMessage: v.string(),
+        consentText: v.optional(v.string()),
+      }),
+    ),
+    // "promo-newsletter" only. The CTA is typed, so the prominent banner can
+    // never persist a dead hash link or unsafe URL. Contact uses the website's
+    // real email at render time instead of duplicating it in section content.
+    promo: v.optional(
+      v.object({
+        eyebrow: v.optional(v.string()),
+        heading: v.string(),
+        cta: ctaRef,
+      }),
+    ),
+    contactLabel: v.optional(v.string()),
   }),
 
   // Long-form legal / policy prose (privacy policy, terms). Structured blocks
@@ -1056,5 +1092,37 @@ export const sectionLayoutValidator = v.object({
    *  measured, not a knob the owner tunes. */
   columnStart: v.optional(v.number()),
   columnSpan: v.optional(v.number()),
+  /** Geometry MEASURED off one band of a source page, for this band alone.
+   *
+   *  Everything else an import measures is site-level: one `sectionPy`, three
+   *  container widths, nine type roles for the whole site
+   *  (`theme.customLayout` / `customType`). A source page whose bands have
+   *  different rhythm or a different measure than the rest of the page could
+   *  not be expressed at all — every band came back on the site median.
+   *
+   *  Import-only, like `parallax` and the column tokens: these are numbers an
+   *  author's own CSS produced, not knobs the owner tunes. Lengths only,
+   *  re-validated by the renderer's `safeLength` before they reach a
+   *  declaration (`lib/sections/measuredSection.ts`), so a hostile or broken
+   *  bundle degrades to the site rhythm rather than injecting CSS.
+   *
+   *  An owner choice always wins: an explicit Labs `paddingY` replaces the
+   *  measured padding and an explicit `width` replaces the measured maxWidth,
+   *  because the owner touched the knob after the import ran. */
+  measured: v.optional(
+    v.object({
+      /** This band's own vertical padding, replacing the page rhythm. */
+      paddingTop: v.optional(v.string()),
+      paddingBottom: v.optional(v.string()),
+      /** This band's content measure, replacing the site container width. */
+      maxWidth: v.optional(v.string()),
+      /** Row gap of this band's own multi-column grid (`--site-grid-gap`). */
+      gap: v.optional(v.string()),
+      /** How this band's heading block sits. Bounded enum, not a length. */
+      align: v.optional(
+        v.union(v.literal("start"), v.literal("center"), v.literal("end")),
+      ),
+    }),
+  ),
 });
 export type SectionLayout = Infer<typeof sectionLayoutValidator>;

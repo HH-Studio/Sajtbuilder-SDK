@@ -4,6 +4,7 @@ import type {
   SectionContent,
   SectionType,
 } from "../../convex/model/sections";
+import { newsletterDefaults } from "./newsletterDefaults";
 
 // ---------------------------------------------------------------------------
 // Section registry - the single source of truth for: plain-language labels,
@@ -1793,6 +1794,32 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           pl: "Stopka leży we własnym zaokrąglonym polu z przestrzenią wokół, zamiast wychodzić do krawędzi. Nazwa stoi duża po lewej, a odnośniki w kolumnach po prawej.",
         },
       },
+      {
+        key: "newsletter-box",
+        label: {
+          sv: "Nyhetsbrev och länkar",
+          en: "Newsletter and links",
+          pl: "Newsletter i linki",
+        },
+        description: {
+          sv: "Företagsnamn och ett e-postfält står till vänster, länkar i spalter till höger och den juridiska raden centrerad längst ner i en gemensam ruta.",
+          en: "The business name and an email signup sit on the left, link columns on the right, and the legal line is centred at the bottom of one shared box.",
+          pl: "Nazwa firmy i zapis e-mail są po lewej, kolumny linków po prawej, a wiersz prawny jest wyśrodkowany na dole wspólnej ramki.",
+        },
+      },
+      {
+        key: "promo-newsletter",
+        label: {
+          sv: "Kontakt och nyhetsbrev",
+          en: "Contact and newsletter",
+          pl: "Kontakt i newsletter",
+        },
+        description: {
+          sv: "En stor kontaktyta följs av e-post, nyhetsbrev, länkar och juridisk text i en sammanhållen sidfot.",
+          en: "A large contact banner is followed by email, newsletter signup, links, and legal copy in one continuous footer.",
+          pl: "Duży baner kontaktowy łączy się z e-mailem, newsletterem, linkami i informacją prawną w jednej stopce.",
+        },
+      },
     ],
     defaultVariant: "simple",
     defaultTone: "dark",
@@ -2355,23 +2382,31 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           pl: "Skromny, wyśrodkowany zapis bez karty i bez dzielonego rzędu.",
         },
       },
+      {
+        key: "orbits",
+        label: { sv: "Cirklar", en: "Orbits", pl: "Kręgi" },
+        description: {
+          sv: "En stor rundad färgyta med centrerad rubrik, prenumeration och tunna cirklar i hörnen.",
+          en: "A large rounded colour panel with a centred heading, signup, and fine circles in the corners.",
+          pl: "Duży zaokrąglony panel kolorystyczny z wyśrodkowanym nagłówkiem, zapisem i delikatnymi kręgami w rogach.",
+        },
+      },
     ],
     defaultVariant: "boxed",
     defaultTone: "clear",
     allowedTones: ["light", "clear", "dark", "brand"],
-    defaultContent: (lang) => ({
-      type: "newsletter",
-      heading: pick(lang, "Håll dig uppdaterad", "Stay in the loop", "Bądź na bieżąco"),
-      intro: pick(
-        lang,
-        "Få nyheter och erbjudanden då och då. Inget spam.",
-        "Get news and offers now and then. No spam.",
-        "Otrzymuj nowości i oferty od czasu do czasu. Żadnego spamu.",
-      ),
-      placeholder: pick(lang, "Din e-post", "Your email", "Twój e-mail"),
-      submitLabel: pick(lang, "Prenumerera", "Subscribe", "Zapisz się"),
-      successMessage: pick(lang, "Tack! Du är anmäld.", "Thanks! You’re signed up.", "Dziękujemy! Zapisano Cię."),
-    }),
+    defaultContent: (lang) => {
+      const signup = newsletterDefaults(lang);
+      return {
+        type: "newsletter",
+        heading: signup.heading,
+        intro: signup.description,
+        placeholder: signup.placeholder,
+        submitLabel: signup.submitLabel,
+        successMessage: signup.successMessage,
+        consentText: signup.consentText,
+      };
+    },
   },
 
   statement: {

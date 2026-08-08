@@ -267,6 +267,7 @@ export const portableSiteV1 = v.object({
 
   sections: v.array(
     v.object({
+      tmpId: v.optional(v.string()),
       pageTmpId: v.string(),
       // Incremental import: stable per-section key, unique within the bundle
       // (e.g. "home/hero"). Required for a section to be UPDATABLE by a later
@@ -288,6 +289,28 @@ export const portableSiteV1 = v.object({
       anchorId: v.optional(v.string()),
       content: v.any(), // validated on insert (see header note)
     }),
+  ),
+
+  localizations: v.optional(
+    v.array(
+      v.object({
+        locale: siteLocaleValidator,
+        pages: v.array(
+          v.object({
+            pageTmpId: v.string(),
+            slug: v.string(),
+            title: v.string(),
+            navLabel: v.optional(v.string()),
+            excerpt: v.optional(v.string()),
+            author: v.optional(v.string()),
+            seo: portableSeo,
+          }),
+        ),
+        sections: v.array(
+          v.object({ sectionTmpId: v.string(), content: v.any() }),
+        ),
+      }),
+    ),
   ),
 
   fonts: v.array(

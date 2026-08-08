@@ -21,6 +21,7 @@ optional; every other field is required.
 | `fonts` | `object[]` | Google, Adobe, or bundled custom fonts. |
 | `fontsAssignment?` | `object` | References entries in `fonts`. |
 | `format` | `"sajt-site"` | Format discriminator. |
+| `localizations?` | `object[]` |  |
 | `pages` | `object[]` | Pages and posts. |
 | `redirects?` | `object[]` | SEO-safe old-URL mappings. Validated against the page graph after pages exist. |
 | `sections` | `object[]` | Ordered, typed content sections. |
@@ -49,7 +50,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `external-product-grid` | `default` |
 | `faq` | `accordion`, `accordion-cta`, `beside-photo`, `cards`, `dashed`, `filled-rows`, `filtered`, `grouped`, `header-cta`, `numbered`, `outlined`, `split`, `two-column` |
 | `featured-product` | `default` |
-| `footer` | `centered`, `columns`, `contact`, `inset`, `ruled`, `simple` |
+| `footer` | `centered`, `columns`, `contact`, `inset`, `newsletter-box`, `promo-newsletter`, `ruled`, `simple` |
 | `gallery` | `carousel`, `full-bleed`, `grid-3`, `grid-4`, `masonry`, `mosaic` |
 | `hero` | `centered`, `duo`, `gradient`, `image-left`, `image-right`, `minimal`, `overlay`, `overlay-full`, `overlay-left`, `overlay-light`, `panel`, `poster`, `scatter`, `split`, `split-bleed`, `spotlight`, `stage` |
 | `highlights` | `accent`, `alternating`, `checklist`, `chip-cards`, `figures`, `grid-2`, `grid-3`, `icon-circles`, `icon-list`, `panel-cards`, `pillars`, `plain`, `split-icons`, `stat-cards`, `values` |
@@ -61,7 +62,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `legal` | `centered`, `document`, `paper` |
 | `location` | `address-only`, `map-card`, `map-first` |
 | `logos` | `grid`, `marquee`, `numbered-grid`, `row` |
-| `newsletter` | `boxed`, `centered`, `inline` |
+| `newsletter` | `boxed`, `centered`, `inline`, `orbits` |
 | `opening-hours` | `cards`, `compact`, `table` |
 | `pricing` | `packages`, `rows`, `simple-list`, `single`, `tiers-3`, `two-col` |
 | `process` | `numbered-cards`, `steps-cta`, `steps-horizontal`, `steps-vertical`, `timeline` |
@@ -143,6 +144,33 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `displayTmpId?` | `string` |  |
 | `headingTmpId?` | `string` |  |
 
+### `localizations[]`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `locale` | `"sv" \| "en" \| "pl" \| "de" \| "da" \| "no" \| … (12 total)` |  |
+| `pages` | `object[]` | Pages and posts. |
+| `sections` | `object[]` | Ordered, typed content sections. |
+
+### `localizations[].pages[]`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `author?` | `string` |  |
+| `excerpt?` | `string` |  |
+| `navLabel?` | `string` |  |
+| `pageTmpId` | `string` |  |
+| `seo?` | `object` |  |
+| `slug` | `string` |  |
+| `title` | `string` |  |
+
+### `localizations[].sections[]`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `content` | `any` |  |
+| `sectionTmpId` | `string` |  |
+
 ### `pages[]`
 
 | Field | Type | Meaning |
@@ -205,6 +233,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `order?` | `string` |  |
 | `pageTmpId` | `string` |  |
 | `styleOverrides?` | `Record<string, object>` |  |
+| `tmpId?` | `string` |  |
 | `tone?` | `"light" \| "clear" \| "dark" \| "brand"` |  |
 | `type` | `"hero" \| "services" \| "service-detail" \| "about" \| "team" \| "testimonials" \| … (42 total)` |  |
 | `variant` | `string` |  |
@@ -217,6 +246,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `columnStart?` | `number` |  |
 | `hideOnDesktop?` | `true` |  |
 | `hideOnMobile?` | `true` |  |
+| `measured?` | `object` |  |
 | `paddingY?` | `"none" \| "compact" \| "normal" \| "spacious"` |  |
 | `parallax?` | `object` |  |
 | `width?` | `"normal" \| "wide" \| "full"` |  |
@@ -280,8 +310,8 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `contact` | `object` |  |
 | `faviconAssetId?` | `string` |  |
 | `goal` | `"get_calls" \| "get_bookings" \| "show_services"` |  |
-| `language` | `"sv" \| "en" \| "pl" \| "de" \| "da" \| "no" \| … (9 total)` |  |
-| `languages?` | `"sv" \| "en" \| "pl" \| "de" \| "da" \| "no" \| … (9 total)[]` |  |
+| `language` | `"sv" \| "en" \| "pl" \| "de" \| "da" \| "no" \| … (12 total)` |  |
+| `languages?` | `"sv" \| "en" \| "pl" \| "de" \| "da" \| "no" \| … (12 total)[]` |  |
 | `logoAssetId?` | `string` |  |
 | `navLinks?` | `object[]` |  |
 | `navOrder?` | `string[]` |  |
@@ -290,7 +320,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `socials?` | `object` |  |
 | `theme` | `object` |  |
 | `tracking?` | `object` |  |
-| `vertical` | `"dentist" \| "clinic" \| "salon" \| "cleaning" \| "restaurant" \| "fitness" \| … (12 total)` |  |
+| `vertical` | `"dentist" \| "clinic" \| "salon" \| "cleaning" \| "restaurant" \| "fitness" \| … (16 total)` |  |
 
 ### `site.bookingConfig`
 
@@ -323,7 +353,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | --- | --- | --- |
 | `id` | `string` |  |
 | `label` | `string` |  |
-| `target` | `object \| object \| object \| object \| object \| object` |  |
+| `target` | `object \| object \| object \| object \| object \| object \| object` |  |
 
 ### `site.provenance`
 
