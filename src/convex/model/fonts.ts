@@ -151,14 +151,22 @@ export function isValidAdobeKitId(id: string): boolean {
 
 /**
  * Build a Google Fonts css2 stylesheet URL for a curated family. Throws if the
- * family is not in the allow-list. Weights default to the family's curated set;
- * any caller-supplied weights are intersected with that set so an attacker
- * can't smuggle arbitrary query content.
+ * family is not in the allow-list. Weights default to the family's small
+ * curated set; any caller-supplied weights are intersected with an allow-list
+ * so an attacker can't smuggle arbitrary query content.
+ *
+ * That allow-list is `available` - every weight Google really serves - rather
+ * than the default set. A measured import that read the source's hero
+ * sub-heading at 300 used to have its request silently dropped and render 400,
+ * because 300 was not one of the three weights we happened to request by
+ * default (backlog 1725 §7). Widening the DEFAULT instead would have put ~15 kB
+ * of extra render-blocking CSS on every customer site to serve weights almost
+ * none of them use; see the measurement note in `lib/fonts/google.ts`.
  */
 export function buildGoogleUrl(family: string, weights?: number[]): string {
   const font = findGoogleFont(family);
   if (!font) throw new Error(`Unknown Google font: ${family}`);
-  const allowed = new Set(font.weights);
+  const allowed = new Set(font.available);
   const chosen = (weights ?? font.weights).filter((w) => allowed.has(w));
   const finalWeights = (chosen.length > 0 ? chosen : font.weights)
     .slice()
