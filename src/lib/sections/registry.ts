@@ -925,6 +925,60 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           pl: "Każde pytanie leży we własnym przyciemnionym polu z plusem po prawej, oddzielone przestrzenią zamiast liniami.",
         },
       },
+      {
+        key: "outlined",
+        label: { sv: "Ramade rutor", en: "Outlined boxes", pl: "Pola z ramką" },
+        description: {
+          sv: "Rubriken står centrerad och varje fråga ligger i en egen ruta med tunn ram.",
+          en: "The heading is centred and each question sits in a box of its own with a thin outline.",
+          pl: "Nagłówek jest wyśrodkowany, a każde pytanie leży we własnym polu z cienką ramką.",
+        },
+      },
+      {
+        key: "dashed",
+        label: { sv: "Streckad ram", en: "Dashed frame", pl: "Przerywana ramka" },
+        description: {
+          sv: "Alla frågor ligger innanför en streckad ram och numreras Q1, Q2 – som ett ifyllt formulär.",
+          en: "Every question sits inside one dashed frame, numbered Q1, Q2 – like a filled-in form.",
+          pl: "Wszystkie pytania są w jednej przerywanej ramce, numerowane Q1, Q2 – jak wypełniony formularz.",
+        },
+      },
+      {
+        key: "header-cta",
+        label: { sv: "Rubrik med knapp", en: "Heading with button", pl: "Nagłówek z przyciskiem" },
+        description: {
+          sv: "Rubriken håller vänsterkanten och en knapp står till höger, sedan löper frågorna i två spalter.",
+          en: "The heading holds the left edge with a button at the right, then the questions run in two columns.",
+          pl: "Nagłówek trzyma lewą krawędź, przycisk stoi po prawej, a pytania biegną w dwóch kolumnach.",
+        },
+      },
+      {
+        key: "grouped",
+        label: { sv: "Grupperade", en: "Grouped", pl: "Pogrupowane" },
+        description: {
+          sv: "Frågorna delas i grupper – gruppens namn står till vänster och dess frågor till höger. Sätt en grupp på varje fråga.",
+          en: "The questions are split into groups – the group name sits left and its questions right. Give each question a group.",
+          pl: "Pytania są podzielone na grupy – nazwa grupy po lewej, pytania po prawej. Nadaj każdemu pytaniu grupę.",
+        },
+      },
+      {
+        key: "filtered",
+        label: { sv: "Med filter", en: "With filter", pl: "Z filtrem" },
+        description: {
+          sv: "Besökaren kan filtrera frågorna på grupp. Alla frågor finns kvar på sidan – filtret döljer bara.",
+          en: "The visitor can filter the questions by group. Every question stays on the page – the filter only hides.",
+          pl: "Odwiedzający może filtrować pytania według grupy. Wszystkie pytania zostają na stronie – filtr tylko ukrywa.",
+        },
+      },
+      {
+        key: "beside-photo",
+        label: { sv: "Bredvid foto", en: "Beside a photo", pl: "Obok zdjęcia" },
+        description: {
+          sv: "Frågorna står i en spalt med ett foto bredvid. Utan foto tar frågorna hela bredden.",
+          en: "The questions sit in one column with a photo beside them. With no photo they take the full width.",
+          pl: "Pytania stoją w jednej kolumnie, obok nich zdjęcie. Bez zdjęcia zajmują całą szerokość.",
+        },
+      },
     ],
     defaultVariant: "accordion",
     defaultTone: "light",
@@ -1078,6 +1132,33 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "E-post, telefon och adress visas som tre ikonkort istället för ett formulär.",
           en: "Email, phone and address shown as three icon cards instead of a form.",
           pl: "E-mail, telefon i adres pokazane jako trzy karty z ikonami zamiast formularza.",
+        },
+      },
+      {
+        key: "info-strip",
+        label: { sv: "Remsa", en: "Strip", pl: "Pasek" },
+        description: {
+          sv: "Kontaktvägarna står i en enda rad med varannan ruta tonad, i stället för separata kort.",
+          en: "The contact methods sit in one unbroken row with every other cell tinted, instead of separate cards.",
+          pl: "Sposoby kontaktu w jednym rzędzie, co druga komórka przyciemniona, zamiast osobnych kart.",
+        },
+      },
+      {
+        key: "form-panel",
+        label: { sv: "Formulär i ruta", en: "Form in a panel", pl: "Formularz w panelu" },
+        description: {
+          sv: "Hela formuläret ligger i en egen ruta under en centrerad rubrik. Bra när du frågar om mer än namn och meddelande.",
+          en: "The whole form sits in a panel of its own under a centred heading. Good when you ask for more than a name and a message.",
+          pl: "Cały formularz w osobnym panelu pod wyśrodkowanym nagłówkiem. Dobre, gdy pytasz o więcej niż imię i wiadomość.",
+        },
+      },
+      {
+        key: "form-methods",
+        label: { sv: "Formulär och kontaktvägar", en: "Form and contact methods", pl: "Formularz i sposoby kontaktu" },
+        description: {
+          sv: "Formuläret till vänster och dina kontaktvägar listade till höger – den enda layouten som visar båda.",
+          en: "The form on the left and your contact methods listed on the right – the only layout that shows both.",
+          pl: "Formularz po lewej, sposoby kontaktu po prawej – jedyny układ pokazujący oba.",
         },
       },
       {
@@ -1394,6 +1475,24 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "En mörk rundad ruta med luft runt om: liten etikett överst, mycket stor rubrik och två knappar under.",
           en: "A dark rounded box with air around it: a small label on top, a very large heading and two buttons under it.",
           pl: "Ciemne zaokrąglone pole z przestrzenią wokół: mała etykieta na górze, bardzo duży nagłówek i dwa przyciski pod nim.",
+        },
+      },
+      {
+        key: "proof-row",
+        label: { sv: "Med omdöme", en: "With reassurance", pl: "Z rekomendacją" },
+        description: {
+          sv: "Centrerad uppmaning med en rad under knapparna: kundbilder, ditt betyg och en egen mening. Allt fyller du i själv – inget räknas ut.",
+          en: "A centred ask with one line under the buttons: customer photos, your score and a sentence of your own. You fill all of it in – nothing is worked out for you.",
+          pl: "Wyśrodkowane wezwanie z linią pod przyciskami: zdjęcia klientów, twoja ocena i własne zdanie. Wszystko wpisujesz sam – nic nie jest wyliczane.",
+        },
+      },
+      {
+        key: "feature-tiles",
+        label: { sv: "Med etiketter", en: "With tiles", pl: "Z kafelkami" },
+        description: {
+          sv: "Uppmaningen följs av små rutor som säger vad som ingår. Rutorna är etiketter, inte länkar.",
+          en: "The ask is followed by small tiles saying what is included. The tiles are labels, not links.",
+          pl: "Po wezwaniu małe kafelki mówiące, co jest w cenie. Kafelki to etykiety, nie linki.",
         },
       },
       {
@@ -1901,6 +2000,33 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "För siffror: rubriken sätts stor som ett tal och texten under blir dess etikett. En fördel med foto blir en bildruta i samma rad.",
           en: "For numbers: the title is set large like a figure and the text below becomes its label. A highlight with a photo becomes an image tile in the same row.",
           pl: "Dla liczb: tytuł jest duży jak liczba, a tekst pod nim staje się podpisem. Zaleta ze zdjęciem zamienia się w kafelek w tym samym rzędzie.",
+        },
+      },
+      {
+        key: "chip-cards",
+        label: { sv: "Kort med etikett", en: "Cards with a label", pl: "Karty z etykietą" },
+        description: {
+          sv: "Ramade kort med ikonen i en rundad ruta och en liten etikett längst ner (”Ingår alltid”). Etiketten visas bara om du skriver en.",
+          en: "Outlined cards with the icon in a rounded square and a small label along the bottom (“Always included”). The label only shows if you write one.",
+          pl: "Karty z ramką, ikona w zaokrąglonym kwadracie i mała etykieta na dole („Zawsze w cenie”). Etykieta pojawia się tylko wtedy, gdy ją wpiszesz.",
+        },
+      },
+      {
+        key: "checklist",
+        label: { sv: "Checklista", en: "Checklist", pl: "Lista kontrolna" },
+        description: {
+          sv: "Rubrik, en prickad lista och en knapp till vänster, med sektionens foto bredvid. Håll punkterna korta.",
+          en: "Heading, a marked list and a button on the left with the section photo beside them. Keep the points short.",
+          pl: "Nagłówek, lista z punktorami i przycisk po lewej, obok zdjęcie sekcji. Punkty trzymaj krótkie.",
+        },
+      },
+      {
+        key: "panel-cards",
+        label: { sv: "Kort med bild", en: "Cards with a photo", pl: "Karty ze zdjęciem" },
+        description: {
+          sv: "Två breda kort där varje fördel avslutas med sitt eget foto. En fördel utan foto blir ett rent textkort.",
+          en: "Two wide cards where each highlight closes on its own photo. A highlight with no photo stays a plain text card.",
+          pl: "Dwie szerokie karty, każda zaleta kończy się własnym zdjęciem. Zaleta bez zdjęcia zostaje kartą tekstową.",
         },
       },
       {

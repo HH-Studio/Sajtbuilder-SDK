@@ -43,16 +43,16 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `certifications` | `badges`, `grid`, `list` |
 | `comparison` | `cards`, `features`, `plans`, `table` |
 | `comparison-slider` | `default` |
-| `contact` | `form-info`, `info-cards`, `info-only`, `links` |
-| `cta-band` | `boxed`, `centered`, `gradient`, `showpiece`, `slab`, `split` |
+| `contact` | `form-info`, `form-methods`, `form-panel`, `info-cards`, `info-only`, `info-strip`, `links` |
+| `cta-band` | `boxed`, `centered`, `feature-tiles`, `gradient`, `proof-row`, `showpiece`, `slab`, `split` |
 | `documents` | `grid`, `list` |
 | `external-product-grid` | `default` |
-| `faq` | `accordion`, `accordion-cta`, `cards`, `filled-rows`, `numbered`, `split`, `two-column` |
+| `faq` | `accordion`, `accordion-cta`, `beside-photo`, `cards`, `dashed`, `filled-rows`, `filtered`, `grouped`, `header-cta`, `numbered`, `outlined`, `split`, `two-column` |
 | `featured-product` | `default` |
 | `footer` | `centered`, `columns`, `contact`, `inset`, `ruled`, `simple` |
 | `gallery` | `carousel`, `full-bleed`, `grid-3`, `grid-4`, `masonry`, `mosaic` |
 | `hero` | `centered`, `duo`, `gradient`, `image-left`, `image-right`, `minimal`, `overlay`, `overlay-full`, `overlay-left`, `overlay-light`, `panel`, `poster`, `scatter`, `split`, `split-bleed`, `spotlight`, `stage` |
-| `highlights` | `accent`, `alternating`, `figures`, `grid-2`, `grid-3`, `icon-circles`, `icon-list`, `pillars`, `plain`, `split-icons`, `stat-cards`, `values` |
+| `highlights` | `accent`, `alternating`, `checklist`, `chip-cards`, `figures`, `grid-2`, `grid-3`, `icon-circles`, `icon-list`, `panel-cards`, `pillars`, `plain`, `split-icons`, `stat-cards`, `values` |
 | `illustration` | `default`, `inline`, `wide` |
 | `image` | `full`, `inset`, `wide` |
 | `imported` | `default` |

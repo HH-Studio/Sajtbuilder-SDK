@@ -16,7 +16,7 @@
     "maxTotalAssetBytes": 209715200
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:ea96419cf4864b188384eec388dc90413f33a88bb64d64ae8c472e7829c30424",
+  "hash": "sha256:72d6e18f0054f52549542c300c8adff8f0d16610bd92192b6e60a2521397caa9",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -6664,14 +6664,19 @@
       ],
       "contact": [
         "form-info",
+        "form-methods",
+        "form-panel",
         "info-cards",
         "info-only",
+        "info-strip",
         "links"
       ],
       "cta-band": [
         "boxed",
         "centered",
+        "feature-tiles",
         "gradient",
+        "proof-row",
         "showpiece",
         "slab",
         "split"
@@ -6686,9 +6691,15 @@
       "faq": [
         "accordion",
         "accordion-cta",
+        "beside-photo",
         "cards",
+        "dashed",
         "filled-rows",
+        "filtered",
+        "grouped",
+        "header-cta",
         "numbered",
+        "outlined",
         "split",
         "two-column"
       ],
@@ -6733,11 +6744,14 @@
       "highlights": [
         "accent",
         "alternating",
+        "checklist",
+        "chip-cards",
         "figures",
         "grid-2",
         "grid-3",
         "icon-circles",
         "icon-list",
+        "panel-cards",
         "pillars",
         "plain",
         "split-icons",

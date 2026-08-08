@@ -254,10 +254,26 @@ export const sectionContent = v.union(
     // before when it is absent - `SectionHeading` already returns null for an
     // empty heading+intro pair, so absence is byte-identical to today.
     intro: v.optional(v.string()),
+    /** @see rich-text's `eyebrow`. Drawn as a chip above the heading by the
+     *  "outlined", "framed", "tabs", "grouped" and "header-cta" cuts. */
+    eyebrow: v.optional(v.string()),
+    // "header-cta" and "beside-photo" only - one button beside (or under) the
+    // heading. Distinct from `footerCta`, which is the trailing "still have
+    // questions?" band and belongs to "accordion-cta": a header button and a
+    // closing band are not the same offer and a site may want both.
+    cta: v.optional(ctaRef),
+    // "beside-photo" only - one photo beside the questions.
+    media: v.optional(assetRef),
     items: v.array(
       v.object({
         question: v.string(),
         answer: v.string(),
+        // "tabs" and "grouped" only - which group this question belongs to
+        // ("Priser", "Bokning"). The groups are DERIVED from the questions in
+        // first-appearance order, so renaming a category on one question
+        // renames its chip and there is no second list to keep in sync. Every
+        // other cut ignores it.
+        category: v.optional(v.string()),
       }),
     ),
     // "accordion-cta" variant only - a trailing "still have questions?" band.
@@ -368,6 +384,25 @@ export const sectionContent = v.union(
     subtext: v.optional(v.string()),
     primaryCta: ctaRef,
     secondaryCta: v.optional(ctaRef),
+    // "proof-row" only - a line of reassurance under the buttons. Every part of
+    // it is STORED, never derived: `label` is the owner's own sentence, `rating`
+    // the score they hold elsewhere, `faces` photos they uploaded. The renderer
+    // will not draw a rating the owner did not enter, and it counts nothing on
+    // their behalf - a figure this software invented would be the software
+    // making a claim about their business.
+    proof: v.optional(
+      v.object({
+        label: v.optional(v.string()),
+        rating: v.optional(v.number()),
+        faces: v.optional(v.array(assetRef)),
+      }),
+    ),
+    // "feature-tiles" only - small labelled tiles under the buttons, for what
+    // is included or what you work with. Labels, not links: a tile that
+    // navigates competes with the two buttons directly above it.
+    tiles: v.optional(
+      v.array(v.object({ label: v.string(), icon: v.optional(siteIconKey) })),
+    ),
   }),
 
   v.object({
