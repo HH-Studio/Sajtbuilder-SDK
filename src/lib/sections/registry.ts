@@ -699,6 +699,19 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       { key: "list", label: { sv: "Lista", en: "List", pl: "Lista" } },
       { key: "cards", label: { sv: "Kort", en: "Cards", pl: "Karty" } },
       {
+        key: "portrait-reveal",
+        label: {
+          sv: "Porträtt med presentation",
+          en: "Portrait reveal",
+          pl: "Portrety z opisem",
+        },
+        description: {
+          sv: "Höga porträttkort visar namn och roll direkt. Presentationen visas på touch och vid fokus eller hovring på större skärmar.",
+          en: "Tall portrait cards keep names and roles visible. Bios stay visible on touch and reveal on focus or hover on larger screens.",
+          pl: "Wysokie karty portretowe zawsze pokazują imię i stanowisko. Opis jest widoczny na dotyku oraz pojawia się po fokusie lub najechaniu.",
+        },
+      },
+      {
         key: "grid-cta",
         label: {
           sv: "Rutnät med rekrytering",
