@@ -144,7 +144,11 @@ export const NAV_OVERLAY_KEYS = ["none", "transparent", "gradient"] as const;
 export type NavOverlay = (typeof NAV_OVERLAY_KEYS)[number];
 
 // Optional presentation only. Absent keeps every existing header unchanged.
-export const NAV_PRESENTATION_KEYS = ["standard", "floating-pill"] as const;
+export const NAV_PRESENTATION_KEYS = [
+  "standard",
+  "floating-pill",
+  "floating-launcher",
+] as const;
 export type NavPresentation = (typeof NAV_PRESENTATION_KEYS)[number];
 
 // One tone surface as raw CSS colour strings. Used only by `customPalette`

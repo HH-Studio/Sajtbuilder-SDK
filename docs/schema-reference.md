@@ -447,7 +447,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `motion?` | `"none" \| "subtle" \| "full"` |  |
 | `navLayout?` | `"spread" \| "left" \| "center" \| "right" \| "brand-center"` |  |
 | `navOverlay?` | `"none" \| "transparent" \| "gradient"` |  |
-| `navPresentation?` | `"standard" \| "floating-pill"` |  |
+| `navPresentation?` | `"standard" \| "floating-pill" \| "floating-launcher"` |  |
 | `palette` | `"slate" \| "ocean" \| "forest" \| "clay" \| "sand" \| "mono" \| … (14 total)` |  |
 | `radius` | `"sharp" \| "soft" \| "round"` |  |
 | `slotPresets?` | `Record<string, object>` |  |
