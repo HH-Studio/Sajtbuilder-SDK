@@ -19,8 +19,10 @@ that validated against an older CLI still validates against a newer one.
   grouped site navigation with its floating-pill and floating-launcher
   presentations. This includes the manual `team.portrait-reveal`,
   `team.avatar-roster`, and `team.expanding-strips` layouts for authored team
-  portraits. Portable packages preserve these settings instead of dropping
-  them during validation or multilingual conversion.
+  portraits, plus `testimonials.card-carousel` and
+  `testimonials.vertical-stack` for authored review collections. Portable
+  packages preserve these settings instead of dropping them during validation
+  or multilingual conversion.
 
 - **Authored multilingual packages.** `PortableSiteV1.localizations` pairs
   translated pages and section content to stable `tmpId`s, including per-locale

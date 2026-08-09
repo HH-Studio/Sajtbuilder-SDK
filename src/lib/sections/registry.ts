@@ -837,6 +837,32 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           pl: "Karty mają różną szerokość i są przesunięte w pionie, z dużym cudzysłowem w narożniku – wyglądają ułożone ręcznie, a nie w rzędzie.",
         },
       },
+      {
+        key: "card-carousel",
+        label: {
+          sv: "Bläddringsbara kort",
+          en: "Card carousel",
+          pl: "Karuzela kart",
+        },
+        description: {
+          sv: "Ett till tre omdömeskort i bredd med lugn, manuell bläddring.",
+          en: "One to three review cards at a time with calm, manual paging.",
+          pl: "Od jednej do trzech kart opinii naraz, ze spokojnym ręcznym przewijaniem.",
+        },
+      },
+      {
+        key: "vertical-stack",
+        label: {
+          sv: "Vertikal kortstapel",
+          en: "Vertical card stack",
+          pl: "Pionowy stos kart",
+        },
+        description: {
+          sv: "Rubriken står till vänster och omdömena bläddras vertikalt till höger på större skärmar.",
+          en: "The heading sits left while reviews scroll vertically on the right on larger screens.",
+          pl: "Nagłówek znajduje się po lewej, a opinie przewijają się pionowo po prawej na większych ekranach.",
+        },
+      },
     ],
     defaultVariant: "cards",
     defaultTone: "clear",

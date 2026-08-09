@@ -16,7 +16,7 @@
     "maxTotalAssetBytes": 209715200
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:b7f879b8aac4bfb6a06f39f90e56ca1eaafa48c8735e6841ec73fe265da48575",
+  "hash": "sha256:a8897dd76107400c54d5cf78e52b469c00cb7d6ec7bd5a712cec4c81480dda03",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -7905,13 +7905,15 @@
         "portrait-reveal"
       ],
       "testimonials": [
+        "card-carousel",
         "cards",
         "logos-quote",
         "marquee",
         "plain",
         "portrait",
         "ragged",
-        "single"
+        "single",
+        "vertical-stack"
       ],
       "video": [
         "cinema",
