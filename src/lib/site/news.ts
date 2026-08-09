@@ -17,11 +17,46 @@ export function publishedPostsNewestFirst(
     });
 }
 
+/** Draft posts that would be eligible for the next full publish. Held pages
+ *  are deliberately absent from preview: showing a changed held article in the
+ *  index would promise content the owner explicitly excluded. New drafts have
+ *  no first-publish date and therefore sort behind already-live articles;
+ *  slug is the deterministic tie-breaker in both groups. */
+export function draftPostsNewestFirst<
+  P extends {
+    slug: string;
+    pageType?: string;
+    excludeFromPublish?: boolean;
+    firstPublishedAt?: number;
+  },
+>(pages: readonly P[]): P[] {
+  return pages
+    .filter((page) => page.pageType === "post" && page.excludeFromPublish !== true)
+    .sort((a, b) => {
+      const byDate = (b.firstPublishedAt ?? 0) - (a.firstPublishedAt ?? 0);
+      return byDate !== 0 ? byDate : a.slug.localeCompare(b.slug);
+    });
+}
+
 // The reserved URL segment for the news/blog feature. Published posts live at
 // `/<locale?>/news/<slug>` and the index at `/<locale?>/news`. Shared by the
 // public router (parsePublicRoute), the sitemap and the editor link builders so
 // the path can never drift between them.
 export const NEWS_SEGMENT = "news";
+
+export type DraftNewsRoute =
+  | { kind: "news-index"; pageSlug: "" }
+  | { kind: "post"; pageSlug: string };
+
+/** Draft/share-preview equivalent of the public news route parser. Ordinary
+ *  pages return null so the existing page/careers parser remains authoritative
+ *  for every other path. */
+export function parseDraftNewsRoute(path: readonly string[]): DraftNewsRoute | null {
+  if (path[0] !== NEWS_SEGMENT) return null;
+  if (path.length === 1) return { kind: "news-index", pageSlug: "" };
+  if (path.length === 2 && path[1]) return { kind: "post", pageSlug: path[1] };
+  return null;
+}
 
 /** Format a post's publication date for display. Always rendered in UTC so the
  *  server and client agree (no hydration drift) and the date is stable
@@ -42,6 +77,7 @@ export function newsLabels(lang: Locale): {
   back: string;
   prev: string;
   next: string;
+  read: string;
 } {
   return lang === "sv"
     ? {
@@ -50,6 +86,7 @@ export function newsLabels(lang: Locale): {
         back: "Alla nyheter",
         prev: "Föregående",
         next: "Nästa",
+        read: "Läs artikel",
       }
     : lang === "pl"
       ? {
@@ -58,6 +95,7 @@ export function newsLabels(lang: Locale): {
           back: "Wszystkie aktualności",
           prev: "Poprzedni",
           next: "Następny",
+          read: "Czytaj artykuł",
         }
       : {
           index: "News",
@@ -65,5 +103,6 @@ export function newsLabels(lang: Locale): {
           back: "All news",
           prev: "Previous",
           next: "Next",
+          read: "Read article",
         };
 }

@@ -77,7 +77,22 @@ export function mapSnapshotText(
       ...snapshot.seo,
       defaultDescription: tx("defaultDescription", snapshot.seo.defaultDescription),
     },
+    newsIndex: snapshot.newsIndex
+      ? {
+          ...snapshot.newsIndex,
+          ...(snapshot.newsIndex.intro !== undefined
+            ? { intro: tx("intro", snapshot.newsIndex.intro) }
+            : {}),
+        }
+      : undefined,
     nav: snapshot.nav.map((n) => ({ ...n, label: tx("label", n.label) })),
+    navCta:
+      snapshot.navCta && snapshot.navCta !== "off"
+        ? { ...snapshot.navCta, label: tx("label", snapshot.navCta.label) }
+        : snapshot.navCta,
+    navMegaMenu: snapshot.navMegaMenu
+      ? (walk(snapshot.navMegaMenu, null, fn) as typeof snapshot.navMegaMenu)
+      : undefined,
     visitorAssistant: snapshot.visitorAssistant
       ? {
           ...snapshot.visitorAssistant,
@@ -261,6 +276,18 @@ export function collectSnapshotTextFields(
   const out: SnapshotTextField[] = [];
   const pageSlug = opts.pageSlug;
   if (pageSlug === undefined) {
+    if (
+      snapshot.newsIndex?.intro !== undefined &&
+      isTranslatable("intro", snapshot.newsIndex.intro)
+    ) {
+      out.push({
+        key: "site.newsIndex.intro",
+        text: snapshot.newsIndex.intro,
+        pageSlug: null,
+        pageTitle: null,
+        scope: "site",
+      });
+    }
     if (isTranslatable("defaultDescription", snapshot.seo.defaultDescription)) {
       out.push({
         key: "site.seo.defaultDescription",
@@ -280,6 +307,29 @@ export function collectSnapshotTextFields(
         scope: "nav",
       });
     });
+    if (
+      snapshot.navCta !== undefined &&
+      snapshot.navCta !== "off" &&
+      isTranslatable("label", snapshot.navCta.label)
+    ) {
+      out.push({
+        key: "site.navCta.label",
+        text: snapshot.navCta.label,
+        pageSlug: null,
+        pageTitle: null,
+        scope: "site",
+      });
+    }
+    if (snapshot.navMegaMenu) {
+      collectNodeFields(
+        snapshot.navMegaMenu,
+        null,
+        "",
+        "site.navMegaMenu",
+        { pageSlug: null, pageTitle: null, scope: "site" },
+        out,
+      );
+    }
     if (
       snapshot.visitorAssistant?.greeting !== undefined &&
       isTranslatable("greeting", snapshot.visitorAssistant.greeting)
@@ -406,10 +456,36 @@ export function applySnapshotTextOverrides(
       ...snapshot.seo,
       defaultDescription: pick("site.seo.defaultDescription", snapshot.seo.defaultDescription),
     },
+    newsIndex: snapshot.newsIndex
+      ? {
+          ...snapshot.newsIndex,
+          ...(snapshot.newsIndex.intro !== undefined
+            ? {
+                intro: pick("site.newsIndex.intro", snapshot.newsIndex.intro),
+              }
+            : {}),
+        }
+      : undefined,
     nav: snapshot.nav.map((n, i) => ({
       ...n,
       label: pick(`nav.${i}.label`, n.label),
     })),
+    navCta:
+      snapshot.navCta && snapshot.navCta !== "off"
+        ? {
+            ...snapshot.navCta,
+            label: pick("site.navCta.label", snapshot.navCta.label),
+          }
+        : snapshot.navCta,
+    navMegaMenu: snapshot.navMegaMenu
+      ? (applyNodeOverrides(
+          snapshot.navMegaMenu,
+          null,
+          "",
+          "site.navMegaMenu",
+          overrides,
+        ) as typeof snapshot.navMegaMenu)
+      : undefined,
     visitorAssistant: snapshot.visitorAssistant
       ? {
           ...snapshot.visitorAssistant,
@@ -612,5 +688,21 @@ export function remapSnapshotPageSlugs(
       ...item,
       pageSlug: slugMap.get(item.pageSlug) ?? item.pageSlug,
     })),
+    navCta:
+      snapshot.navCta !== undefined && snapshot.navCta !== "off" &&
+      snapshot.navCta.target.kind === "page"
+        ? {
+            ...snapshot.navCta,
+            target: {
+              kind: "page",
+              pageSlug:
+                slugMap.get(snapshot.navCta.target.pageSlug) ??
+                snapshot.navCta.target.pageSlug,
+            },
+          }
+        : snapshot.navCta,
+    navMegaMenu: snapshot.navMegaMenu
+      ? (remapTargets(snapshot.navMegaMenu) as typeof snapshot.navMegaMenu)
+      : undefined,
   };
 }

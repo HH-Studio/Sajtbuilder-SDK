@@ -377,6 +377,34 @@ export const address = v.object({
 });
 export type Address = Infer<typeof address>;
 
+/** Layout and optional owner-written introduction for the synthesized `/news`
+ * index. Optional at every storage boundary so existing sites keep the current
+ * media grid without a migration. The intro is prose; locale overlays replace
+ * it independently while `layout` stays structural. */
+export const newsIndexLayoutValidator = v.union(
+  v.literal("media-grid"),
+  v.literal("editorial-cards"),
+  v.literal("article-cards"),
+);
+export const NEWS_INDEX_INTRO_MAX = 280;
+export const newsIndexConfigValidator = v.object({
+  layout: newsIndexLayoutValidator,
+  intro: v.optional(v.string()),
+});
+export type NewsIndexConfig = Infer<typeof newsIndexConfigValidator>;
+
+/** Structural presentation for the synthesized `/careers` landing. Optional at
+ * every storage boundary so existing sites keep the current card list without
+ * a migration. Unlike copy, the layout is shared by every locale. */
+export const careersIndexLayoutValidator = v.union(
+  v.literal("cards"),
+  v.literal("filter-list"),
+);
+export const careersIndexConfigValidator = v.object({
+  layout: careersIndexLayoutValidator,
+});
+export type CareersIndexConfig = Infer<typeof careersIndexConfigValidator>;
+
 // ---------------------------------------------------------------------------
 // Rich text. Shared by `rich-text` (Textavsnitt) and `legal` (Juridisk text).
 // The TS mirror of this shape, plus every helper that reads it, lives in

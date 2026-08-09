@@ -16,7 +16,7 @@
     "maxTotalAssetBytes": 209715200
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:bf657ca8d03c35b1e76bad73907d5cba424ac69ced39952e9190fcd783867623",
+  "hash": "sha256:211f054530085cc60ae93b6d0a7973d6f583ba72de41116918504d879e39910b",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -865,6 +865,12 @@
                     ]
                   },
                   "optional": false
+                },
+                "newsIndexIntro": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
                 },
                 "pages": {
                   "fieldType": {
@@ -3679,6 +3685,30 @@
                 },
                 "optional": false
               },
+              "careersIndex": {
+                "fieldType": {
+                  "type": "object",
+                  "value": {
+                    "layout": {
+                      "fieldType": {
+                        "type": "union",
+                        "value": [
+                          {
+                            "type": "literal",
+                            "value": "cards"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "filter-list"
+                          }
+                        ]
+                      },
+                      "optional": false
+                    }
+                  }
+                },
+                "optional": true
+              },
               "contact": {
                 "fieldType": {
                   "type": "object",
@@ -3890,6 +3920,121 @@
                 },
                 "optional": true
               },
+              "navCta": {
+                "fieldType": {
+                  "type": "union",
+                  "value": [
+                    {
+                      "type": "literal",
+                      "value": "off"
+                    },
+                    {
+                      "type": "object",
+                      "value": {
+                        "label": {
+                          "fieldType": {
+                            "type": "string"
+                          },
+                          "optional": false
+                        },
+                        "target": {
+                          "fieldType": {
+                            "type": "union",
+                            "value": [
+                              {
+                                "type": "object",
+                                "value": {
+                                  "kind": {
+                                    "fieldType": {
+                                      "type": "literal",
+                                      "value": "page"
+                                    },
+                                    "optional": false
+                                  },
+                                  "pageSlug": {
+                                    "fieldType": {
+                                      "type": "string"
+                                    },
+                                    "optional": false
+                                  }
+                                }
+                              },
+                              {
+                                "type": "object",
+                                "value": {
+                                  "kind": {
+                                    "fieldType": {
+                                      "type": "literal",
+                                      "value": "phone"
+                                    },
+                                    "optional": false
+                                  },
+                                  "value": {
+                                    "fieldType": {
+                                      "type": "string"
+                                    },
+                                    "optional": false
+                                  }
+                                }
+                              },
+                              {
+                                "type": "object",
+                                "value": {
+                                  "kind": {
+                                    "fieldType": {
+                                      "type": "literal",
+                                      "value": "email"
+                                    },
+                                    "optional": false
+                                  },
+                                  "value": {
+                                    "fieldType": {
+                                      "type": "string"
+                                    },
+                                    "optional": false
+                                  }
+                                }
+                              },
+                              {
+                                "type": "object",
+                                "value": {
+                                  "kind": {
+                                    "fieldType": {
+                                      "type": "literal",
+                                      "value": "external"
+                                    },
+                                    "optional": false
+                                  },
+                                  "url": {
+                                    "fieldType": {
+                                      "type": "string"
+                                    },
+                                    "optional": false
+                                  }
+                                }
+                              },
+                              {
+                                "type": "object",
+                                "value": {
+                                  "kind": {
+                                    "fieldType": {
+                                      "type": "literal",
+                                      "value": "booking"
+                                    },
+                                    "optional": false
+                                  }
+                                }
+                              }
+                            ]
+                          },
+                          "optional": false
+                        }
+                      }
+                    }
+                  ]
+                },
+                "optional": true
+              },
               "navLinks": {
                 "fieldType": {
                   "type": "array",
@@ -4042,11 +4187,329 @@
                 },
                 "optional": true
               },
+              "navMegaMenu": {
+                "fieldType": {
+                  "type": "object",
+                  "value": {
+                    "featured": {
+                      "fieldType": {
+                        "type": "object",
+                        "value": {
+                          "description": {
+                            "fieldType": {
+                              "type": "string"
+                            },
+                            "optional": true
+                          },
+                          "eyebrow": {
+                            "fieldType": {
+                              "type": "string"
+                            },
+                            "optional": true
+                          },
+                          "link": {
+                            "fieldType": {
+                              "type": "object",
+                              "value": {
+                                "label": {
+                                  "fieldType": {
+                                    "type": "string"
+                                  },
+                                  "optional": false
+                                },
+                                "target": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "object",
+                                        "value": {
+                                          "kind": {
+                                            "fieldType": {
+                                              "type": "literal",
+                                              "value": "page"
+                                            },
+                                            "optional": false
+                                          },
+                                          "pageSlug": {
+                                            "fieldType": {
+                                              "type": "string"
+                                            },
+                                            "optional": false
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "type": "object",
+                                        "value": {
+                                          "kind": {
+                                            "fieldType": {
+                                              "type": "literal",
+                                              "value": "external"
+                                            },
+                                            "optional": false
+                                          },
+                                          "url": {
+                                            "fieldType": {
+                                              "type": "string"
+                                            },
+                                            "optional": false
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "type": "object",
+                                        "value": {
+                                          "kind": {
+                                            "fieldType": {
+                                              "type": "literal",
+                                              "value": "phone"
+                                            },
+                                            "optional": false
+                                          },
+                                          "value": {
+                                            "fieldType": {
+                                              "type": "string"
+                                            },
+                                            "optional": false
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "type": "object",
+                                        "value": {
+                                          "kind": {
+                                            "fieldType": {
+                                              "type": "literal",
+                                              "value": "email"
+                                            },
+                                            "optional": false
+                                          },
+                                          "value": {
+                                            "fieldType": {
+                                              "type": "string"
+                                            },
+                                            "optional": false
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "type": "object",
+                                        "value": {
+                                          "kind": {
+                                            "fieldType": {
+                                              "type": "literal",
+                                              "value": "booking"
+                                            },
+                                            "optional": false
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  },
+                                  "optional": false
+                                }
+                              }
+                            },
+                            "optional": false
+                          },
+                          "title": {
+                            "fieldType": {
+                              "type": "string"
+                            },
+                            "optional": false
+                          }
+                        }
+                      },
+                      "optional": true
+                    },
+                    "groups": {
+                      "fieldType": {
+                        "type": "array",
+                        "value": {
+                          "type": "object",
+                          "value": {
+                            "description": {
+                              "fieldType": {
+                                "type": "string"
+                              },
+                              "optional": true
+                            },
+                            "heading": {
+                              "fieldType": {
+                                "type": "string"
+                              },
+                              "optional": false
+                            },
+                            "items": {
+                              "fieldType": {
+                                "type": "array",
+                                "value": {
+                                  "type": "object",
+                                  "value": {
+                                    "label": {
+                                      "fieldType": {
+                                        "type": "string"
+                                      },
+                                      "optional": false
+                                    },
+                                    "target": {
+                                      "fieldType": {
+                                        "type": "union",
+                                        "value": [
+                                          {
+                                            "type": "object",
+                                            "value": {
+                                              "kind": {
+                                                "fieldType": {
+                                                  "type": "literal",
+                                                  "value": "page"
+                                                },
+                                                "optional": false
+                                              },
+                                              "pageSlug": {
+                                                "fieldType": {
+                                                  "type": "string"
+                                                },
+                                                "optional": false
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "type": "object",
+                                            "value": {
+                                              "kind": {
+                                                "fieldType": {
+                                                  "type": "literal",
+                                                  "value": "external"
+                                                },
+                                                "optional": false
+                                              },
+                                              "url": {
+                                                "fieldType": {
+                                                  "type": "string"
+                                                },
+                                                "optional": false
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "type": "object",
+                                            "value": {
+                                              "kind": {
+                                                "fieldType": {
+                                                  "type": "literal",
+                                                  "value": "phone"
+                                                },
+                                                "optional": false
+                                              },
+                                              "value": {
+                                                "fieldType": {
+                                                  "type": "string"
+                                                },
+                                                "optional": false
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "type": "object",
+                                            "value": {
+                                              "kind": {
+                                                "fieldType": {
+                                                  "type": "literal",
+                                                  "value": "email"
+                                                },
+                                                "optional": false
+                                              },
+                                              "value": {
+                                                "fieldType": {
+                                                  "type": "string"
+                                                },
+                                                "optional": false
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "type": "object",
+                                            "value": {
+                                              "kind": {
+                                                "fieldType": {
+                                                  "type": "literal",
+                                                  "value": "booking"
+                                                },
+                                                "optional": false
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      },
+                                      "optional": false
+                                    }
+                                  }
+                                }
+                              },
+                              "optional": false
+                            }
+                          }
+                        }
+                      },
+                      "optional": false
+                    },
+                    "position": {
+                      "fieldType": {
+                        "type": "number"
+                      },
+                      "optional": false
+                    },
+                    "triggerLabel": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": false
+                    }
+                  }
+                },
+                "optional": true
+              },
               "navOrder": {
                 "fieldType": {
                   "type": "array",
                   "value": {
                     "type": "string"
+                  }
+                },
+                "optional": true
+              },
+              "newsIndex": {
+                "fieldType": {
+                  "type": "object",
+                  "value": {
+                    "intro": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": true
+                    },
+                    "layout": {
+                      "fieldType": {
+                        "type": "union",
+                        "value": [
+                          {
+                            "type": "literal",
+                            "value": "media-grid"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "editorial-cards"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "article-cards"
+                          }
+                        ]
+                      },
+                      "optional": false
+                    }
                   }
                 },
                 "optional": true
@@ -5524,6 +5987,22 @@
                           {
                             "type": "literal",
                             "value": "gradient"
+                          }
+                        ]
+                      },
+                      "optional": true
+                    },
+                    "navPresentation": {
+                      "fieldType": {
+                        "type": "union",
+                        "value": [
+                          {
+                            "type": "literal",
+                            "value": "standard"
+                          },
+                          {
+                            "type": "literal",
+                            "value": "floating-pill"
                           }
                         ]
                       },
@@ -7239,16 +7718,23 @@
       "hero": [
         "centered",
         "duo",
+        "fan-cards",
         "gradient",
         "image-left",
         "image-right",
+        "integration-masonry",
+        "lattice-collage",
         "minimal",
         "overlay",
         "overlay-full",
+        "overlay-full-left",
+        "overlay-full-left-centered",
         "overlay-left",
         "overlay-light",
+        "overlay-proof",
         "panel",
         "poster",
+        "price-photo",
         "scatter",
         "split",
         "split-bleed",
@@ -7316,7 +7802,8 @@
         "boxed",
         "centered",
         "inline",
-        "orbits"
+        "orbits",
+        "photo-hero"
       ],
       "opening-hours": [
         "cards",
@@ -7379,6 +7866,7 @@
         "icon-grid",
         "icon-grid-cta",
         "labelled-cards",
+        "linked-cards",
         "list",
         "media-list",
         "menu-grid",

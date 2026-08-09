@@ -52,7 +52,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `featured-product` | `default` |
 | `footer` | `backdrop-contact`, `backdrop-newsletter`, `centered`, `columns`, `contact`, `inset`, `nested-card`, `newsletter-box`, `photo-directory-cta`, `photo-newsletter`, `promo-newsletter`, `ruled`, `simple`, `wordmark-contact`, `wordmark-cta`, `wordmark-directory`, `wordmark-newsletter` |
 | `gallery` | `carousel`, `full-bleed`, `grid-3`, `grid-4`, `masonry`, `mosaic` |
-| `hero` | `centered`, `duo`, `gradient`, `image-left`, `image-right`, `minimal`, `overlay`, `overlay-full`, `overlay-left`, `overlay-light`, `panel`, `poster`, `scatter`, `split`, `split-bleed`, `spotlight`, `stage` |
+| `hero` | `centered`, `duo`, `fan-cards`, `gradient`, `image-left`, `image-right`, `integration-masonry`, `lattice-collage`, `minimal`, `overlay`, `overlay-full`, `overlay-full-left`, `overlay-full-left-centered`, `overlay-left`, `overlay-light`, `overlay-proof`, `panel`, `poster`, `price-photo`, `scatter`, `split`, `split-bleed`, `spotlight`, `stage` |
 | `highlights` | `accent`, `alternating`, `checklist`, `chip-cards`, `figures`, `grid-2`, `grid-3`, `icon-circles`, `icon-list`, `panel-cards`, `pillars`, `plain`, `split-icons`, `stat-cards`, `values` |
 | `illustration` | `default`, `inline`, `wide` |
 | `image` | `full`, `inset`, `wide` |
@@ -62,7 +62,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `legal` | `centered`, `document`, `paper` |
 | `location` | `address-only`, `map-card`, `map-first` |
 | `logos` | `grid`, `marquee`, `numbered-grid`, `row` |
-| `newsletter` | `boxed`, `centered`, `inline`, `orbits` |
+| `newsletter` | `boxed`, `centered`, `inline`, `orbits`, `photo-hero` |
 | `opening-hours` | `cards`, `compact`, `table` |
 | `pricing` | `packages`, `rows`, `simple-list`, `single`, `tiers-3`, `two-col` |
 | `process` | `numbered-cards`, `steps-cta`, `steps-horizontal`, `steps-vertical`, `timeline` |
@@ -73,7 +73,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `scroll-tabs` | `overlay`, `pinned`, `pinned-text`, `stacked`, `tabs` |
 | `service-areas` | `cards`, `chips`, `list` |
 | `service-detail` | `media-left`, `media-right`, `stacked` |
-| `services` | `feature-cards`, `grid-2`, `grid-3`, `icon-grid`, `icon-grid-cta`, `labelled-cards`, `list`, `media-list`, `menu-grid`, `numbered`, `numbered-split`, `photo-bento`, `ruled-grid`, `split`, `tiles` |
+| `services` | `feature-cards`, `grid-2`, `grid-3`, `icon-grid`, `icon-grid-cta`, `labelled-cards`, `linked-cards`, `list`, `media-list`, `menu-grid`, `numbered`, `numbered-split`, `photo-bento`, `ruled-grid`, `split`, `tiles` |
 | `social-proof` | `cards`, `divided`, `inline`, `split-grid`, `stats` |
 | `statement` | `bordered`, `centered`, `framed`, `lede`, `rule` |
 | `team` | `cards`, `grid`, `grid-cta`, `list` |
@@ -150,6 +150,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `locale` | `"sv" \| "en" \| "pl" \| "de" \| "da" \| "no" \| … (12 total)` |  |
+| `newsIndexIntro?` | `string` |  |
 | `pages` | `object[]` | Pages and posts. |
 | `sections` | `object[]` | Ordered, typed content sections. |
 
@@ -328,14 +329,18 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | --- | --- | --- |
 | `bookingConfig?` | `object` |  |
 | `businessName` | `string` |  |
+| `careersIndex?` | `object` |  |
 | `contact` | `object` |  |
 | `faviconAssetId?` | `string` |  |
 | `goal` | `"get_calls" \| "get_bookings" \| "show_services"` |  |
 | `language` | `"sv" \| "en" \| "pl" \| "de" \| "da" \| "no" \| … (12 total)` |  |
 | `languages?` | `"sv" \| "en" \| "pl" \| "de" \| "da" \| "no" \| … (12 total)[]` |  |
 | `logoAssetId?` | `string` |  |
+| `navCta?` | `"off" \| object` |  |
 | `navLinks?` | `object[]` |  |
+| `navMegaMenu?` | `object` |  |
 | `navOrder?` | `string[]` |  |
+| `newsIndex?` | `object` |  |
 | `ogImageAssetId?` | `string` |  |
 | `provenance?` | `object` |  |
 | `socials?` | `object` |  |
@@ -360,6 +365,12 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `timezone?` | `string` |  |
 | `windowDays?` | `number` |  |
 
+### `site.careersIndex`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `layout` | `"cards" \| "filter-list"` |  |
+
 ### `site.contact`
 
 | Field | Type | Meaning |
@@ -368,6 +379,13 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `email?` | `string` |  |
 | `phone?` | `string` |  |
 
+### `site.navCta`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `label` | `string` |  |
+| `target` | `object \| object \| object \| object \| object` |  |
+
 ### `site.navLinks[]`
 
 | Field | Type | Meaning |
@@ -375,6 +393,22 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `id` | `string` |  |
 | `label` | `string` |  |
 | `target` | `object \| object \| object \| object \| object \| object \| object` |  |
+
+### `site.navMegaMenu`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `featured?` | `object` |  |
+| `groups` | `object[]` |  |
+| `position` | `number` |  |
+| `triggerLabel` | `string` |  |
+
+### `site.newsIndex`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `intro?` | `string` |  |
+| `layout` | `"media-grid" \| "editorial-cards" \| "article-cards"` |  |
 
 ### `site.provenance`
 
@@ -413,6 +447,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `motion?` | `"none" \| "subtle" \| "full"` |  |
 | `navLayout?` | `"spread" \| "left" \| "center" \| "right" \| "brand-center"` |  |
 | `navOverlay?` | `"none" \| "transparent" \| "gradient"` |  |
+| `navPresentation?` | `"standard" \| "floating-pill"` |  |
 | `palette` | `"slate" \| "ocean" \| "forest" \| "clay" \| "sand" \| "mono" \| … (14 total)` |  |
 | `radius` | `"sharp" \| "soft" \| "round"` |  |
 | `slotPresets?` | `Record<string, object>` |  |

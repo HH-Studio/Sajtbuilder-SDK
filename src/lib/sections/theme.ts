@@ -25,7 +25,7 @@ export type SectionTone = "light" | "clear" | "dark" | "brand";
 
 /** Typeface family of the heading font - drives optical line-height / tracking /
  *  weight so serif and grotesk headings each read correctly (sizes stay shared).
- *  `displaySerif` = the premium display cut (Cormorant Garamond) - editorial
+ *  `displaySerif` = the elegant display cut (Playfair Display) - editorial
  *  gravitas, tight leading; `groteskBold` = the loud trades/gym cut of Inter -
  *  heavy weight, tight tracking, tracked-caps eyebrow. */
 type FontCategory =
@@ -103,7 +103,7 @@ const FONT_PAIRS: Record<
 
 /** The five fluid sizes a category owns, plus its two reading measures. A
  *  category is a typographic personality, so the SIZE RAMP belongs to it too:
- *  Cormorant at 40px reads smaller than Inter at 40px, and an editorial serif
+ *  A display serif at 40px reads smaller than Inter at 40px, and an editorial serif
  *  site and a grotesk site should not share one metric scale (that is what made
  *  two generated sites look like the same template). */
 type CategorySizes = {

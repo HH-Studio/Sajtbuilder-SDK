@@ -4,7 +4,9 @@ import { sectionTypeLiteral, sectionLayoutValidator } from "./sections";
 import { sectionStyleOverrides } from "./slotStyle";
 import {
   address,
+  careersIndexConfigValidator,
   navLink,
+  newsIndexConfigValidator,
   sectionMotionValidator,
   sectionToneValidator,
   socialsValidator,
@@ -21,6 +23,7 @@ import {
 import { fontSource, fontStyle, fontLicense } from "./fonts";
 import { verticalValidator, goalValidator, siteLocaleValidator } from "./business";
 import { CONTENT_TYPES } from "../../lib/content/contentTypes";
+import { navMegaMenu } from "./navigation";
 import {
   jobOpeningDraftFieldsValidator,
   localizedJobOpeningFieldsValidator,
@@ -126,6 +129,12 @@ export const portableSiteV1 = v.object({
     // single-language (no switcher/hreflang) with no settings UI to restore
     // the list afterward.
     languages: v.optional(v.array(siteLocaleValidator)),
+    // Route-level `/news` presentation. Optional keeps every pre-layout V1
+    // bundle valid and imports it as the existing media grid.
+    newsIndex: v.optional(newsIndexConfigValidator),
+    // Structural `/careers` presentation. Optional keeps older V1 bundles
+    // valid and imports them with the established cards layout.
+    careersIndex: v.optional(careersIndexConfigValidator),
     theme: themeTokens,
     /** Where this bundle was authored FROM, when there is a live page to point
      *  at. Optional and additive: a bundle without it imports exactly as it
@@ -159,6 +168,22 @@ export const portableSiteV1 = v.object({
     // cross-row reference in this file.
     navLinks: v.optional(v.array(navLink)),
     navOrder: v.optional(v.array(v.string())),
+    navCta: v.optional(
+      v.union(
+        v.literal("off"),
+        v.object({
+          label: v.string(),
+          target: v.union(
+            v.object({ kind: v.literal("page"), pageSlug: v.string() }),
+            v.object({ kind: v.literal("phone"), value: v.string() }),
+            v.object({ kind: v.literal("email"), value: v.string() }),
+            v.object({ kind: v.literal("external"), url: v.string() }),
+            v.object({ kind: v.literal("booking") }),
+          ),
+        }),
+      ),
+    ),
+    navMegaMenu: v.optional(navMegaMenu),
     tracking: v.optional(trackingConfig),
     // Shared native-booking defaults. Optional so older V1 backups retain
     // their existing inline-booking behavior on import.
@@ -310,6 +335,9 @@ export const portableSiteV1 = v.object({
     v.array(
       v.object({
         locale: siteLocaleValidator,
+        // Authored translation for site.newsIndex.intro. Layout is structural
+        // and remains on `site.newsIndex`, never inside locale overlays.
+        newsIndexIntro: v.optional(v.string()),
         pages: v.array(
           v.object({
             pageTmpId: v.string(),

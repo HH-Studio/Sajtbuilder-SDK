@@ -132,6 +132,45 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
         },
       },
       {
+        key: "overlay-full-left",
+        label: {
+          sv: "Helskärm, vänsterställd",
+          en: "Full-screen, left aligned",
+          pl: "Pełny ekran, wyrównanie do lewej",
+        },
+        description: {
+          sv: "Bilden fyller hela första vyn medan rubrik, text och knapp står smalt och högt till vänster.",
+          en: "The photo fills the whole first view while the heading, text and button sit in a narrow column high on the left.",
+          pl: "Zdjęcie wypełnia cały pierwszy widok, a nagłówek, tekst i przycisk tworzą wąską kolumnę wysoko po lewej.",
+        },
+      },
+      {
+        key: "overlay-full-left-centered",
+        label: {
+          sv: "Helskärm, vänster i mitten",
+          en: "Full-screen, centred left",
+          pl: "Pełny ekran, po lewej na środku",
+        },
+        description: {
+          sv: "Bilden fyller hela första vyn medan en smal vänsterspalt med liten rad, rubrik, text och två knappar ligger mitt på höjden.",
+          en: "The photo fills the whole first view while a narrow left column with a short label, heading, text and two buttons sits midway down the image.",
+          pl: "Zdjęcie wypełnia cały pierwszy widok, a wąska lewa kolumna z krótką etykietą, nagłówkiem, tekstem i dwoma przyciskami znajduje się pośrodku wysokości.",
+        },
+      },
+      {
+        key: "overlay-proof",
+        label: {
+          sv: "Helskärm med faktarad",
+          en: "Full-screen with fact line",
+          pl: "Pełny ekran z krótkim faktem",
+        },
+        description: {
+          sv: "Samma helskärmsbild med centrerad rubrik, plus en separat kort faktarad längst ned. Raden visas bara när ni skriver den.",
+          en: "The same full-screen photo with a centred heading, plus a separate short fact at the bottom. The line only appears when you write it.",
+          pl: "To samo zdjęcie pełnoekranowe z wyśrodkowanym nagłówkiem oraz osobnym krótkim faktem na dole. Wiersz pojawia się tylko po jego wpisaniu.",
+        },
+      },
+      {
         key: "overlay-light",
         label: {
           sv: "Ljus bild bakom",
@@ -212,6 +251,58 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "Rubriken står stor mitt på bilden med knapparna under, och små etiketter för det ni gör svävar runt den.",
           en: "The headline sits large in the middle of the photo with the buttons below it, and small labels for what you do float around it.",
           pl: "Nagłówek stoi duży na środku zdjęcia, przyciski pod nim, a wokół unoszą się małe etykiety z tym, co robicie.",
+        },
+      },
+      {
+        key: "integration-masonry",
+        label: {
+          sv: "Logotypmosaik",
+          en: "Logo mosaic",
+          pl: "Mozaika logotypów",
+        },
+        description: {
+          sv: "Rubrik och knapp till vänster med en förskjuten mosaik av kund- eller partnerlogotyper till höger.",
+          en: "Heading and button on the left with a staggered mosaic of customer or partner logos on the right.",
+          pl: "Nagłówek i przycisk po lewej oraz przesunięta mozaika logotypów klientów lub partnerów po prawej.",
+        },
+      },
+      {
+        key: "price-photo",
+        label: {
+          sv: "Pris och foto",
+          en: "Price and photo",
+          pl: "Cena i zdjęcie",
+        },
+        description: {
+          sv: "Rubrik, knappar och en valfri prisruta till vänster med ett stort foto till höger.",
+          en: "Heading, buttons and an optional price callout on the left with a large photo on the right.",
+          pl: "Nagłówek, przyciski i opcjonalna informacja o cenie po lewej oraz duże zdjęcie po prawej.",
+        },
+      },
+      {
+        key: "lattice-collage",
+        label: {
+          sv: "Bildkollage i rutnät",
+          en: "Lattice collage",
+          pl: "Kolaż na siatce",
+        },
+        description: {
+          sv: "Rubrik och knappar till vänster med tre överlappande foton på ett diskret rutnät till höger.",
+          en: "Heading and buttons on the left with three overlapping photos on a subtle lattice to the right.",
+          pl: "Nagłówek i przyciski po lewej oraz trzy nakładające się zdjęcia na subtelnej siatce po prawej.",
+        },
+      },
+      {
+        key: "fan-cards",
+        label: {
+          sv: "Kort i solfjäder",
+          en: "Fanned cards",
+          pl: "Karty w wachlarzu",
+        },
+        description: {
+          sv: "Rubrik och knappar centrerat överst med upp till tre bildkort i en solfjäder under.",
+          en: "Heading and buttons centred at the top with up to three image cards fanned underneath.",
+          pl: "Nagłówek i przyciski wyśrodkowane u góry, a pod nimi do trzech kart ze zdjęciami ułożonych w wachlarz.",
         },
       },
     ],
@@ -391,6 +482,19 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "Tjänsterna står i rutor med hårfina linjer och priset lika stort som namnet – läses som en meny eller prislista.",
           en: "The services sit in hairline-ruled boxes with the price set as large as the name – it reads as a menu or price list.",
           pl: "Usługi w polach obrysowanych cienką linią, z ceną tak dużą jak nazwa – czyta się jak menu lub cennik.",
+        },
+      },
+      {
+        key: "linked-cards",
+        label: {
+          sv: "Länkade kort",
+          en: "Linked cards",
+          pl: "Połączone karty",
+        },
+        description: {
+          sv: "Tre inramade tjänstekort med en liten kvadratisk bild, där mittkortet står ett steg lägre.",
+          en: "Three bordered service cards with a small square image, with the middle card set one step lower.",
+          pl: "Trzy obramowane karty usług z małym kwadratowym zdjęciem, ze środkową kartą ustawioną nieco niżej.",
         },
       },
     ],
@@ -2532,6 +2636,19 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           pl: "Duży zaokrąglony panel kolorystyczny z wyśrodkowanym nagłówkiem, zapisem i delikatnymi kręgami w rogach.",
         },
       },
+      {
+        key: "photo-hero",
+        label: {
+          sv: "Nyhetsbrev över bild",
+          en: "Photo hero",
+          pl: "Newsletter na zdjęciu",
+        },
+        description: {
+          sv: "Ett högt bakgrundsfoto med en kort rad som bygger förtroende, rubrik och prenumeration centrerade ovanpå.",
+          en: "A tall background photo with a proof row, heading, and signup centred on top.",
+          pl: "Wysokie zdjęcie w tle z rzędem rekomendacji, nagłówkiem i zapisem pośrodku.",
+        },
+      },
     ],
     defaultVariant: "boxed",
     defaultTone: "clear",
@@ -3031,7 +3148,42 @@ export const CONVERSION_SECTION_TYPES: ReadonlySet<string> = new Set([
  *  keeps the paste-bomb ceiling meaningful while leaving long lists editable. */
 export const ARRAY_ITEM_MAX = 64;
 
+/** Field-scoped repeatable-content ceiling for owner writes. Imports remain
+ *  lossless, but the ordinary editor and AI append paths cannot prefill a logo
+ *  wall beyond its deliberate three-row silhouette before switching variants. */
+export function arrayItemMaxFor(
+  type: SectionType,
+  arrayField: string,
+  variant?: string,
+): number {
+  if (type === "hero" && arrayField === "logoTiles") return 14;
+  if (type === "hero" && arrayField === "showcaseCards") return 3;
+  if (type === "newsletter" && arrayField === "proof.faces") return 3;
+  // `scatterImages` is shared with the larger stage and scatter layouts. Only
+  // the fixed three-plane lattice (primary media + two supports) owns this cap.
+  if (
+    type === "hero" &&
+    arrayField === "scatterImages" &&
+    variant === "lattice-collage"
+  ) {
+    return 2;
+  }
+  return ARRAY_ITEM_MAX;
+}
+
 export const ARRAY_DEFAULTS: Record<string, (lang: Locale) => unknown> = {
+  "hero.logoTiles": (l) => ({
+    label: pick(l, "Ny logotyp", "New logo", "Nowe logo"),
+  }),
+  "hero.showcaseCards": (l) => ({
+    title: pick(l, "Nytt kort", "New card", "Nowa karta"),
+    description: pick(
+      l,
+      "Beskriv kortet här.",
+      "Describe the card here.",
+      "Opisz kartę tutaj.",
+    ),
+  }),
   "documents.items": (l) => ({
     title: pick(l, "Nytt dokument", "New document", "Nowy dokument"),
   }),

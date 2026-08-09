@@ -6,7 +6,9 @@ import { sectionStyleOverrides } from "./slotStyle";
 import {
   address,
   assetRef,
+  careersIndexConfigValidator,
   ctaTarget,
+  newsIndexConfigValidator,
   sectionMotionValidator,
   sectionToneValidator,
   socialsValidator,
@@ -18,6 +20,7 @@ import { jobOpeningFieldsValidator } from "./jobOpening";
 
 const contentTypeValidator = v.union(...CONTENT_TYPES.map((t) => v.literal(t)));
 import { trackingConfig } from "./tracking";
+import { navMegaMenu } from "./navigation";
 
 // ---------------------------------------------------------------------------
 // The published snapshot: a single denormalized, immutable document capturing
@@ -130,6 +133,11 @@ export const siteSnapshot = v.object({
   localizedPageSlugs: v.optional(
     v.record(v.string(), v.record(v.string(), v.string())),
   ),
+  // Frozen route-level presentation for `/news`. Optional preserves all
+  // snapshots published before the editorial-card layout existed.
+  newsIndex: v.optional(newsIndexConfigValidator),
+  // Frozen route-level presentation for `/careers`. Absent means cards.
+  careersIndex: v.optional(careersIndexConfigValidator),
   theme: themeTokens,
   // Resolved custom fonts (heading/body) - present only when assigned; absent
   // snapshots simply render the theme's built-in fontPair.
@@ -164,6 +172,22 @@ export const siteSnapshot = v.object({
       target: v.optional(ctaTarget),
     }),
   ),
+  navCta: v.optional(
+    v.union(
+      v.literal("off"),
+      v.object({
+        label: v.string(),
+        target: v.union(
+          v.object({ kind: v.literal("page"), pageSlug: v.string() }),
+          v.object({ kind: v.literal("phone"), value: v.string() }),
+          v.object({ kind: v.literal("email"), value: v.string() }),
+          v.object({ kind: v.literal("external"), url: v.string() }),
+          v.object({ kind: v.literal("booking") }),
+        ),
+      }),
+    ),
+  ),
+  navMegaMenu: v.optional(navMegaMenu),
   // assetId -> resolved url/dims for every assetRef referenced anywhere in pages.
   resolvedAssets: v.record(v.string(), resolvedAsset),
   // Old-URL redirects (from a previous site or an internal page rename),

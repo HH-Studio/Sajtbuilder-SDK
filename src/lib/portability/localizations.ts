@@ -4,6 +4,7 @@ import { CAREERS_SEGMENT } from "../site/jobs";
 import { NEWS_SEGMENT } from "../site/news";
 import { slugify } from "../site/slugify";
 import { PORTABLE_CAPS } from "./caps";
+import { NEWS_INDEX_INTRO_MAX } from "../../convex/model/content";
 
 export type PortableLocalizationIssue =
   | "primary_locale"
@@ -71,6 +72,10 @@ export function overlayLocalizedText<T>(
 /** Strict additive validation beyond the Convex shape validator. */
 export function validatePortableLocalizations(site: PortableSiteV1): PortableLocalizationIssue | null {
   const localizations = site.localizations ?? [];
+  const primaryNewsIndexIntro = site.site.newsIndex?.intro?.trim();
+  if ((primaryNewsIndexIntro?.length ?? 0) > NEWS_INDEX_INTRO_MAX) {
+    return "shape_mismatch";
+  }
   if (localizations.length === 0) return null;
   if (new TextEncoder().encode(JSON.stringify(localizations)).byteLength > PORTABLE_CAPS.maxJsonBytes) {
     return "too_large";
@@ -87,6 +92,14 @@ export function validatePortableLocalizations(site: PortableSiteV1): PortableLoc
     if (!languages.has(localization.locale)) return "undeclared_locale";
     if (seenLocales.has(localization.locale)) return "duplicate_locale";
     seenLocales.add(localization.locale);
+    const primaryIntro = primaryNewsIndexIntro;
+    const localizedIntro = localization.newsIndexIntro?.trim();
+    if (
+      (!primaryIntro && localizedIntro !== undefined) ||
+      (localizedIntro?.length ?? 0) > NEWS_INDEX_INTRO_MAX
+    ) {
+      return "shape_mismatch";
+    }
     if (localization.pages.length !== site.pages.length) return "page_mismatch";
     if (localization.sections.length !== site.sections.length) return "section_mismatch";
 

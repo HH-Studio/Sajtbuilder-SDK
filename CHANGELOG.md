@@ -14,6 +14,12 @@ that validated against an older CLI still validates against a newer one.
 
 ### Added
 
+- **Current site presentation contract.** Site Kit now mirrors route-native
+  news and careers layouts, the latest section variants and media fields, and
+  grouped site navigation with its floating-pill presentation. Portable
+  packages preserve these settings instead of dropping them during validation
+  or multilingual conversion.
+
 - **Authored multilingual packages.** `PortableSiteV1.localizations` pairs
   translated pages and section content to stable `tmpId`s, including per-locale
   page slugs. The app keeps the author's copy instead of replacing it with AI.

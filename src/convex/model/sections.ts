@@ -47,6 +47,10 @@ export const sectionContent = v.union(
     videoControls: v.optional(v.boolean()),
     primaryCta: v.optional(ctaRef),
     secondaryCta: v.optional(ctaRef),
+    // "overlay-proof" only - a short owner-authored fact anchored separately
+    // at the bottom of the photo. Optional by design: no claim appears unless
+    // the owner writes one, and the other hero layouts ignore it.
+    proofText: v.optional(v.string()),
     // "spotlight" only - small labelled chips floated over the hero media
     // ("Office cleaning", "Bathroom cleaning"). Names of things the business
     // does, not links: a chip that navigates competes with the two CTAs
@@ -64,12 +68,46 @@ export const sectionContent = v.union(
     // is the layout; a variant that needs a second one must say so rather than
     // borrowing the first item of `scatterImages`, which means something else.
     secondaryMedia: v.optional(assetRef),
+    // "integration-masonry" only - a bounded wall of owner-supplied marks.
+    // The label is required so a missing/removed image still has an honest,
+    // accessible fallback instead of leaving a blank tile.
+    logoTiles: v.optional(
+      v.array(
+        v.object({
+          label: v.string(),
+          logo: v.optional(assetRef),
+        }),
+      ),
+    ),
+    // "price-photo" only - an optional display callout, never a checkout
+    // amount. Every leaf stays optional so imported or manually-authored copy
+    // can be as short as "$99" without inventing a claim around it.
+    priceCallout: v.optional(
+      v.object({
+        label: v.optional(v.string()),
+        price: v.optional(v.string()),
+        suffix: v.optional(v.string()),
+        note: v.optional(v.string()),
+      }),
+    ),
+    // "fan-cards" only - up to three owner-authored visual cards below the
+    // centred hero copy. These are presentation cards, not links or claims;
+    // every optional leaf disappears cleanly when the owner leaves it empty.
+    showcaseCards: v.optional(
+      v.array(
+        v.object({
+          title: v.string(),
+          description: v.optional(v.string()),
+          media: v.optional(assetRef),
+        }),
+      ),
+    ),
   }),
 
   v.object({
     type: v.literal("services"),
-    /** @see rich-text's `eyebrow`. "feature-cards" only - the small label
-     *  above the heading ("Our services"). */
+    /** @see rich-text's `eyebrow`. Small label above the heading; notably used
+     *  by the centered "linked-cards" composition. */
     eyebrow: v.optional(v.string()),
     heading: v.string(),
     intro: v.optional(v.string()),
@@ -95,6 +133,8 @@ export const sectionContent = v.union(
         // them - the other variants would turn a card into a spec sheet.
         bullets: v.optional(v.array(v.string())),
         icon: v.optional(siteIconKey),
+        // "linked-cards" renders this as compact square owner media. Other
+        // card variants may use a wider crop; the stored asset stays shared.
         media: v.optional(assetRef),
         cta: v.optional(ctaRef),
         // Phase S: optional link to a canonical `services` row. Additive - manual
@@ -690,6 +730,16 @@ export const sectionContent = v.union(
     submitLabel: v.string(),
     successMessage: v.string(),
     consentText: v.optional(v.string()),
+    // "photo-hero" only - an owner-selected background and optional, honest
+    // proof line. Faces are decorative portraits rather than invented people;
+    // ordinary owner writes cap the row at three in sectionOps.
+    media: v.optional(assetRef),
+    proof: v.optional(
+      v.object({
+        label: v.optional(v.string()),
+        faces: v.optional(v.array(assetRef)),
+      }),
+    ),
   }),
 
   // Large pull-quote / mission statement (non-attributed by default).

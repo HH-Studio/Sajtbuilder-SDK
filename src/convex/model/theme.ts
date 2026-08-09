@@ -143,6 +143,10 @@ export const NAV_LAYOUT_KEYS = [
 export const NAV_OVERLAY_KEYS = ["none", "transparent", "gradient"] as const;
 export type NavOverlay = (typeof NAV_OVERLAY_KEYS)[number];
 
+// Optional presentation only. Absent keeps every existing header unchanged.
+export const NAV_PRESENTATION_KEYS = ["standard", "floating-pill"] as const;
+export type NavPresentation = (typeof NAV_PRESENTATION_KEYS)[number];
+
 // One tone surface as raw CSS colour strings. Used only by `customPalette`
 // (site import): a colour set generated from an imported site's own brand,
 // carried verbatim so the migrated site reads as "my site" instead of snapping
@@ -361,6 +365,9 @@ export const themeTokens = v.object({
   motion: v.optional(v.union(...MOTION_KEYS.map((k) => v.literal(k)))),
   navLayout: v.optional(v.union(...NAV_LAYOUT_KEYS.map((k) => v.literal(k)))),
   navOverlay: v.optional(v.union(...NAV_OVERLAY_KEYS.map((k) => v.literal(k)))),
+  navPresentation: v.optional(
+    v.union(...NAV_PRESENTATION_KEYS.map((k) => v.literal(k))),
+  ),
   // Optional import-only overrides. Absent on every hand-built site (they keep
   // `palette`/`fontPair`). When present, the renderer uses these instead so an
   // imported site keeps its original brand colour + typefaces.
