@@ -68,6 +68,7 @@ export const snapshotSection = v.object({
   motion: v.optional(sectionMotionValidator),
   layout: v.optional(sectionLayoutValidator),
   styleOverrides: v.optional(sectionStyleOverrides),
+  hiddenContentPaths: v.optional(v.array(v.string())),
   anchorId: v.optional(v.string()),
   content: sectionContent,
 });

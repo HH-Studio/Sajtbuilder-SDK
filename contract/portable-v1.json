@@ -16,7 +16,7 @@
     "maxTotalAssetBytes": 209715200
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:a8897dd76107400c54d5cf78e52b469c00cb7d6ec7bd5a712cec4c81480dda03",
+  "hash": "sha256:8055dcab6123e98bdc6c899d1c6755ae945c416410276b95c0b3d9550545a1e6",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1446,6 +1446,15 @@
                 "hidden": {
                   "fieldType": {
                     "type": "boolean"
+                  },
+                  "optional": true
+                },
+                "hiddenContentPaths": {
+                  "fieldType": {
+                    "type": "array",
+                    "value": {
+                      "type": "string"
+                    }
                   },
                   "optional": true
                 },
@@ -7646,6 +7655,8 @@
         "table"
       ],
       "comparison-slider": [
+        "comparison-bars",
+        "comparison-cards",
         "default"
       ],
       "contact": [
@@ -7672,7 +7683,9 @@
         "list"
       ],
       "external-product-grid": [
-        "default"
+        "default",
+        "store-list",
+        "store-showcase"
       ],
       "faq": [
         "accordion",
@@ -7690,7 +7703,9 @@
         "two-column"
       ],
       "featured-product": [
-        "default"
+        "default",
+        "spotlight-split",
+        "spotlight-strip"
       ],
       "footer": [
         "backdrop-contact",
@@ -7830,6 +7845,8 @@
         "timeline"
       ],
       "product-grid": [
+        "catalog-compact",
+        "catalog-list",
         "default"
       ],
       "quote-flow": [

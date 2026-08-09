@@ -98,11 +98,9 @@ export const EXTRA_GOALS = ["show_gallery", "request_quote", "other"] as const;
 export const ONBOARDING_GOALS = [...GOALS, ...EXTRA_GOALS] as const;
 export type OnboardingGoal = (typeof ONBOARDING_GOALS)[number];
 
-// How the owner wants the business to be PERCEIVED - the one bounded
-// positioning signal onboarding collects (optional, single-select chips).
-// Drives the AI visual-style direction and the page copy register; never
-// asked as a free-text branding exercise. Keys are internal; UI shows plain
-// bilingual labels.
+// How the generated website presents the business. It is derived from the
+// owner's words and exposed as an editable consequence in the final receipt,
+// never asked as abstract tone homework.
 export const POSITIONINGS = [
   "familjar", // family-run, warm, personal
   "premium", // premium, exclusive, high-end
@@ -110,6 +108,54 @@ export const POSITIONINGS = [
   "specialist", // specialist, expert, niche
 ] as const;
 export type Positioning = (typeof POSITIONINGS)[number];
+
+// Provenance for the small set of onboarding assumptions the owner reviews
+// before the first build. Values stay in their existing canonical fields; this
+// object only explains where each value came from and when it was approved.
+export const ASSUMPTION_KEYS = [
+  "targetAudience",
+  "positioning",
+  "services",
+  "goal",
+  "hours",
+  "price",
+] as const;
+export type AssumptionKey = (typeof ASSUMPTION_KEYS)[number];
+
+export const ASSUMPTION_SOURCES = [
+  "owner",
+  "verified_import",
+  "kit",
+  "inferred",
+] as const;
+export type AssumptionSource = (typeof ASSUMPTION_SOURCES)[number];
+
+export type AssumptionEntry = {
+  source: AssumptionSource;
+  approvedAt?: number;
+};
+
+export type AssumptionMeta = Partial<Record<AssumptionKey, AssumptionEntry>>;
+
+export const assumptionEntryValidator = v.object({
+  source: v.union(
+    v.literal("owner"),
+    v.literal("verified_import"),
+    v.literal("kit"),
+    v.literal("inferred"),
+  ),
+  approvedAt: v.optional(v.number()),
+});
+
+/** Fixed keys are deliberate: provenance cannot become an unbounded metadata bag. */
+export const assumptionMetaValidator = v.object({
+  targetAudience: v.optional(assumptionEntryValidator),
+  positioning: v.optional(assumptionEntryValidator),
+  services: v.optional(assumptionEntryValidator),
+  goal: v.optional(assumptionEntryValidator),
+  hours: v.optional(assumptionEntryValidator),
+  price: v.optional(assumptionEntryValidator),
+});
 
 /** Model-facing descriptor per positioning (never shown to users). */
 export const POSITIONING_HINTS: Record<Positioning, string> = {

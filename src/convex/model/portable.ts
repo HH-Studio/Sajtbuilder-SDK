@@ -316,6 +316,9 @@ export const portableSiteV1 = v.object({
       motion: v.optional(sectionMotionValidator),
       layout: v.optional(sectionLayoutValidator),
       styleOverrides: v.optional(sectionStyleOverrides),
+      // Non-destructive optional-element visibility. Optional keeps older
+      // bundles valid; import normalizes the bounded path list before storage.
+      hiddenContentPaths: v.optional(v.array(v.string())),
       // Fractional-indexing key, preserved verbatim when present. OPTIONAL
       // (SDK feedback #4): hand-authoring these keys is a footgun — omit it
       // and the import assigns valid keys in array position.

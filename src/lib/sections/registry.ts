@@ -2901,6 +2901,24 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
         key: "default",
         label: { sv: "Standard", en: "Default", pl: "Standardowy" },
       },
+      {
+        key: "spotlight-split",
+        label: { sv: "Stor favorit", en: "Large favourite", pl: "Duży wybór" },
+        description: {
+          sv: "Den första produkten får en stor plats, med övriga produkter bredvid.",
+          en: "The first product gets a large space, with the remaining products beside it.",
+          pl: "Pierwszy produkt zajmuje dużo miejsca, a pozostałe są pokazane obok.",
+        },
+      },
+      {
+        key: "spotlight-strip",
+        label: { sv: "Produktband", en: "Product strip", pl: "Pas produktów" },
+        description: {
+          sv: "Produkterna ligger i en luftig rad som är enkel att bläddra på mobilen.",
+          en: "Products sit in an airy row that is easy to browse on a phone.",
+          pl: "Produkty są ułożone w lekkim rzędzie, który łatwo przeglądać na telefonie.",
+        },
+      },
     ],
     defaultVariant: "default",
     defaultTone: "light",
@@ -2925,6 +2943,24 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       {
         key: "default",
         label: { sv: "Standard", en: "Default", pl: "Standardowy" },
+      },
+      {
+        key: "catalog-list",
+        label: { sv: "Produktlista", en: "Product list", pl: "Lista produktów" },
+        description: {
+          sv: "En tydlig rad per produkt med bild, namn och pris samlat.",
+          en: "One clear row per product, keeping the photo, name and price together.",
+          pl: "Jeden czytelny wiersz na produkt ze zdjęciem, nazwą i ceną razem.",
+        },
+      },
+      {
+        key: "catalog-compact",
+        label: { sv: "Kompakt butik", en: "Compact shop", pl: "Kompaktowy sklep" },
+        description: {
+          sv: "Mindre produktkort visar fler varor på samma yta.",
+          en: "Smaller product cards show more items in the same space.",
+          pl: "Mniejsze karty pokazują więcej produktów na tej samej powierzchni.",
+        },
       },
     ],
     defaultVariant: "default",
@@ -2954,6 +2990,24 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       {
         key: "default",
         label: { sv: "Standard", en: "Default", pl: "Standardowy" },
+      },
+      {
+        key: "store-list",
+        label: { sv: "Butikslista", en: "Store list", pl: "Lista sklepowa" },
+        description: {
+          sv: "Varje produkt får en bred rad med köpknappen nära priset.",
+          en: "Each product gets a wide row with the buy button close to the price.",
+          pl: "Każdy produkt ma szeroki wiersz z przyciskiem zakupu blisko ceny.",
+        },
+      },
+      {
+        key: "store-showcase",
+        label: { sv: "Butiksskyltfönster", en: "Store showcase", pl: "Witryna sklepu" },
+        description: {
+          sv: "Stora, luftiga produktkort ger bilderna mer plats.",
+          en: "Large, airy product cards give the photos more room.",
+          pl: "Duże, lekkie karty dają zdjęciom więcej miejsca.",
+        },
       },
     ],
     defaultVariant: "default",
@@ -3088,6 +3142,24 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
     icon: "Table2",
     variants: [
       { key: "default", label: { sv: "Standard", en: "Default", pl: "Standard" } },
+      {
+        key: "comparison-cards",
+        label: { sv: "Jämförelsekort", en: "Comparison cards", pl: "Karty porównania" },
+        description: {
+          sv: "Varje resultat får ett eget kort under reglaget.",
+          en: "Each result gets its own card below the slider.",
+          pl: "Każdy wynik ma własną kartę pod suwakiem.",
+        },
+      },
+      {
+        key: "comparison-bars",
+        label: { sv: "Jämförelsestaplar", en: "Comparison bars", pl: "Słupki porównania" },
+        description: {
+          sv: "Resultaten visas som tydliga staplar som växer med värdet.",
+          en: "Results appear as clear bars that grow with the value.",
+          pl: "Wyniki są pokazane jako czytelne paski rosnące wraz z wartością.",
+        },
+      },
     ],
     defaultVariant: "default",
     defaultTone: "light",
