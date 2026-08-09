@@ -76,7 +76,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `services` | `feature-cards`, `grid-2`, `grid-3`, `icon-grid`, `icon-grid-cta`, `labelled-cards`, `linked-cards`, `list`, `media-list`, `menu-grid`, `numbered`, `numbered-split`, `photo-bento`, `ruled-grid`, `split`, `tiles` |
 | `social-proof` | `cards`, `divided`, `inline`, `split-grid`, `stats` |
 | `statement` | `bordered`, `centered`, `framed`, `lede`, `rule` |
-| `team` | `cards`, `grid`, `grid-cta`, `list`, `portrait-reveal` |
+| `team` | `avatar-roster`, `cards`, `expanding-strips`, `grid`, `grid-cta`, `list`, `portrait-reveal` |
 | `testimonials` | `cards`, `logos-quote`, `marquee`, `plain`, `portrait`, `ragged`, `single` |
 | `video` | `cinema`, `full`, `side` |
 

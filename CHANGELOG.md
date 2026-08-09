@@ -17,9 +17,10 @@ that validated against an older CLI still validates against a newer one.
 - **Current site presentation contract.** Site Kit now mirrors route-native
   news and careers layouts, the latest section variants and media fields, and
   grouped site navigation with its floating-pill and floating-launcher
-  presentations. This includes the manual `team.portrait-reveal` layout for
-  authored portrait grids. Portable packages preserve these settings instead
-  of dropping them during validation or multilingual conversion.
+  presentations. This includes the manual `team.portrait-reveal`,
+  `team.avatar-roster`, and `team.expanding-strips` layouts for authored team
+  portraits. Portable packages preserve these settings instead of dropping
+  them during validation or multilingual conversion.
 
 - **Authored multilingual packages.** `PortableSiteV1.localizations` pairs
   translated pages and section content to stable `tmpId`s, including per-locale

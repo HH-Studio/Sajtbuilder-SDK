@@ -712,6 +712,32 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
         },
       },
       {
+        key: "avatar-roster",
+        label: {
+          sv: "Luftiga porträtt",
+          en: "Avatar roster",
+          pl: "Portrety zespołu",
+        },
+        description: {
+          sv: "Stora runda porträtt i en luftig, centrerad presentation.",
+          en: "Large circular portraits in an airy, centered roster.",
+          pl: "Duże okrągłe portrety w przestronnym, wyśrodkowanym układzie.",
+        },
+      },
+      {
+        key: "expanding-strips",
+        label: {
+          sv: "Expanderande porträtt",
+          en: "Expanding portraits",
+          pl: "Rozwijane portrety",
+        },
+        description: {
+          sv: "Läsbara porträttkort på mobil och en expanderande porträttrad på större skärmar.",
+          en: "Readable portrait cards on phones and an expanding portrait row on larger screens.",
+          pl: "Czytelne karty portretowe na telefonie i rozwijany rząd portretów na większych ekranach.",
+        },
+      },
+      {
         key: "grid-cta",
         label: {
           sv: "Rutnät med rekrytering",
