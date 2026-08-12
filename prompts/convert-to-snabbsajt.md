@@ -149,6 +149,13 @@ import creates an unpublished draft and never overwrites or publishes
 anything. Do not upload, import, or publish on their behalf, and do not claim
 any step succeeded that you did not run and verify.
 
+**Exception — the human explicitly asks you to upload.** With CLI ≥ 0.4.0 and
+a `SNABBSAJT_ADMIN_TOKEN` (`snabbsajt admin pair`), you may run
+`snabbsajt push ./candidate --site <id> --dry-run`, show the merge report
+(added / updated / unchanged / conflicts), and only after the human approves
+that report run the same command without `--dry-run`. Never push to a site the
+human did not name, and never publish.
+
 ---
 
 ## Per-agent wrappers
