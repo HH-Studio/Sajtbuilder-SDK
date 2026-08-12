@@ -305,6 +305,19 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           pl: "Nagłówek i przyciski wyśrodkowane u góry, a pod nimi do trzech kart ze zdjęciami ułożonych w wachlarz.",
         },
       },
+      {
+        key: "slideshow",
+        label: {
+          sv: "Bildspel",
+          en: "Slideshow",
+          pl: "Pokaz zdjęć",
+        },
+        description: {
+          sv: "Flera foton byter av varandra i helskärm medan rubriken står still nedtill. Besökaren kan dra i sidled eller välja bild med punkterna.",
+          en: "Several photos take turns filling the screen while the heading stands still at the bottom. Visitors can drag sideways or pick a photo with the dots.",
+          pl: "Kilka zdjęć zmienia się na pełnym ekranie, a nagłówek stoi nieruchomo u dołu. Można przesuwać w bok albo wybrać zdjęcie kropkami.",
+        },
+      },
     ],
     defaultVariant: "image-right",
     defaultTone: "light",
@@ -495,6 +508,19 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "Tre inramade tjänstekort med en liten kvadratisk bild, där mittkortet står ett steg lägre.",
           en: "Three bordered service cards with a small square image, with the middle card set one step lower.",
           pl: "Trzy obramowane karty usług z małym kwadratowym zdjęciem, ze środkową kartą ustawioną nieco niżej.",
+        },
+      },
+      {
+        key: "numbered-cells",
+        label: {
+          sv: "Numrerade rutor",
+          en: "Numbered cells",
+          pl: "Numerowane pola",
+        },
+        description: {
+          sv: "Tjänsterna står tre i bredd i rutor med hårfina linjer, var och en numrerad 01, 02, 03. Ingen bild och inget pris – bara namnet och en kort rad om vad det är.",
+          en: "Services sit three across in hairline-ruled cells, each numbered 01, 02, 03. No photo and no price – just the name and a short line about it.",
+          pl: "Usługi stoją po trzy w rzędzie w polach z cienkimi liniami, każda numerowana 01, 02, 03. Bez zdjęcia i bez ceny – tylko nazwa i krótki opis.",
         },
       },
     ],
@@ -922,6 +948,19 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "Bilderna varvas i olika storlekar – en bred i mitten på första raden, tre lika stora under.",
           en: "Photos in mixed sizes – one wide image in the middle of the first row, three equal ones below.",
           pl: "Zdjęcia w różnych rozmiarach – jedno szerokie na środku pierwszego rzędu, trzy równe poniżej.",
+        },
+      },
+      {
+        key: "lightbox",
+        label: {
+          sv: "Klicka för stor bild",
+          en: "Click to enlarge",
+          pl: "Klik, żeby powiększyć",
+        },
+        description: {
+          sv: "Två stora bilder i bredd. Besökaren klickar på en bild för att se den i helskärm och kan sedan bläddra vidare med pilarna eller tangentbordet.",
+          en: "Two large photos across. A visitor clicks one to see it full screen, then moves on with the arrows or the keyboard.",
+          pl: "Dwa duże zdjęcia w rzędzie. Odwiedzający klika zdjęcie, żeby zobaczyć je na pełnym ekranie, a potem przechodzi dalej strzałkami lub klawiaturą.",
         },
       },
     ],
@@ -1528,6 +1567,19 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "Certifieringarna visas som en enkel rad med emblem.",
           en: "Certifications shown as a simple row of badges.",
           pl: "Certyfikaty pokazane jako prosty rząd odznak.",
+        },
+      },
+      {
+        key: "ledger",
+        label: {
+          sv: "Finstilt rad",
+          en: "Fine-print row",
+          pl: "Drobny wiersz",
+        },
+        description: {
+          sv: "En smal rad mellan två hårfina linjer där behörigheterna står i liten text, avdelade av punkter. Tar nästan ingen höjd – bra direkt under toppen av sidan.",
+          en: "A slim row between two hairline rules where the qualifications stand in small type, separated by dots. Takes almost no height – good directly under the top of the page.",
+          pl: "Wąski wiersz między dwiema cienkimi liniami, gdzie uprawnienia stoją małym tekstem, rozdzielone kropkami. Zajmuje prawie zero wysokości – dobry pod górą strony.",
         },
       },
     ],
@@ -2392,6 +2444,32 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           pl: "Ta sama siatka co \"Trzy karty\", ale ostatnie pole wypełnione głównym kolorem strony, żeby wzrok tam trafiał.",
         },
       },
+      {
+        key: "ruled-columns",
+        label: {
+          sv: "Numrerade spalter",
+          en: "Numbered columns",
+          pl: "Numerowane kolumny",
+        },
+        description: {
+          sv: "Två eller tre spalter delade av hårfina lodräta linjer, var och en med sitt nummer, sin rubrik i stor grad och en kort text under. Inga kort och inga ikoner.",
+          en: "Two or three columns split by hairline vertical rules, each with its number, its heading set large and a short line beneath. No cards and no icons.",
+          pl: "Dwie lub trzy kolumny rozdzielone cienkimi pionowymi liniami, każda z numerem, dużym nagłówkiem i krótkim tekstem pod nim. Bez kart i bez ikon.",
+        },
+      },
+      {
+        key: "credo",
+        label: {
+          sv: "Ledord",
+          en: "Guiding words",
+          pl: "Motta",
+        },
+        description: {
+          sv: "Spalter mellan två hårfina linjer där den lilla etiketten står i företagets färg och SJÄLVA MENINGEN sätts stor. För tre korta löften eller ledord, inte för längre text.",
+          en: "Columns between two hairline rules where the small label takes the brand colour and THE SENTENCE ITSELF is set large. For three short promises or guiding words, not for longer text.",
+          pl: "Kolumny między dwiema cienkimi liniami, gdzie mała etykieta ma kolor firmy, a SAMO ZDANIE jest duże. Dla trzech krótkich obietnic lub motta, nie dla dłuższego tekstu.",
+        },
+      },
     ],
     defaultVariant: "grid-3",
     defaultTone: "light",
@@ -2492,6 +2570,32 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "Rutorna får olika storlek och förskjuts uppåt och nedåt så bandet ser komponerat ut i stället för som ett rutnät.",
           en: "The cells take different sizes and shift up and down so the band looks composed rather than like a grid.",
           pl: "Kafelki mają różne rozmiary i są przesunięte w górę i w dół, więc pas wygląda skomponowany, a nie jak siatka.",
+        },
+      },
+      {
+        key: "featured-work",
+        label: {
+          sv: "Utvalda arbeten",
+          en: "Selected work",
+          pl: "Wybrane prace",
+        },
+        description: {
+          sv: "Ett urval i två breda spalter: stort foto, sedan titeln och kategorin på samma rad under bilden. Rubriken står till vänster och en valfri länk (”Se alla”) hamnar mitt emot den.",
+          en: "A selection in two wide columns: a large photo, then the title and the category on one line beneath it. The heading holds the left and an optional link (\"See all\") sits opposite it.",
+          pl: "Wybór w dwóch szerokich kolumnach: duże zdjęcie, a pod nim tytuł i kategoria w jednym wierszu. Nagłówek trzyma lewą stronę, a opcjonalny link (\"Zobacz wszystkie\") stoi naprzeciw.",
+        },
+      },
+      {
+        key: "work-index",
+        label: {
+          sv: "Alla arbeten",
+          en: "Work index",
+          pl: "Indeks prac",
+        },
+        description: {
+          sv: "Hela listan tre i bredd, med kategorierna som flikar med understrykning överst. Rutnätet flyttar sig mjukt när besökaren byter flik. För sidan som visar ALLT – använd ”Utvalda arbeten” för ett urval.",
+          en: "The whole list three across, with the categories as underlined tabs on top. The grid reflows gently when the visitor switches tab. For the page that shows EVERYTHING – use \"Selected work\" for a selection.",
+          pl: "Cała lista po trzy w rzędzie, z kategoriami jako podkreślone zakładki u góry. Siatka przestawia się łagodnie przy zmianie zakładki. Dla strony, która pokazuje WSZYSTKO – dla wyboru użyj \"Wybrane prace\".",
         },
       },
     ],

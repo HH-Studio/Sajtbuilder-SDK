@@ -64,6 +64,17 @@ export const sectionContent = v.union(
     // them must not quietly redefine what that single field means for the
     // fifteen variants that share it.
     scatterImages: v.optional(v.array(assetRef)),
+    // "slideshow" only - the photos that CYCLE behind the standing headline.
+    // Deliberately its own field rather than a reuse of `scatterImages`: those
+    // are a composed ring around the type and are all on screen at once, while
+    // these are alternatives to one another and only ever one is visible. A
+    // layout that borrowed the ring would make "remove the fourth photo of the
+    // scatter" mean "remove the fourth slide" on a different variant.
+    //
+    // `media` stays the FIRST frame and the no-JS/reduced-motion fallback, so a
+    // hero with slides but no `media` still renders a photo and a hero whose
+    // owner clears the slides degrades to the ordinary full-bleed layout.
+    slides: v.optional(v.array(assetRef)),
     // "duo" only - the second, smaller photo inset over the first. Two photos
     // is the layout; a variant that needs a second one must say so rather than
     // borrowing the first item of `scatterImages`, which means something else.
@@ -650,6 +661,12 @@ export const sectionContent = v.union(
     type: v.literal("bento"),
     heading: v.optional(v.string()),
     intro: v.optional(v.string()),
+    // "featured-work" only - one link beside the heading ("See all projects"),
+    // for the cut that shows a SELECTION and needs somewhere to send a visitor
+    // who wants the rest. Optional because a band that shows everything has no
+    // "all" to link to, and the other bento cuts ignore it rather than growing
+    // a button they were not designed around.
+    cta: v.optional(ctaRef),
     cells: v.array(
       v.object({
         title: v.string(),

@@ -14,6 +14,20 @@ that validated against an older CLI still validates against a newer one.
 
 ### Added
 
+- **Lodging sites, and eight editorial layouts.** The mirrored contract now
+  carries the `hotel` business type — hotell, pensionat, vandrarhem, B&B and
+  stuguthyrning, whose product is a room priced per night rather than a service
+  priced per visit — so a Site Kit package can declare it instead of falling back
+  to `generic`. Alongside it, eight layouts harvested from a real studio site:
+  `hero.slideshow` (photos that take turns filling the first view, with
+  `hero.slides`), `bento.featured-work` (a selection of work with an optional
+  "see all" link, via `bento.cta`) and `bento.work-index` (the same work behind
+  category tabs), `gallery.lightbox`, `highlights.ruled-columns`,
+  `highlights.credo`, `services.numbered-cells` and `certifications.ledger`.
+
+  Both fields are optional and additive: a package written against the previous
+  contract still validates unchanged.
+
 - **Current site presentation contract.** Site Kit now mirrors route-native
   news and careers layouts, the latest section variants and media fields, and
   grouped site navigation with its floating-pill and floating-launcher

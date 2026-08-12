@@ -55,6 +55,23 @@ export const VERTICALS = [
   // for no gain. Adding a literal only, so every existing row stays valid and
   // no migration is needed.
   "animals",
+  // Added 2026-08-10 (backlog 2319). Lodging - hotell, pensionat, vandrarhem,
+  // B&B, stuguthyrning - was the one category the catalogue gap pass could not
+  // solve with a kit on an existing vertical, and the reasons are all in the
+  // shape of the page rather than in its words:
+  //   - the product is a ROOM or an OBJECT, priced per NIGHT or per WEEK, not a
+  //     service priced per visit or per job;
+  //   - it is SEASONAL: the same room in July and in November is two products;
+  //   - it is sold on availability for SPECIFIC DATES, which no other vertical's
+  //     page asks about;
+  //   - the visitor stays in the place, so what is included, where it is and
+  //     what the rooms actually look like IS the page.
+  // Filed under `retail` it would get opening hours and a stock list, under
+  // `restaurant` a menu, under `consultant` an enquiry form above a list of
+  // advisory services. None of those is a place to sleep.
+  // Adding a literal only, so every existing row stays valid and no migration is
+  // needed.
+  "hotel",
   "generic",
 ] as const;
 export type Vertical = (typeof VERTICALS)[number];

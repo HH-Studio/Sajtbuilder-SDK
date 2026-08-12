@@ -39,21 +39,21 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `about` | `collage`, `image-left`, `showcase`, `split-head`, `story-stats`, `text-image`, `text-only`, `wide` |
 | `banner` | `bar`, `card`, `notice`, `split` |
 | `before-after` | `side-by-side`, `slider`, `stacked`, `wide` |
-| `bento` | `bento`, `list`, `mosaic`, `portfolio`, `rail`, `uniform` |
+| `bento` | `bento`, `featured-work`, `list`, `mosaic`, `portfolio`, `rail`, `uniform`, `work-index` |
 | `booking` | `button`, `inline` |
-| `certifications` | `badges`, `grid`, `list` |
+| `certifications` | `badges`, `grid`, `ledger`, `list` |
 | `comparison` | `cards`, `features`, `plans`, `table` |
-| `comparison-slider` | `default` |
+| `comparison-slider` | `comparison-bars`, `comparison-cards`, `default` |
 | `contact` | `form-info`, `form-methods`, `form-panel`, `info-cards`, `info-only`, `info-strip`, `links` |
 | `cta-band` | `boxed`, `centered`, `feature-tiles`, `gradient`, `proof-row`, `showpiece`, `slab`, `split` |
 | `documents` | `grid`, `list` |
-| `external-product-grid` | `default` |
+| `external-product-grid` | `default`, `store-list`, `store-showcase` |
 | `faq` | `accordion`, `accordion-cta`, `beside-photo`, `cards`, `dashed`, `filled-rows`, `filtered`, `grouped`, `header-cta`, `numbered`, `outlined`, `split`, `two-column` |
-| `featured-product` | `default` |
+| `featured-product` | `default`, `spotlight-split`, `spotlight-strip` |
 | `footer` | `backdrop-contact`, `backdrop-newsletter`, `centered`, `columns`, `contact`, `inset`, `nested-card`, `newsletter-box`, `photo-directory-cta`, `photo-newsletter`, `promo-newsletter`, `ruled`, `simple`, `wordmark-contact`, `wordmark-cta`, `wordmark-directory`, `wordmark-newsletter` |
-| `gallery` | `carousel`, `full-bleed`, `grid-3`, `grid-4`, `masonry`, `mosaic` |
-| `hero` | `centered`, `duo`, `fan-cards`, `gradient`, `image-left`, `image-right`, `integration-masonry`, `lattice-collage`, `minimal`, `overlay`, `overlay-full`, `overlay-full-left`, `overlay-full-left-centered`, `overlay-left`, `overlay-light`, `overlay-proof`, `panel`, `poster`, `price-photo`, `scatter`, `split`, `split-bleed`, `spotlight`, `stage` |
-| `highlights` | `accent`, `alternating`, `checklist`, `chip-cards`, `figures`, `grid-2`, `grid-3`, `icon-circles`, `icon-list`, `panel-cards`, `pillars`, `plain`, `split-icons`, `stat-cards`, `values` |
+| `gallery` | `carousel`, `full-bleed`, `grid-3`, `grid-4`, `lightbox`, `masonry`, `mosaic` |
+| `hero` | `centered`, `duo`, `fan-cards`, `gradient`, `image-left`, `image-right`, `integration-masonry`, `lattice-collage`, `minimal`, `overlay`, `overlay-full`, `overlay-full-left`, `overlay-full-left-centered`, `overlay-left`, `overlay-light`, `overlay-proof`, `panel`, `poster`, `price-photo`, `scatter`, `slideshow`, `split`, `split-bleed`, `spotlight`, `stage` |
+| `highlights` | `accent`, `alternating`, `checklist`, `chip-cards`, `credo`, `figures`, `grid-2`, `grid-3`, `icon-circles`, `icon-list`, `panel-cards`, `pillars`, `plain`, `ruled-columns`, `split-icons`, `stat-cards`, `values` |
 | `illustration` | `default`, `inline`, `wide` |
 | `image` | `full`, `inset`, `wide` |
 | `imported` | `default` |
@@ -66,14 +66,14 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `opening-hours` | `cards`, `compact`, `table` |
 | `pricing` | `packages`, `rows`, `simple-list`, `single`, `tiers-3`, `two-col` |
 | `process` | `numbered-cards`, `steps-cta`, `steps-horizontal`, `steps-vertical`, `timeline` |
-| `product-grid` | `default` |
+| `product-grid` | `catalog-compact`, `catalog-list`, `default` |
 | `quote-flow` | `card`, `inline` |
 | `restaurant-menu` | `columns`, `stacked` |
 | `rich-text` | `columns`, `narrow`, `paper`, `prose` |
 | `scroll-tabs` | `overlay`, `pinned`, `pinned-text`, `stacked`, `tabs` |
 | `service-areas` | `cards`, `chips`, `list` |
 | `service-detail` | `media-left`, `media-right`, `stacked` |
-| `services` | `feature-cards`, `grid-2`, `grid-3`, `icon-grid`, `icon-grid-cta`, `labelled-cards`, `linked-cards`, `list`, `media-list`, `menu-grid`, `numbered`, `numbered-split`, `photo-bento`, `ruled-grid`, `split`, `tiles` |
+| `services` | `feature-cards`, `grid-2`, `grid-3`, `icon-grid`, `icon-grid-cta`, `labelled-cards`, `linked-cards`, `list`, `media-list`, `menu-grid`, `numbered`, `numbered-cells`, `numbered-split`, `photo-bento`, `ruled-grid`, `split`, `tiles` |
 | `social-proof` | `cards`, `divided`, `inline`, `split-grid`, `stats` |
 | `statement` | `bordered`, `centered`, `framed`, `lede`, `rule` |
 | `team` | `avatar-roster`, `cards`, `expanding-strips`, `grid`, `grid-cta`, `list`, `portrait-reveal` |
@@ -250,6 +250,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `content` | `any` |  |
 | `externalKey?` | `string` |  |
 | `hidden?` | `boolean` |  |
+| `hiddenContentPaths?` | `string[]` |  |
 | `layout?` | `object` |  |
 | `motion?` | `"inherit" \| "none" \| "subtle" \| "full"` |  |
 | `order?` | `string` |  |
@@ -346,7 +347,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `socials?` | `object` |  |
 | `theme` | `object` |  |
 | `tracking?` | `object` |  |
-| `vertical` | `"dentist" \| "clinic" \| "salon" \| "cleaning" \| "restaurant" \| "fitness" \| … (16 total)` |  |
+| `vertical` | `"dentist" \| "clinic" \| "salon" \| "cleaning" \| "restaurant" \| "fitness" \| … (17 total)` |  |
 
 ### `site.bookingConfig`
 

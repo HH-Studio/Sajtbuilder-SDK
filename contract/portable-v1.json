@@ -16,7 +16,7 @@
     "maxTotalAssetBytes": 209715200
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:8055dcab6123e98bdc6c899d1c6755ae945c416410276b95c0b3d9550545a1e6",
+  "hash": "sha256:1c9e70cb698a69b60c85419c433183e870e8d3e2f4139f984ab4fae3b5aea20e",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -7536,6 +7536,10 @@
                     },
                     {
                       "type": "literal",
+                      "value": "hotel"
+                    },
+                    {
+                      "type": "literal",
                       "value": "generic"
                     }
                   ]
@@ -7633,11 +7637,13 @@
       ],
       "bento": [
         "bento",
+        "featured-work",
         "list",
         "mosaic",
         "portfolio",
         "rail",
-        "uniform"
+        "uniform",
+        "work-index"
       ],
       "booking": [
         "button",
@@ -7646,6 +7652,7 @@
       "certifications": [
         "badges",
         "grid",
+        "ledger",
         "list"
       ],
       "comparison": [
@@ -7731,6 +7738,7 @@
         "full-bleed",
         "grid-3",
         "grid-4",
+        "lightbox",
         "masonry",
         "mosaic"
       ],
@@ -7755,6 +7763,7 @@
         "poster",
         "price-photo",
         "scatter",
+        "slideshow",
         "split",
         "split-bleed",
         "spotlight",
@@ -7765,6 +7774,7 @@
         "alternating",
         "checklist",
         "chip-cards",
+        "credo",
         "figures",
         "grid-2",
         "grid-3",
@@ -7773,6 +7783,7 @@
         "panel-cards",
         "pillars",
         "plain",
+        "ruled-columns",
         "split-icons",
         "stat-cards",
         "values"
@@ -7892,6 +7903,7 @@
         "media-list",
         "menu-grid",
         "numbered",
+        "numbered-cells",
         "numbered-split",
         "photo-bento",
         "ruled-grid",
