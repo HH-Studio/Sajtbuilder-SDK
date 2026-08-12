@@ -3,6 +3,7 @@
 import { runAdminCommand } from "./commands/admin";
 import { runConnectCommand } from "./commands/connect";
 import { runLinkCommand } from "./commands/link";
+import { runPushCommand } from "./commands/push";
 import { cliVersion, runSiteCommand } from "./commands/site";
 import { runSkillsCommand } from "./commands/skills";
 import { maybeNotifyUpdate, runUpgradeCommand } from "./update";
@@ -16,6 +17,7 @@ Usage:
   snabbsajt link [--site <slug|id>] [--yes] [--relink] [--status] [--json]
   snabbsajt unlink [--json]
   snabbsajt pull [-o <file>] [--locale sv|en|pl] [--json]
+  snabbsajt push <site.json|dir> [--site <id>] [--dry-run] [--force-key <k>]... [--json]
   snabbsajt upgrade [--yes] [--json]
   snabbsajt connect [--api-url <url>] [--json]
   snabbsajt admin pair [--scopes a,b,c] [--api-url <url>] [--json]
@@ -38,7 +40,9 @@ which you pick right here with the arrow keys. connect is the older flow that
 picks the site in the browser instead; both end with the same read-only,
 single-site token and neither can change anything. admin holds the only
 credential in this CLI that can: a separate, capability-scoped token in its own
-SNABBSAJT_ADMIN_TOKEN variable, so pull never holds write power.
+SNABBSAJT_ADMIN_TOKEN variable, so pull never holds write power. push
+merge-imports a validated site package into your site's draft using that admin
+token — run \`snabbsajt push --help\` for the merge and conflict rules.
 Every site and skills command runs entirely locally and needs no credentials at all.
 Skill installs are project-local unless you explicitly pass --global.`);
 }
@@ -80,6 +84,9 @@ async function main(): Promise<number> {
     return runLinkCommand(args, consoleOutput, { version: safeVersion() });
   }
   if (CONNECT_COMMANDS.has(namespace!)) return runConnectCommand(args);
+  // push is pull's write-side twin, but it authenticates with the ADMIN token
+  // (sajt_live_, from `admin pair`) — never the read-only delivery token.
+  if (namespace === "push") return runPushCommand(rest);
   // Routed before the shared "namespace with no subcommand" branch below, so a
   // bare `snabbsajt admin` prints the admin usage rather than the global one —
   // the credential rules are the thing a reader needs at that moment.

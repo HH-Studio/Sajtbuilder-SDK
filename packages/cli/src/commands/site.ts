@@ -153,7 +153,9 @@ function installedVersions() {
   };
 }
 
-function loadPackage(target: string) {
+/** Shared with `push`: load a package (site.json or a package directory) with
+ *  the same symlink, size and JSON guards `inspect|validate|pack` use. */
+export function loadPackage(target: string) {
   const resolved = resolve(target);
   if (!existsSync(resolved)) throw new CliError(`${target} does not exist`);
   if (lstatSync(resolved).isSymbolicLink()) {
@@ -198,12 +200,12 @@ function loadPackage(target: string) {
   }
 }
 
-function reportCounts(report: SiteKitReport) {
+export function reportCounts(report: SiteKitReport) {
   const errors = report.issues.filter((issue) => issue.level === "error").length;
   return { errors, warnings: report.issues.length - errors };
 }
 
-function printReport(report: SiteKitReport, output: Output): void {
+export function printReport(report: SiteKitReport, output: Output): void {
   for (const issue of report.issues) {
     output.stdout(
       `  ${issue.level === "error" ? "ERROR" : "warn "}  ${issue.path}: ${issue.message}`,
