@@ -18,6 +18,14 @@ import { describe, expect, it } from "vitest";
 const repoRoot = resolve(import.meta.dirname, "../../..");
 const sourceCli = join(repoRoot, "packages/cli/src/cli.ts");
 
+// Counts come from the manifest, not a literal: adding a skill is a routine
+// release change and must not require editing every assertion in this file.
+const canonicalManifest = JSON.parse(
+  readFileSync(join(repoRoot, "skills/manifest.json"), "utf8"),
+) as { skills: Array<{ name: string }> };
+const skillNames = canonicalManifest.skills.map((skill) => skill.name);
+const skillCount = skillNames.length;
+
 function fixture(): string {
   return mkdtempSync(join(tmpdir(), "snabbsajt-skills-"));
 }
@@ -62,7 +70,7 @@ describe("snabbsajt skills", () => {
 
     expect(result).toMatchObject({ ok: true, command: "skills install", scope: "local" });
     for (const skillRoot of expectedRoots) {
-      for (const name of ["import-website", "build-snabbsajt-site", "review-site-package"]) {
+      for (const name of skillNames) {
         expect(existsSync(join(root, skillRoot, name, "SKILL.md"))).toBe(true);
       }
       expect(existsSync(join(root, skillRoot, "import-website/references/import-mapping-rules.md"))).toBe(true);
@@ -117,17 +125,17 @@ describe("snabbsajt skills", () => {
   it("installs cleanly, lists skills, verifies checksums, and updates an unmodified receipt", () => {
     const root = createDetectedRoot("codex");
     const first = runJson(["skills", "install", "--agent", "auto"], root);
-    expect(first).toMatchObject({ installed: 3, updated: 0 });
+    expect(first).toMatchObject({ installed: skillCount, updated: 0 });
 
     const listed = runJson(["skills", "list", "--agent", "auto"], root);
     expect(listed).toMatchObject({ ok: true, command: "skills list" });
-    expect(listed.skills).toHaveLength(3);
+    expect(listed.skills).toHaveLength(skillCount);
 
     const doctor = runJson(["skills", "doctor", "--agent", "auto"], root);
-    expect(doctor).toMatchObject({ ok: true, command: "skills doctor", valid: 3, modified: 0 });
+    expect(doctor).toMatchObject({ ok: true, command: "skills doctor", valid: skillCount, modified: 0 });
 
     const second = runJson(["skills", "install", "--agent", "auto"], root);
-    expect(second).toMatchObject({ installed: 0, updated: 0, unchanged: 3 });
+    expect(second).toMatchObject({ installed: 0, updated: 0, unchanged: skillCount });
   });
 
   it("updates a previously unmodified skill when canonical assets advance", () => {
@@ -147,7 +155,12 @@ describe("snabbsajt skills", () => {
     const updated = runJson(["skills", "install", "--agent", "auto"], root, {
       SNABBSAJT_SKILLS_DIR: assets,
     });
-    expect(updated).toMatchObject({ installed: 0, updated: 1, unchanged: 2, valid: 3 });
+    expect(updated).toMatchObject({
+      installed: 0,
+      updated: 1,
+      unchanged: skillCount - 1,
+      valid: skillCount,
+    });
     expect(readFileSync(join(root, ".agents/skills/import-website/SKILL.md"), "utf8"))
       .toContain("Updated canonical guidance.");
   });
@@ -174,7 +187,7 @@ describe("snabbsajt skills", () => {
     expect(readFileSync(target, "utf8")).toContain("local change");
 
     const forced = runJson(["skills", "install", "--agent", "auto", "--force"], root);
-    expect(forced).toMatchObject({ updated: 1, valid: 3 });
+    expect(forced).toMatchObject({ updated: 1, valid: skillCount });
     expect(forced.backups).toHaveLength(1);
     expect(existsSync((forced.backups as string[])[0])).toBe(true);
     expect(readFileSync(target, "utf8")).not.toContain("local change");
@@ -365,7 +378,7 @@ describe("snabbsajt skills", () => {
     expect(packageJson.files).toContain("dist/skills");
     expect(packageJson.scripts.build).toContain("sync-skills-assets.ts");
     const workflow = readFileSync(join(repoRoot, ".github/workflows/release.yml"), "utf8");
-    expect(workflow).toContain("import-website build-snabbsajt-site review-site-package");
+    expect(workflow).toContain(skillNames.join(" "));
     expect(workflow).toMatch(/sha256sum|shasum -a 256/);
     expect(workflow).toContain(".zip");
     expect(workflow).toContain('GITHUB_REF_NAME" = "v${version}');

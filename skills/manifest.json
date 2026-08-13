@@ -1,6 +1,6 @@
 {
   "manifestVersion": 1,
-  "releaseVersion": "1.1.0",
+  "releaseVersion": "1.2.0",
   "minimumCliVersion": "0.1.0",
   "portableFormat": {
     "format": "sajt-site",
@@ -13,11 +13,11 @@
   "skills": [
     {
       "name": "import-website",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "files": [
         {
           "path": "SKILL.md",
-          "sha256": "fab6949fe025646b6be6f9adbaa14fa6c35d164118be600bfafa672e2de495c8"
+          "sha256": "d2fb78f7b17617c96ea40fd30414277a7d6372d9c5916866adc9f78ddc1a0f8e"
         },
         {
           "path": "references/import-mapping-rules.md",
@@ -28,11 +28,11 @@
     },
     {
       "name": "build-snabbsajt-site",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "files": [
         {
           "path": "SKILL.md",
-          "sha256": "c394ec16cc88c4c7213b0c5addf45b670a27be1ea1fe4fab45232ad3f7ace8e8"
+          "sha256": "3871dfab5eb7dfbb3bddc5eb22b32c375148cbda46fa3aa3c899aeaa0c28b4f4"
         }
       ]
     },
@@ -43,6 +43,16 @@
         {
           "path": "SKILL.md",
           "sha256": "86b8f314f724fea754721b36569a1dd069e10eacbd058b5e7ff6ff6e9742808e"
+        }
+      ]
+    },
+    {
+      "name": "manage-snabbsajt-site",
+      "version": "1.0.0",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "a61654987dde7933cd51f299ef3ba6f23df3bddae25b159e87740a02e3aa387b"
         }
       ]
     }

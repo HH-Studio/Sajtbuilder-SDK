@@ -216,9 +216,10 @@ snabbsajt skills list    --agent auto|codex|claude|all [--global] [--json]
 snabbsajt skills doctor  --agent auto|codex|claude|all [--global] [--json]
 ```
 
-Installs the conversion skills (`import-website`, `build-snabbsajt-site`,
-`review-site-package`) into a coding agent's skill directory. `auto` detects
-which agents the repository already uses.
+Installs the agent skills (`import-website`, `build-snabbsajt-site`,
+`review-site-package`, and `manage-snabbsajt-site` for running a live site over
+MCP) into a coding agent's skill directory. `auto` detects which agents the
+repository already uses.
 
 Installation is **project-local unless you pass `--global`**. A skill file you
 have modified is preserved unless `--force` is explicit, and a backup is written

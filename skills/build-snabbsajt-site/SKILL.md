@@ -2,7 +2,7 @@
 name: build-snabbsajt-site
 description: Build a constrained portable SnabbSajt package that customers can safely edit.
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.1.0"
   minimum-cli-version: "0.1.0"
   portable-format: "sajt-site@1"
   report-contract: "snabbsajt-import-report@1"
@@ -36,3 +36,21 @@ safe for a non-technical customer to edit.
 
 Local build, validation, inspection, and packing require no API key. Publishing
 and account access are separate product workflows.
+
+## Handoff
+
+The package is data; landing it in a site is a separate, credentialled step.
+
+- `snabbsajt link` connects this directory to one of the human's sites with a
+  read-only, single-site token; `snabbsajt pull` reads the current draft.
+- `snabbsajt push <dir> --dry-run` merges the package into that site's draft
+  server-side and rolls it back, printing what a real push would do. Run it
+  before every real push. A push needs the separate admin token from
+  `snabbsajt admin pair`, which the human mints through a browser approval —
+  you cannot self-serve it, so stop and ask.
+- Sections match on `externalKey`. Anything the customer already edited in the
+  app comes back as a **conflict** and is skipped unless the human names it with
+  `--force-key`. Never pass `--force-key` on your own judgement; a conflict is
+  the customer's own work.
+- Nothing published: `push` lands in the draft. For ongoing content edits and
+  the publish handshake afterwards, use the `manage-snabbsajt-site` skill.

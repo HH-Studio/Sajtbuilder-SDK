@@ -126,7 +126,7 @@ jobs:
           set -euo pipefail
           version=$(node -p "require('./skills/manifest.json').releaseVersion")
           mkdir -p release-assets
-          for skill in import-website build-snabbsajt-site review-site-package; do
+          for skill in import-website build-snabbsajt-site review-site-package manage-snabbsajt-site; do
             archive="snabbsajt-${skill}-${version}.zip"
             staging=$(mktemp -d)
             cp -R "skills/${skill}" "${staging}/${skill}"

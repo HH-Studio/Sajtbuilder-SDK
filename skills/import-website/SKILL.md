@@ -2,7 +2,7 @@
 name: import-website
 description: Convert an existing public website or local export into a safe editable SnabbSajt site package.
 metadata:
-  skill-version: "1.1.0"
+  skill-version: "1.2.0"
   minimum-cli-version: "0.1.0"
   portable-format: "sajt-site@1"
   report-contract: "snabbsajt-import-report@1"
@@ -51,3 +51,12 @@ before inspecting or changing a candidate package.
 Do not claim the migration, browser import, edit, publish, or restore succeeded
 unless that exact step was verified. Local conversion requires no SnabbSajt API
 key or bundled model client.
+
+## Handoff
+
+Review the packed bundle with the `review-site-package` skill before anyone
+imports it. The human lands it either by uploading the zip in the app or with
+`snabbsajt push <package-dir>` — always `--dry-run` first, and never
+`--force-key` on your own judgement, since a conflict is the customer's own
+edit. A push writes the DRAFT only. For content edits and the publish handshake
+afterwards, use the `manage-snabbsajt-site` skill.
