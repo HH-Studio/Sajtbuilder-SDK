@@ -115,6 +115,27 @@ that validated against an older CLI still validates against a newer one.
 
 ### Fixed
 
+- **A release can no longer half-ship while every command reports success.** On
+  2026-08-13 `@snabbsajt/cli@0.4.0` went to npm against a still-`0.3.0`
+  `@snabbsajt/site-kit`, so `npm install @snabbsajt/cli` — the first command an
+  inbound developer types — died with `ETARGET` for about seven hours. The cause
+  was `npm publish` run against `packages/site-kit/`, a `"private": true`
+  workspace link: npm prints a full, convincing tarball notice, warns that it
+  skipped the workspace, and **exits 0**. `scripts/publish-package.ts` now
+  refuses a private manifest before npm can shrug it off, and confirms with the
+  registry that the exact version actually landed before returning — npm's exit
+  code is not evidence, and the registry is the only truth. Because the release
+  workflow publishes Site Kit first and routes both packages through this
+  script, the failure now stops the run before the CLI publishes, instead of
+  being noticed by the final `npm audit signatures` after the broken pair is
+  already public.
+
+- **The skills contract test stopped failing on every version bump.** It pinned
+  `1.1.0` as a literal for both the manifest's release version and the
+  importer's, so shipping the skills at `1.2.0` left the suite red on `main`. It
+  now requires stable semver and keeps asserting what the test is actually
+  about: the one checksummed shared mapping reference.
+
 - **`pair` no longer claims your token is unprotected when it is.** The
   `.gitignore` check gave up on *any* negation line and reported "not
   gitignored". The default `create-next-app` `.gitignore` negates four `.yarn/`
