@@ -34,6 +34,65 @@ export const SITE_ICON_KEYS = [
   "dumbbell",
   "users",
   "ruler",
+  // --- 2026-08-13 expansion (backlog 2279) ---------------------------------
+  // Additive only: every key above keeps its meaning and its place, because
+  // published snapshots already contain them. These forty cover the verticals
+  // the original twenty-five could only approximate - a dentist got a generic
+  // stethoscope, a garage a wrench, a bakery a fork and knife. Each key names a
+  // recognisable business concept; near-duplicates of an existing glyph were
+  // left out on purpose, since a longer list of similar pictures makes the
+  // picker harder, not richer.
+  // Health and care
+  "tooth",
+  "heartbeat",
+  "first-aid",
+  "brain",
+  "eye",
+  // Animals
+  "paw",
+  // Building and home services
+  "toolbox",
+  "paint-roller",
+  "bulb",
+  "plug",
+  "flame",
+  "key",
+  // Automotive and transport
+  "car",
+  "tire",
+  "battery",
+  // Food and hospitality
+  "chef-hat",
+  "coffee",
+  "cake",
+  "bed",
+  // Beauty and wellness
+  "razor",
+  "flower",
+  "sun",
+  // Retail and logistics
+  "shopping-bag",
+  "package",
+  "gift",
+  "barcode",
+  // Professional services
+  "briefcase",
+  "calculator",
+  "chart",
+  "scale",
+  "handshake",
+  // Education
+  "book",
+  "school",
+  "certificate",
+  // Creative and events
+  "camera",
+  "palette",
+  "music",
+  "microphone",
+  // Technology
+  "code",
+  "laptop",
 ] as const;
 
 export type SiteIconKey = (typeof SITE_ICON_KEYS)[number];
