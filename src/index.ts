@@ -50,6 +50,19 @@ export type {
   GetPublishedSiteOptions,
   PublishedSite,
 } from "./lib/delivery/client";
+// One renderable shape for a locally authored package AND a published
+// snapshot, so a headless app renders both with the same components.
+export {
+  findPage,
+  renderModelFromPackage,
+  renderModelFromPublished,
+  resolveAsset,
+} from "./lib/delivery/renderModel";
+export type {
+  RenderPage,
+  RenderSection,
+  RenderSite,
+} from "./lib/delivery/renderModel";
 // Visual editing: render your own site inside the SnabbSajt editor's canvas.
 export {
   connectVisualEditing,

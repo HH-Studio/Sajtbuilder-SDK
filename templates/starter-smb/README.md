@@ -58,6 +58,43 @@ Then in SnabbSajt: **Settings → Backup & move → Import** the `.zip`. It crea
 new **unpublished** draft — nothing is overwritten. Your client edits text and
 images in the normal editor and publishes when ready.
 
+## Serve the published site from your own host (headless)
+
+The template has two content sources and one set of components:
+
+| Environment | Renders | Who edits it |
+| --- | --- | --- |
+| No delivery env vars | `src/site.ts` | you, in your editor |
+| `SNABBSAJT_SITE_ID` + `SNABBSAJT_DELIVERY_TOKEN` | the **published** SnabbSajt snapshot | your client, in SnabbSajt |
+
+That is the whole round-trip: you author locally, `snabbsajt push` into
+SnabbSajt, your client edits and presses **Publicera**, SnabbSajt calls your
+deploy hook, and this build fetches their words and renders them with your
+components on your hosting.
+
+```bash
+cp .env.example .env.local     # fill in the two values from SnabbSajt
+npm run build                  # the build log prints which version it rendered
+```
+
+Set the same two variables in your host's server environment (Vercel: Project
+→ Settings → Environment Variables), then paste that project's **deploy hook**
+into SnabbSajt under **Settings → Developers → Var hemsidan visas**. Publishing
+now rebuilds your deployment. A marketer publishing never deploys your code; a
+developer deploying never changes content.
+
+Content is fetched **at build time** (`cache: "force-cache"`), not per request —
+a snapshot only changes when someone publishes, and publishing already triggers
+the rebuild. Setting only one of the two variables fails the build on purpose:
+half-configured would silently deploy this demo content to a real domain.
+
+Published images arrive as resolved URLs and render for real; while you author
+locally the same sections fall back to the placeholder box, because
+`bundle://` refs have no URL until the site has been imported and published.
+
+> Needs `@snabbsajt/site-kit` 0.4.0 or newer for `createDeliveryClient` and the
+> render model. Until 0.4.0 is on npm, link a local build of the package.
+
 ## How it stays clean (the rules)
 
 This is a **blessed vocabulary**, not a free-form site. The round-trip only works

@@ -60,9 +60,40 @@ every SDK test run (the package name is aliased to local source in
 `vitest.config.ts`). If the portable format, section schemas, or theme tokens
 drift, the template breaks loudly — it is a living contract, not just an example.
 
+## Headless mode — render what the client published
+
+The template reads its content from one of two places, through one set of
+components:
+
+```
+                     no env vars set
+src/site.ts ─────────────────────────────────► renderModelFromPackage ──┐
+                                                                        ├─► your components
+GET /v1/sites/{id}/published ───────────────► renderModelFromPublished ─┘
+      SNABBSAJT_SITE_ID + SNABBSAJT_DELIVERY_TOKEN
+```
+
+`src/lib/site-source.ts` owns that switch. Set the two variables in your host's
+server environment (copy `.env.example`), paste the host's deploy hook into
+SnabbSajt under **Settings → Developers → Var hemsidan visas**, and the loop
+closes: your client publishes, SnabbSajt calls the hook, the build fetches their
+snapshot, your components render it.
+
+Content is fetched at **build time** (`cache: "force-cache"`), so routes stay
+statically prerendered. Setting only one of the two variables fails the build
+rather than silently deploying the template's demo content. The build log names
+the version it rendered (`[snabbsajt] rendering published version <id> of <name>`),
+which is the line to check when a deployment shows content nobody recognises.
+
+Published images arrive as resolved URLs and render; locally the same sections
+show the placeholder box, because `bundle://` refs have no URL until the site has
+been imported and published.
+
+Requires `@snabbsajt/site-kit` ≥ 0.4.0.
+
 ## Deploy
 
 It is a standard Next.js App Router app. `npm run build` produces a static export
-of every page in `site.ts` (`generateStaticParams`), deployable to Vercel or any
-static host. Fonts use system stacks to stay offline-buildable; swap in `next/font`
+of every page in `site.ts` — or of every published page, in headless mode —
+via `generateStaticParams`, deployable to Vercel or any static host. Fonts use system stacks to stay offline-buildable; swap in `next/font`
 in `src/app/layout.tsx` for production-faithful typography.

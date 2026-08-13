@@ -244,6 +244,33 @@ someone publishes, and publishing can fire your deploy hook — so refetching pe
 request buys nothing. Point `baseUrl` (or `SNABBSAJT_API_URL`) at another
 deployment for staging.
 
+**One shape for both directions.** Your app has two sources for the same site —
+the `defineSite()` file you author and the snapshot your client publishes — and
+they must render through the same components, or what you preview is not what
+they ship. `renderModelFromPackage` and `renderModelFromPublished` normalise
+both into one `RenderSite`: pages in order, each with its sections in order,
+posts and job pages left out of top-level routing, and images resolved.
+
+```ts
+import {
+  renderModelFromPackage,
+  renderModelFromPublished,
+  findPage,
+  resolveAsset,
+} from "@snabbsajt/site-kit";
+
+const model = process.env.SNABBSAJT_DELIVERY_TOKEN
+  ? renderModelFromPublished(await sajt.getPublishedSite())
+  : renderModelFromPackage(site);
+
+const home = findPage(model, "");            // "" is the home page
+const hero = home?.sections[0];
+const image = resolveAsset(model, hero?.content.media); // undefined while local
+```
+
+`templates/starter-smb` ships this switch wired up — see
+[the starter template](docs/templates.md).
+
 ## Documentation
 
 - [Quickstart](docs/quickstart.md)

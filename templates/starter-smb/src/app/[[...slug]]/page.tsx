@@ -1,31 +1,31 @@
 import { notFound } from "next/navigation";
-import { site } from "@/site";
+import { findPage } from "@snabbsajt/site-kit";
+import { loadSite } from "@/lib/site-source";
 import { Nav } from "@/components/Nav";
 import { SectionRenderer } from "@/components/sections";
 
-// One route handles every page in `site.ts`. The slug segments map to a page's
-// `slug` ("" = home). Sections render in `order` (fractional-indexing) order.
-export function generateStaticParams() {
-  return site.pages.map((p) => ({ slug: p.slug ? p.slug.split("/") : [] }));
+// One route handles every page of the site — whether it comes from `src/site.ts`
+// or from the published SnabbSajt snapshot (see `src/lib/site-source.ts`). The
+// slug segments map to a page's `slug` ("" = home).
+export async function generateStaticParams() {
+  const model = await loadSite();
+  return model.pages.map((p) => ({ slug: p.slug ? p.slug.split("/") : [] }));
 }
 
 export default async function Page({ params }: { params: Promise<{ slug?: string[] }> }) {
   const { slug } = await params;
   const path = (slug ?? []).join("/");
 
-  const page = site.pages.find((p) => p.slug === path);
+  const model = await loadSite();
+  const page = findPage(model, path);
   if (!page) notFound();
-
-  const sections = site.sections
-    .filter((s) => s.pageTmpId === page.tmpId)
-    .sort((a, b) => (a.order < b.order ? -1 : a.order > b.order ? 1 : 0));
 
   return (
     <>
-      <Nav />
+      <Nav site={model} />
       <main>
-        {sections.map((section, i) => (
-          <SectionRenderer key={i} section={section} />
+        {page.sections.map((section, i) => (
+          <SectionRenderer key={i} section={section} assets={model.assets} />
         ))}
       </main>
     </>

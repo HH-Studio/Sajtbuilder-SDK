@@ -14,6 +14,25 @@ that validated against an older CLI still validates against a newer one.
 
 ### Added
 
+- **The starter template can serve the site your client published.** Until now
+  the template was a one-way street: you authored `src/site.ts`, packed it, and
+  imported it. What your client then edited and published had nowhere to go —
+  their words lived in SnabbSajt and your deployment kept rendering the file you
+  wrote. Set `SNABBSAJT_SITE_ID` and `SNABBSAJT_DELIVERY_TOKEN` and the same
+  components now render the published snapshot instead, fetched at build time;
+  set neither and nothing changes. Setting exactly one fails the build on
+  purpose, because half-configured would quietly deploy the template's demo
+  content to a real domain.
+
+  Two new exports do the normalising, and they are useful outside the template:
+  `renderModelFromPackage` and `renderModelFromPublished` turn an authored
+  `PortableSiteV1` and a published `PublishedSite` into one `RenderSite` — pages
+  in order, sections in fractional-index order, hidden sections dropped the way a
+  publish drops them, posts and job pages kept out of top-level routing, and
+  images resolved. With `findPage` and `resolveAsset` alongside them, a headless
+  app renders both sources through one component switch, so what a developer
+  previews locally is what their client ships.
+
 - **Lodging sites, and eight editorial layouts.** The mirrored contract now
   carries the `hotel` business type — hotell, pensionat, vandrarhem, B&B and
   stuguthyrning, whose product is a room priced per night rather than a service

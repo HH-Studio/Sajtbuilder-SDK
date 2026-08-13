@@ -1,4 +1,8 @@
-import type { PortableSectionContent, TypedSiteKitSection } from "@snabbsajt/site-kit";
+import type {
+  PortableSectionContent,
+  ResolvedAsset,
+  TypedSiteKitSection,
+} from "@snabbsajt/site-kit";
 import { Star } from "lucide-react";
 import { Band, Eyebrow, Heading } from "@/components/ui/section";
 import { Button } from "@/components/ui/button";
@@ -41,8 +45,27 @@ function CtaButton({ cta, variant = "primary" }: { cta?: Cta; variant?: "primary
   );
 }
 
+/** The published URL behind a content image reference, when there is one.
+ *
+ *  While you author locally there never is: `bundle://` refs only become URLs
+ *  after the site has been imported and published. Callers fall back to the
+ *  placeholder box rather than rendering a broken image. */
+function assetUrl(
+  assets: Record<string, ResolvedAsset>,
+  ref: { assetId?: string } | undefined,
+): ResolvedAsset | undefined {
+  return ref?.assetId ? assets[ref.assetId] : undefined;
+}
+
 // ---- hero -----------------------------------------------------------------
-function Hero({ c }: { c: Content<"hero"> }) {
+function Hero({
+  c,
+  assets = {},
+}: {
+  c: Content<"hero">;
+  assets?: Record<string, ResolvedAsset>;
+}) {
+  const media = assetUrl(assets, c.media);
   return (
     <Band>
       <div className="grid items-center gap-10 md:grid-cols-2">
@@ -57,7 +80,20 @@ function Hero({ c }: { c: Content<"hero"> }) {
             <CtaButton cta={c.secondaryCta} variant="outline" />
           </div>
         </div>
-        <div className="aspect-[4/3] rounded-lg border border-border bg-muted" aria-hidden />
+        {media ? (
+          // A plain <img>: the published URL's host is not known at build time,
+          // so next/image would need a remotePatterns entry per deployment.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={media.url}
+            alt={c.media?.alt ?? ""}
+            width={media.width}
+            height={media.height}
+            className="aspect-[4/3] w-full rounded-lg border border-border object-cover"
+          />
+        ) : (
+          <div className="aspect-[4/3] rounded-lg border border-border bg-muted" aria-hidden />
+        )}
       </div>
     </Band>
   );
@@ -242,11 +278,21 @@ function Footer({ c }: { c: Content<"footer"> }) {
 // Renderer: one SnabbSajt section -> one component. Add a case here when you
 // add a section type to your vocabulary.
 // ---------------------------------------------------------------------------
-export function SectionRenderer({ section }: { section: TypedSiteKitSection }) {
-  const c = section.content;
+export function SectionRenderer({
+  section,
+  assets = {},
+}: {
+  // Accepts a section from either source: the `src/site.ts` you author and the
+  // published snapshot your client edits carry the same content union.
+  section: { type: string; variant: string; anchorId?: string; content: unknown };
+  /** Published images, keyed by asset id. Empty while authoring locally —
+   *  bundle images have no URL until the site has been imported + published. */
+  assets?: Record<string, ResolvedAsset>;
+}) {
+  const c = section.content as TypedSiteKitSection["content"];
   switch (c.type) {
     case "hero":
-      return <Hero c={c} />;
+      return <Hero c={c} assets={assets} />;
     case "services":
       return <Services c={c} variant={section.variant} />;
     case "about":
