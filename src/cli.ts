@@ -16,6 +16,13 @@ import { packSitePackage } from "./lib/site-kit/pack";
 import { readBoundedLocalFiles } from "./lib/site-kit/localFiles";
 import { validateSitePackage, type SiteKitReport } from "./lib/site-kit/validate";
 import { createStarterSite, type StarterTemplate } from "./starter";
+import {
+  measureDirectory,
+  measureFragment,
+  measureUrl,
+  motionFrom,
+  type MeasureResult,
+} from "./import/measure";
 
 function fail(message: string): never {
   console.error(`site-kit: ${message}`);
@@ -30,8 +37,11 @@ Usage:
   site-kit validate <site.json|dir>
   site-kit inspect <site.json|dir>
   site-kit pack <dir> [-o bundle.zip]
+  site-kit measure <url|dir> [-o fragment.json]
 
-No API key is required. Commands run locally.`);
+No API key is required. Commands run locally.
+\`measure\` renders the page in a real browser and prints the measured design as
+a site.json fragment; it needs playwright (npm i -D playwright).`);
   process.exit(exitCode);
 }
 
@@ -107,12 +117,60 @@ function init(target: string, rest: string[]): void {
   console.log(`created ${dir}`);
 }
 
+/**
+ * Measure a page and print what an author pastes into `site.json`.
+ *
+ * A URL is rendered directly. A directory is served on loopback first, which
+ * is not the app's "an archive has no live address" case: these are the
+ * developer's own files, on their own machine, and the server binds to
+ * 127.0.0.1 and dies with the command.
+ *
+ * The motion pass is separate from the design pass because it reads the page's
+ * SOURCE - it parses the scripts, and never runs them - so it works from the
+ * markup we already fetched rather than from the render.
+ */
+async function measure(target: string, rest: string[]): Promise<void> {
+  const isUrl = /^https?:\/\//i.test(target);
+  let result: MeasureResult;
+  try {
+    result = isUrl
+      ? { url: target, sample: await measureUrl(target) }
+      : await measureDirectory(target);
+  } catch (error) {
+    fail((error as Error).message);
+  }
+  // Motion, from the page's own markup. Best-effort in both lanes: a page we
+  // could measure but not re-read is still worth its design numbers.
+  try {
+    const html = isUrl
+      ? await (await fetch(target)).text()
+      : readFileSync(join(resolve(target), "index.html"), "utf8");
+    const motion = motionFrom(html);
+    if (motion) result = { ...result, motion };
+  } catch {
+    /* the design measurement is the deliverable; motion is a bonus */
+  }
+  const fragment = measureFragment(result);
+  const outIndex = rest.indexOf("-o");
+  const json = `${JSON.stringify(fragment, null, 2)}\n`;
+  if (outIndex >= 0 && rest[outIndex + 1]) {
+    writeFileSync(resolve(rest[outIndex + 1]), json);
+    console.log(`wrote ${resolve(rest[outIndex + 1])}`);
+    return;
+  }
+  console.log(json.trimEnd());
+}
+
 async function main(): Promise<void> {
   const [command, target, ...rest] = process.argv.slice(2);
   if (!command || command === "help" || command === "--help" || command === "-h") usage();
   if (!target) usage(1);
   if (command === "init") {
     init(target, rest);
+    return;
+  }
+  if (command === "measure") {
+    await measure(target, rest);
     return;
   }
   if (!["validate", "inspect", "pack"].includes(command)) usage(1);

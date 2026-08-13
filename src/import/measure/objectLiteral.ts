@@ -1,0 +1,328 @@
+// ---------------------------------------------------------------------------
+// A reader for the JavaScript OBJECT LITERALS embedded in an imported page's
+// scripts - Webflow's IX2 `ixData` payload and a GSAP tween config.
+//
+// It PARSES; it never executes. No `eval`, no `new Function`, no `vm`. That is
+// not a preference: this is untrusted third-party code from a stranger's
+// website, and running it is exactly what backlog 0939 blocks `verbatimClone`
+// on. A reader can only ever produce data.
+//
+// It is deliberately not a JSON parser either, because these are not JSON:
+// keys are unquoted, strings may be single-quoted, `!0`/`!1` stand in for
+// booleans after minification, numbers may be hex, and trailing commas are
+// normal. Anything the reader does not recognise as a literal - an identifier,
+// a call, an arrow function - is captured as an opaque `{ expr }` marker so the
+// REST of the object still reads. A tween whose `trigger` is a variable still
+// tells us its duration.
+// ---------------------------------------------------------------------------
+
+/** A value the reader could not resolve to data (an identifier, a call, an
+ *  arrow function). Kept as text so a caller can pattern-match it if it wants,
+ *  and never interpreted. */
+export type OpaqueExpression = { expr: string };
+
+export type LiteralValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | OpaqueExpression
+  | LiteralValue[]
+  | { [key: string]: LiteralValue };
+
+export function isOpaque(value: unknown): value is OpaqueExpression {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "expr" in value &&
+    typeof (value as OpaqueExpression).expr === "string"
+  );
+}
+
+export type LiteralObject = { [key: string]: LiteralValue };
+
+/** A value as a plain object, or undefined when it is not one.
+ *
+ *  A RETURN, not a type guard, on purpose: `OpaqueExpression` is structurally
+ *  an object with string values, so a `value is LiteralObject` guard cannot
+ *  narrow it out of the union and every property read downstream fails to
+ *  compile. Reading `.start` off an opaque marker is harmless (it is
+ *  undefined), so the honest shape is "give me the object or nothing". */
+export function asObject(value: LiteralValue): LiteralObject | undefined {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return undefined;
+  }
+  return value as LiteralObject;
+}
+
+const WHITESPACE = /\s/;
+const IDENT_START = /[A-Za-z_$]/;
+const IDENT_PART = /[A-Za-z0-9_$]/;
+
+/** Hard ceilings. A source page is data we did not write: without these, a
+ *  pathological (or deliberately hostile) script could pin a CPU inside the
+ *  import action. Both are far above any real Webflow payload. */
+const MAX_DEPTH = 40;
+const MAX_NODES = 200_000;
+
+class Reader {
+  i = 0;
+  nodes = 0;
+  constructor(readonly src: string) {}
+
+  ws() {
+    while (this.i < this.src.length) {
+      const c = this.src[this.i]!;
+      if (WHITESPACE.test(c)) {
+        this.i++;
+        continue;
+      }
+      // Comments are legal between a key and its value in a hand-written file.
+      if (c === "/" && this.src[this.i + 1] === "/") {
+        const nl = this.src.indexOf("\n", this.i);
+        this.i = nl === -1 ? this.src.length : nl + 1;
+        continue;
+      }
+      if (c === "/" && this.src[this.i + 1] === "*") {
+        const end = this.src.indexOf("*/", this.i + 2);
+        this.i = end === -1 ? this.src.length : end + 2;
+        continue;
+      }
+      return;
+    }
+  }
+
+  /** Read a quoted string, resolving only the escapes that carry meaning for
+   *  us. `\uXXXX` is resolved; anything else keeps its literal character. */
+  string(quote: string): string {
+    this.i++; // opening quote
+    let out = "";
+    while (this.i < this.src.length) {
+      const c = this.src[this.i]!;
+      if (c === "\\") {
+        const n = this.src[this.i + 1];
+        if (n === "u" && /^[0-9a-fA-F]{4}$/.test(this.src.slice(this.i + 2, this.i + 6))) {
+          out += String.fromCharCode(parseInt(this.src.slice(this.i + 2, this.i + 6), 16));
+          this.i += 6;
+          continue;
+        }
+        const simple: Record<string, string> = {
+          n: "\n",
+          t: "\t",
+          r: "\r",
+          b: "\b",
+          f: "\f",
+          v: "\v",
+          "0": "\0",
+        };
+        out += n !== undefined && n in simple ? simple[n]! : (n ?? "");
+        this.i += 2;
+        continue;
+      }
+      if (c === quote) {
+        this.i++;
+        return out;
+      }
+      out += c;
+      this.i++;
+    }
+    return out; // unterminated - return what we have rather than throwing
+  }
+
+  /** Skip a value we are not reading, so the scanner lands on the delimiter
+   *  after it. Tracks nesting and string state; returns the raw text. */
+  rawUntilDelimiter(): string {
+    const start = this.i;
+    let depth = 0;
+    while (this.i < this.src.length) {
+      const c = this.src[this.i]!;
+      if (c === '"' || c === "'" || c === "`") {
+        this.string(c);
+        continue;
+      }
+      if (c === "(" || c === "[" || c === "{") depth++;
+      else if (c === ")" || c === "]" || c === "}") {
+        if (depth === 0) break;
+        depth--;
+      } else if (c === "," && depth === 0) break;
+      this.i++;
+    }
+    return this.src.slice(start, this.i).trim();
+  }
+
+  value(depth: number): LiteralValue {
+    if (++this.nodes > MAX_NODES || depth > MAX_DEPTH) {
+      return { expr: this.rawUntilDelimiter() };
+    }
+    this.ws();
+    const c = this.src[this.i];
+    if (c === undefined) return undefined;
+    if (c === '"' || c === "'" || c === "`") return this.string(c);
+    if (c === "{") return this.object(depth + 1);
+    if (c === "[") return this.array(depth + 1);
+
+    // `!0` / `!1` - what a minifier writes for true / false.
+    if (c === "!" && (this.src[this.i + 1] === "0" || this.src[this.i + 1] === "1")) {
+      const v = this.src[this.i + 1] === "0";
+      this.i += 2;
+      // Only a bare `!0`, not the head of a larger expression.
+      const after = this.src[this.i];
+      if (after === undefined || after === "," || after === "}" || after === "]" || WHITESPACE.test(after)) {
+        return v;
+      }
+      this.i -= 2;
+      return { expr: this.rawUntilDelimiter() };
+    }
+
+    if (c === "-" || c === "+" || c === "." || (c >= "0" && c <= "9")) {
+      const m = /^[-+]?(0[xX][0-9a-fA-F]+|\d*\.?\d+(?:[eE][-+]?\d+)?)/.exec(
+        this.src.slice(this.i),
+      );
+      if (m) {
+        const end = this.i + m[0].length;
+        const next = this.src[end];
+        // `1 + x` is an expression, not a number.
+        if (next === undefined || /[\s,}\]]/.test(next)) {
+          this.i = end;
+          return Number(m[0]);
+        }
+      }
+      return { expr: this.rawUntilDelimiter() };
+    }
+
+    if (IDENT_START.test(c)) {
+      const m = /^[A-Za-z_$][A-Za-z0-9_$]*/.exec(this.src.slice(this.i))!;
+      const word = m[0];
+      const end = this.i + word.length;
+      const next = this.src.slice(end).match(/^\s*/)![0].length + end;
+      const after = this.src[next];
+      const bare = after === undefined || after === "," || after === "}" || after === "]";
+      if (bare && (word === "true" || word === "false")) {
+        this.i = end;
+        return word === "true";
+      }
+      if (bare && word === "null") {
+        this.i = end;
+        return null;
+      }
+      if (bare && word === "undefined") {
+        this.i = end;
+        return undefined;
+      }
+    }
+    return { expr: this.rawUntilDelimiter() };
+  }
+
+  key(): string | undefined {
+    this.ws();
+    const c = this.src[this.i];
+    if (c === undefined) return undefined;
+    if (c === '"' || c === "'") return this.string(c);
+    if (c === "[") {
+      // A computed key. Skip it entirely - we never need one.
+      this.rawUntilDelimiter();
+      return undefined;
+    }
+    if (!IDENT_START.test(c)) return undefined;
+    let out = "";
+    while (this.i < this.src.length && IDENT_PART.test(this.src[this.i]!)) {
+      out += this.src[this.i]!;
+      this.i++;
+    }
+    return out;
+  }
+
+  object(depth: number): Record<string, LiteralValue> {
+    this.i++; // {
+    const out: Record<string, LiteralValue> = {};
+    for (;;) {
+      this.ws();
+      const c = this.src[this.i];
+      if (c === undefined) return out;
+      if (c === "}") {
+        this.i++;
+        return out;
+      }
+      if (c === ",") {
+        this.i++;
+        continue;
+      }
+      const k = this.key();
+      this.ws();
+      if (this.src[this.i] !== ":") {
+        // Shorthand (`{ a, b }`) or something we cannot read - skip to the
+        // next delimiter so the remaining entries still parse.
+        this.rawUntilDelimiter();
+        continue;
+      }
+      this.i++; // :
+      const value = this.value(depth);
+      if (k !== undefined) out[k] = value;
+    }
+  }
+
+  array(depth: number): LiteralValue[] {
+    this.i++; // [
+    const out: LiteralValue[] = [];
+    for (;;) {
+      this.ws();
+      const c = this.src[this.i];
+      if (c === undefined) return out;
+      if (c === "]") {
+        this.i++;
+        return out;
+      }
+      if (c === ",") {
+        this.i++;
+        continue;
+      }
+      out.push(this.value(depth));
+    }
+  }
+}
+
+/**
+ * Read the object literal that STARTS at `index` (which must be its `{`).
+ * Returns null when it does not.
+ */
+export function readObjectLiteralAt(
+  source: string,
+  index: number,
+): Record<string, LiteralValue> | null {
+  if (source[index] !== "{") return null;
+  const reader = new Reader(source);
+  reader.i = index;
+  return reader.object(0);
+}
+
+/**
+ * Read the first object literal that follows `from` in `source` - the shape
+ * `foo({...})`, `ixData: {...}`, `gsap.from(el, {...})` all reduce to this.
+ * Returns null when there is no `{` ahead of it.
+ */
+export function readNextObjectLiteral(
+  source: string,
+  from: number,
+): Record<string, LiteralValue> | null {
+  const brace = source.indexOf("{", from);
+  if (brace === -1) return null;
+  return readObjectLiteralAt(source, brace);
+}
+
+/** Read a number, whatever wrapper the source used (`10`, `"10"`, `"10px"`). */
+export function asNumber(value: LiteralValue): number | undefined {
+  if (typeof value === "number") return Number.isFinite(value) ? value : undefined;
+  if (typeof value === "string") {
+    const m = /^[-+]?\d*\.?\d+/.exec(value.trim());
+    if (m) {
+      const n = Number(m[0]);
+      return Number.isFinite(n) ? n : undefined;
+    }
+  }
+  return undefined;
+}
+
+export function asString(value: LiteralValue): string | undefined {
+  return typeof value === "string" ? value : undefined;
+}
