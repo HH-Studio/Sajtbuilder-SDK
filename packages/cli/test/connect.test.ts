@@ -212,6 +212,40 @@ describe("project files — the secret/not-secret split", () => {
     expect(envFileIsGitIgnored(dir)).toBe(false);
   });
 
+  // Regression, 2026-08-13. The check used to give up on ANY `!` line, and the
+  // default create-next-app .gitignore negates four .yarn/ paths — so `admin
+  // pair` warned "your token is not gitignored" on essentially every Next.js
+  // project, about a file git was ignoring perfectly well via `.env*`.
+  it("ignores negations that cannot possibly match .env.local", () => {
+    const dir = tempProject();
+    writeFileSync(
+      join(dir, ".gitignore"),
+      [
+        "node_modules",
+        ".yarn/*",
+        "!.yarn/patches",
+        "!.yarn/plugins",
+        "!.yarn/releases",
+        "!.yarn/versions",
+        ".env*",
+      ].join("\n"),
+      "utf8",
+    );
+    expect(envFileIsGitIgnored(dir)).toBe(true);
+  });
+
+  it("still surrenders to a negation that DOES re-include .env.local", () => {
+    const dir = tempProject();
+    writeFileSync(join(dir, ".gitignore"), ".env*\n!.env.local\n", "utf8");
+    expect(envFileIsGitIgnored(dir)).toBe(false);
+  });
+
+  it("surrenders to a bare wildcard negation, which could reach anything", () => {
+    const dir = tempProject();
+    writeFileSync(join(dir, ".gitignore"), ".env*\n!*\n", "utf8");
+    expect(envFileIsGitIgnored(dir)).toBe(false);
+  });
+
   it("lets the environment win over .env.local, because CI sets it there", () => {
     const dir = tempProject();
     writeDeliveryToken(dir, "sajt_pub_fromfile");

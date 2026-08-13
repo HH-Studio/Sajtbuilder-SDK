@@ -17,6 +17,7 @@ import {
   writeDeliveryToken,
   writeProjectConfig,
 } from "./connect/project";
+import { openBrowser, shouldAutoOpen } from "./openBrowser";
 import { consoleOutput, type Output } from "../output";
 
 // ---------------------------------------------------------------------------
@@ -73,10 +74,19 @@ async function runConnect(
       verificationUrl: start.verificationUrl,
     });
   } else {
+    // Same rule as `admin pair`: open it for a human who is watching, but print
+    // the URL first and always, because the browser we open may be the wrong
+    // one — or on the wrong machine, over SSH.
+    const opened =
+      !args.includes("--no-open") &&
+      shouldAutoOpen(deps.browser) &&
+      openBrowser(start.verificationUrl, deps.browser);
+
     output.stdout("");
     output.stdout(`  Open   ${start.verificationUrl}`);
     output.stdout(`  Code   ${start.userCode}`);
     output.stdout("");
+    if (opened) output.stdout("  Opened that page in your browser.");
     output.stdout("  Waiting for you to approve this terminal…");
   }
 

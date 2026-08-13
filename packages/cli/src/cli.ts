@@ -20,7 +20,7 @@ Usage:
   snabbsajt push <site.json|dir> [--site <id>] [--dry-run] [--force-key <k>]... [--json]
   snabbsajt upgrade [--yes] [--json]
   snabbsajt connect [--api-url <url>] [--json]
-  snabbsajt admin pair [--scopes a,b,c] [--api-url <url>] [--json]
+  snabbsajt admin pair [--scopes a,b,c] [--api-url <url>] [--no-open] [--json]
   snabbsajt admin tools [--app-url <url>] [--json]
   snabbsajt admin run <tool> [--args '<json>'] [--app-url <url>] [--json]
   snabbsajt site init <dir> [--template nextjs|html] [--json]

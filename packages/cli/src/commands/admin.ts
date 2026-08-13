@@ -22,6 +22,7 @@ import {
   type ScopedPairOptions,
 } from "./admin/scopedPairing";
 import { cliVersion } from "./site";
+import { openBrowser, shouldAutoOpen, type OpenBrowserEnv } from "./openBrowser";
 import { consoleOutput, type Output } from "../output";
 
 // ---------------------------------------------------------------------------
@@ -43,6 +44,8 @@ import { consoleOutput, type Output } from "../output";
 export type AdminDeps = ScopedPairOptions & {
   /** Overrides the app origin the MCP client talks to. */
   appUrl?: string;
+  /** Injected in tests so pairing never really spawns a browser. */
+  browser?: OpenBrowserEnv;
 };
 
 function json(output: Output, payload: unknown): void {
@@ -100,13 +103,25 @@ async function runPair(
       scopes: start.scopes,
     });
   } else {
+    // Open the approval page ourselves when a human is obviously watching. The
+    // URL is still printed first and always: the browser may be the wrong one,
+    // may not exist, or may be on another machine over SSH, and in every one of
+    // those cases the developer needs the line they can copy.
+    const noOpenFlag = args.includes("--no-open");
+    const opened =
+      !noOpenFlag &&
+      shouldAutoOpen(deps.browser) &&
+      openBrowser(start.verificationUrl, deps.browser);
+
     output.stdout("");
     output.stdout(`  Open      ${start.verificationUrl}`);
     output.stdout(`  Code      ${start.userCode}`);
     output.stdout(`  Asking    ${start.scopes.join(", ")}`);
     output.stdout("");
+    if (opened) output.stdout("  Opened that page in your browser.");
     output.stdout("  Waiting for you to approve this terminal…");
     output.stdout("  You can untick any of those scopes before approving.");
+    if (opened) output.stdout("  (--no-open next time if you would rather it did not.)");
   }
 
   const approved = await waitForScopedApproval(start, { ...deps, apiUrl });
@@ -308,14 +323,15 @@ async function runTool(
 
 function usage(output: Output): void {
   output.stdout(`Usage:
-  snabbsajt admin pair  [--scopes a,b,c] [--api-url <url>] [--json]
+  snabbsajt admin pair  [--scopes a,b,c] [--api-url <url>] [--no-open] [--json]
   snabbsajt admin tools [--app-url <url>] [--json]
   snabbsajt admin run <tool> [--args '<json>'] [--app-url <url>] [--json]
 
 admin is the only namespace in this CLI that holds a credential able to CHANGE a
 site. \`snabbsajt site ...\` stays local-first and keyless, and never sees a token.
 
-pair prints a code, you approve it in the browser, and it writes
+pair opens the approval page in your browser (--no-open, CI, or a non-terminal
+keeps it to the printed URL), prints a code, and once you approve it writes
 ${ADMIN_PROJECT_FILE} (safe to commit) plus ${ADMIN_TOKEN_ENV_VAR} into
 ${ENV_FILE} (a secret — gitignore it). The owner approves scope by scope and may
 grant fewer than you asked for, so pair prints what you actually got.

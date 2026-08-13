@@ -14,6 +14,17 @@ that validated against an older CLI still validates against a newer one.
 
 ### Added
 
+- **`admin pair` and `connect` open the approval page for you.** Device-code
+  pairing asked you to move a URL from a terminal into a browser by hand, which
+  was the slowest step of an otherwise one-command flow. Now the page opens when
+  you are at an interactive terminal. The URL is still printed first and always
+  — the browser we open may be the wrong one, or on the wrong machine over SSH —
+  and nothing is opened without a TTY, with `CI` set, with `SNABBSAJT_NO_OPEN=1`,
+  or when you pass `--no-open`. The URL is parsed and required to be `http(s)`
+  before it reaches an opener, and is passed as a single argv entry with no
+  shell involved.
+
+
 - **The starter template can serve the site your client published.** Until now
   the template was a one-way street: you authored `src/site.ts`, packed it, and
   imported it. What your client then edited and published had nowhere to go —
@@ -103,6 +114,25 @@ that validated against an older CLI still validates against a newer one.
   code 130 on Ctrl-C with nothing written.
 
 ### Fixed
+
+- **`pair` no longer claims your token is unprotected when it is.** The
+  `.gitignore` check gave up on *any* negation line and reported "not
+  gitignored". The default `create-next-app` `.gitignore` negates four `.yarn/`
+  paths, so the warning fired on essentially every Next.js project — about a
+  file git was ignoring perfectly well via `.env*`. It now asks
+  `git check-ignore`, which is the only thing that actually decides this (globs,
+  negations, parent `.gitignore` files, `.git/info/exclude`), and falls back to
+  literal parsing only when git cannot be asked: no git, or not a repository
+  yet. Negations still force a surrender, but only ones that could plausibly
+  match `.env.local`.
+
+  The check deliberately does **not** pass `--no-index`: a `.env.local` that is
+  already tracked still warns, ignore rule or not, because a committed token is
+  the worst case here and the one most worth shouting about.
+
+  A security warning that fires on healthy projects is one people learn to skip,
+  which is the real bug.
+
 
 - **`--json` errors were not JSON in a colour-capable terminal.** `snabbsajt
   skills … --json` writes its error object to stderr, and Bun's `console.error`

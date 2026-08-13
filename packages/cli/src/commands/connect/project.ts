@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
@@ -56,11 +57,19 @@ export function writeProjectConfig(cwd: string, config: ProjectConfig): void {
 
 /** True when `.env.local` is covered by a gitignore rule in this directory.
  *
- *  Intentionally a plain check of the local `.gitignore` rather than shelling
- *  out to `git check-ignore`: the CLI must work in a directory that is not a
- *  git repository yet, and a wrong "yes it is ignored" is far more dangerous
- *  than a wrong "I could not tell". Anything ambiguous reads as NOT ignored. */
+ *  Asks git first, because git is the only thing that actually decides this:
+ *  it understands globs, negations, parent-directory `.gitignore` files, nested
+ *  rules and `.git/info/exclude`, and our literal matcher understands none of
+ *  them. When git cannot answer — not installed, or this is not a repository
+ *  yet, which is a normal state for a fresh project — we fall back to reading
+ *  the local `.gitignore` literally.
+ *
+ *  Either way, a wrong "yes it is ignored" is far more dangerous than a wrong
+ *  "I could not tell", so everything ambiguous still reads as NOT ignored. */
 export function envFileIsGitIgnored(cwd: string): boolean {
+  const fromGit = gitSaysIgnored(cwd);
+  if (fromGit !== undefined) return fromGit;
+
   const gitignore = join(cwd, ".gitignore");
   if (!existsSync(gitignore)) return false;
   let contents: string;
@@ -73,20 +82,66 @@ export function envFileIsGitIgnored(cwd: string): boolean {
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter((line) => line && !line.startsWith("#"));
-  // A negation anywhere means we cannot reason about this file with literal
-  // matching: `.env*` followed by `!.env.local` re-includes the very file we
-  // are protecting. Give up and report NOT ignored — a false warning costs a
-  // moment, a false all-clear costs a leaked token.
-  if (lines.some((line) => line.startsWith("!"))) return false;
-  return lines
-    .some(
-      (line) =>
-        line === ENV_FILE ||
-        line === `/${ENV_FILE}` ||
-        line === ".env*" ||
-        line === ".env*.local" ||
-        line === "*.local",
-    );
+  // A negation that could re-include this file means we cannot reason about it
+  // with literal matching: `.env*` followed by `!.env.local` re-includes the
+  // very file we are protecting. Give up and report NOT ignored.
+  //
+  // Only negations that could plausibly match `.env.local` count. An earlier
+  // version bailed on ANY `!` line, which made the default create-next-app
+  // `.gitignore` — it negates four `.yarn/` paths — warn on every single
+  // Next.js project, about a file git was ignoring perfectly well. A security
+  // warning that fires on healthy projects is one people learn to skip.
+  if (lines.some((line) => line.startsWith("!") && couldMatchEnvFile(line.slice(1))))
+    return false;
+  return lines.some((line) => literallyCoversEnvFile(line));
+}
+
+/** git's own verdict: `true`/`false` when it answered, `undefined` when it
+ *  could not be asked (no git, not a repository). Never throws. */
+function gitSaysIgnored(cwd: string): boolean | undefined {
+  let result: ReturnType<typeof spawnSync>;
+  try {
+    // Deliberately WITHOUT --no-index. If `.env.local` is already tracked, git
+    // reports it as not-ignored, and that is exactly right: a tracked token is
+    // the worst case here, and it must still produce the warning even though an
+    // ignore rule matches the path.
+    result = spawnSync("git", ["check-ignore", "--quiet", ENV_FILE], {
+      cwd,
+      stdio: "ignore",
+      timeout: 2000,
+    });
+  } catch {
+    return undefined;
+  }
+  if (result.error || result.signal) return undefined;
+  // Documented exit codes: 0 = ignored, 1 = not ignored, 128 = fatal (most
+  // often "not a git repository"). Anything else, we do not interpret.
+  if (result.status === 0) return true;
+  if (result.status === 1) return false;
+  return undefined;
+}
+
+/** Literal patterns we are confident cover `.env.local`. */
+function literallyCoversEnvFile(line: string): boolean {
+  return (
+    line === ENV_FILE ||
+    line === `/${ENV_FILE}` ||
+    line === ".env*" ||
+    line === ".env*.local" ||
+    line === "*.local"
+  );
+}
+
+/** Would this pattern plausibly match `.env.local`? Used only to decide whether
+ *  a negation is worth surrendering to, so it errs toward "yes". */
+function couldMatchEnvFile(pattern: string): boolean {
+  const trimmed = pattern.trim().replace(/^\//, "");
+  if (!trimmed) return false;
+  if (literallyCoversEnvFile(trimmed)) return true;
+  // A leading-wildcard pattern like `*` or `*.local` can reach it; a path
+  // segment that does not start with `.env` cannot.
+  if (trimmed.startsWith("*")) return true;
+  return trimmed.startsWith(".env");
 }
 
 export type TokenWriteResult = {

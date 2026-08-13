@@ -75,7 +75,7 @@ Do not confuse `connect` with `snabbsajt site init`, which scaffolds a site
 ## Edit a site from the terminal — the `admin` namespace
 
 ```bash
-snabbsajt admin pair  [--scopes a,b,c] [--api-url <url>] [--json]
+snabbsajt admin pair  [--scopes a,b,c] [--api-url <url>] [--no-open] [--json]
 snabbsajt admin tools [--app-url <url>] [--json]
 snabbsajt admin run <tool> [--args '<json>'] [--app-url <url>] [--json]
 ```
@@ -90,12 +90,20 @@ own separate variable, so pairing for write access cannot silently escalate what
 
 Device-code pairing, the same shape as `connect`: it prints a short code and a
 URL, you approve it in a browser you are already signed in to, and the terminal
-receives a capability-scoped token exactly once. It writes:
+receives a capability-scoped token exactly once.
+
+It **opens that page for you** when you are at an interactive terminal. The URL
+is still printed first and always, because the browser it opens may be the wrong
+one — or on the wrong machine, if you are over SSH. Pass `--no-open`, or set
+`SNABBSAJT_NO_OPEN=1`, to keep it to the printed URL; it never opens anything
+when there is no TTY or when `CI` is set.
+
+It writes:
 
 | File | Contains | Commit it? |
 | --- | --- | --- |
 | `.snabbsajt-admin.json` | app URL, site id, the granted scopes | **Yes.** Not a secret. |
-| `.env.local` | `SNABBSAJT_ADMIN_TOKEN` | **No.** `pair` checks your `.gitignore` and warns on stderr in both output modes if it is not covered. |
+| `.env.local` | `SNABBSAJT_ADMIN_TOKEN` | **No.** `pair` asks `git check-ignore` whether the file is covered and warns on stderr, in both output modes, when it is not. A file that is already *tracked* warns too, ignore rule or no ignore rule — that is the case worth catching. |
 
 `--scopes` defaults to `site:read,content:write` — enough to read a site and edit
 its draft, and nothing that publishes, spends AI credits, or reads customer data.

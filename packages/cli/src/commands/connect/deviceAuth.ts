@@ -1,3 +1,5 @@
+import type { OpenBrowserEnv } from "../openBrowser";
+
 // ---------------------------------------------------------------------------
 // Device-code pairing — the CLI half of `snabbsajt connect`.
 //
@@ -63,6 +65,8 @@ export type DeviceAuthOptions = {
   sleep?: (ms: number) => Promise<void>;
   /** Free-text hint shown to the human on the approval page. */
   client?: string;
+  /** Injected in tests so pairing never really spawns a browser. */
+  browser?: OpenBrowserEnv;
 };
 
 /** The pairing exchange ends with a live credential crossing the wire, so the
