@@ -236,7 +236,10 @@ which agents the repository already uses.
 
 Each skill also carries the reference material it needs offline — the CLI
 surface with its credential model and failure modes, the MCP tool catalogue with
-scopes — so an agent never has to guess a flag or a tool name.
+scopes, and the generated `PortableSiteV1` schema for the package-authoring
+ones — so an agent never has to guess a flag, a tool name, or a section type.
+`bun scripts/gen-skill-manifest.ts` regenerates the checksums those installs
+verify; `bun run check` fails when it is stale.
 
 Installation is **project-local unless you pass `--global`**. A skill file you
 have modified is preserved unless `--force` is explicit, and a backup is written

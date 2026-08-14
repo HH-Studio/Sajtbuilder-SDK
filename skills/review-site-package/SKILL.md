@@ -21,7 +21,9 @@ Use this workflow before handing a generated or imported package to a customer.
 5. Confirm the package contains no executable JavaScript, PHP, plugins, raw HTML,
    or arbitrary CSS presented as SnabbSajt runtime behavior.
 6. Check routes, locale prefixes, redirects, SEO fields, contact details, forms,
-   analytics, booking, animations, and media. Mark native replacements explicitly.
+   analytics, booking, animations, and media. Mark native replacements
+   explicitly. Field meanings and the allowed variants per section type are in
+   [references/section-schema.md](references/section-schema.md).
 7. If an import report exists, verify its format is `snabbsajt-import-report@1`,
    cited evidence resolves, hashes match, and unsupported behavior is disclosed.
 8. Confirm ordinary customer edits remain constrained to safe text, media, and

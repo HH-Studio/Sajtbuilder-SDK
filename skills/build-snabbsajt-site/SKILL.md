@@ -32,7 +32,11 @@ runs locally and needs no credential.
    the CLI rather than proceeding on an old contract.
 2. Create a starter with `snabbsajt site init <dir> --template nextjs` or
    `--template html`.
-3. Edit `site.json` and assets using the installed Site Kit types as the contract.
+3. Edit `site.json` and assets using the installed Site Kit types as the
+   contract. The full field-by-field schema — envelope, every section type with
+   its allowed variants, nested objects, and a minimal complete package — is in
+   [references/section-schema.md](references/section-schema.md). Look a field up
+   there rather than inferring it; unknown fields are rejected.
 4. Run `snabbsajt site validate <dir> --json` after each meaningful change.
 5. Run `snabbsajt site inspect <dir> --json` and verify page, section, asset, and
    section-type counts.

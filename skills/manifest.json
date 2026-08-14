@@ -37,7 +37,7 @@
       "files": [
         {
           "path": "SKILL.md",
-          "sha256": "f005a56e85bf8308cf919adbe455a8996b48d84a328024efc5b59a819cf2833c"
+          "sha256": "70cd6aab3eaa3a42262685b7092a9927e03e513afe0a577897f6ede30981e44a"
         },
         {
           "path": "references/import-mapping-rules.md",
@@ -48,6 +48,11 @@
           "path": "references/cli-commands.md",
           "source": "shared/cli-commands.md",
           "sha256": "f7abed66eacb836a6afecd10be942d5d6b1ca656254434da25de5bb562e4480a"
+        },
+        {
+          "path": "references/section-schema.md",
+          "source": "shared/section-schema.md",
+          "sha256": "0acac383501f271766258fab1161df1485803fab504bbd6f2a54044d4d42001a"
         }
       ]
     },
@@ -57,12 +62,17 @@
       "files": [
         {
           "path": "SKILL.md",
-          "sha256": "22784af8005b28c014f7317e781b3f381b186d325225b858d465ae169f8d2748"
+          "sha256": "34859f3d296b0377b5775819c14c643a26be3fc73c29bb66f2c6ce4d6b10e8aa"
         },
         {
           "path": "references/cli-commands.md",
           "source": "shared/cli-commands.md",
           "sha256": "f7abed66eacb836a6afecd10be942d5d6b1ca656254434da25de5bb562e4480a"
+        },
+        {
+          "path": "references/section-schema.md",
+          "source": "shared/section-schema.md",
+          "sha256": "0acac383501f271766258fab1161df1485803fab504bbd6f2a54044d4d42001a"
         }
       ]
     },
@@ -72,12 +82,17 @@
       "files": [
         {
           "path": "SKILL.md",
-          "sha256": "821b8aae6912808b70f79d851e0ceb51bae81502d586fd995a99663f36f2b6ad"
+          "sha256": "69b696ae65db7aad7e1fd7adf15af3804977c422a3021108b0ab72694e828618"
         },
         {
           "path": "references/cli-commands.md",
           "source": "shared/cli-commands.md",
           "sha256": "f7abed66eacb836a6afecd10be942d5d6b1ca656254434da25de5bb562e4480a"
+        },
+        {
+          "path": "references/section-schema.md",
+          "source": "shared/section-schema.md",
+          "sha256": "0acac383501f271766258fab1161df1485803fab504bbd6f2a54044d4d42001a"
         }
       ]
     },

@@ -51,6 +51,28 @@ describe("AI-assisted import skill contract", () => {
     });
   });
 
+  it("pins a live checksum for every file every skill installs", () => {
+    // The installer tells "the CLI shipped a new version" apart from "the human
+    // edited this file" purely by these hashes, and one of the shared
+    // references is itself generated from the contract. So a stale manifest is
+    // not cosmetic: it makes `skills install` refuse on someone else's machine.
+    // `bun scripts/gen-skill-manifest.ts` regenerates it.
+    const manifest = JSON.parse(read("skills/manifest.json"));
+    for (const skill of manifest.skills as Array<{
+      name: string;
+      files: Array<{ path: string; source?: string; sha256: string }>;
+    }>) {
+      for (const file of skill.files) {
+        const source = file.source
+          ? `skills/${file.source}`
+          : `skills/${skill.name}/${file.path}`;
+        expect(`${skill.name}/${file.path}: ${sha256(read(source))}`).toBe(
+          `${skill.name}/${file.path}: ${file.sha256}`,
+        );
+      }
+    }
+  });
+
   it("provides deterministic proposal lint rules instead of asserting model wording", () => {
     const rules = read("skills/shared/import-mapping-rules.md");
     expect(rules).toContain("AI proposal lint");

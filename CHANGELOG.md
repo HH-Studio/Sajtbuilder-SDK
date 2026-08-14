@@ -23,13 +23,27 @@ that validated against an older CLI still validates against a newer one.
   read-only delivery token, and MCP, and routes to the skill that does the job.
   All five now also carry the reference material they need offline — the full
   CLI surface with its credential split and per-command failure modes, and the
-  MCP tool catalogue with the scope each tool needs and what a denial means —
-  loaded only when a task reaches it, so the descriptions stay cheap. The four
+  MCP tool catalogue with the scope each tool needs and what a denial means, and
+  for the three that author or check a package, the whole `PortableSiteV1`
+  schema, generated into `skills/shared/section-schema.md` from the same
+  contract the validator reads. An agent writing `site.json` no longer infers a
+  section type and discovers at `site validate` that it does not exist. All of
+  it loads only when a task reaches it, so the descriptions stay cheap. The four
   existing descriptions were rewritten to say when to fire and how they differ
   from each other, in Swedish as well as English, since a description is the
   only thing an agent reads before choosing. The release workflow now stages
   skills and their shared references straight from the manifest, so the next
   skill ships without editing it.
+
+- **`skills/manifest.json` is generated, and stale is now a red test.** Its
+  per-file checksums are what let `skills install` tell "the CLI shipped a new
+  version" apart from "the human edited this file", and they were maintained by
+  hand — so a one-word fix to a `SKILL.md` left the manifest describing a file
+  that no longer existed, and the mismatch only surfaced at install time on
+  someone else's machine. With a generated reference among the bundled files
+  that stopped being hypothetical. `bun scripts/gen-skill-manifest.ts` writes
+  it, `--check` fails on drift, `bun run check` runs that, and the contract
+  suite verifies every hash against its real source.
 
 - **`admin pair` and `connect` open the approval page for you.** Device-code
   pairing asked you to move a URL from a terminal into a browser by hand, which

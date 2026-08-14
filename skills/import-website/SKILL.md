@@ -37,7 +37,10 @@ statuses, and per-command failure modes are in
 3. Read the deterministic evidence and report. Preserve their ids and hashes.
 4. Inventory routes, copy, media, SEO, forms, analytics, booking, animations,
    redirects, and unsupported behavior without executing the source.
-5. Improve `site.json` only with native, evidence-backed sections/settings.
+5. Improve `site.json` only with native, evidence-backed sections/settings. The
+   allowed section types, their variants, and every field are in
+   [references/section-schema.md](references/section-schema.md) — pick the
+   closest existing type, never invent one.
 6. Add every AI-created mapping as an `ai_proposed` report item with real
    evidence ids and confidence, following the shared lint rules.
 7. Run `snabbsajt site validate <candidate-dir> --json` after each meaningful
