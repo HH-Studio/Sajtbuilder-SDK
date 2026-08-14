@@ -1,8 +1,8 @@
 ---
 name: import-website
-description: Convert an existing public website or local export into a safe editable SnabbSajt site package.
+description: Convert an existing website into a safe, editable SnabbSajt site package - a public URL, rendered HTML, a static zip, a Next.js export, or a WordPress WXR. Use when the human says "import this website", "importera den har hemsidan", "migrate <customer> to SnabbSajt", "flytta kundens sajt", "convert this WordPress site", or hands over a URL, zip, or repo that should become a SnabbSajt site. Starts from an existing source with a deterministic importer and an evidence report; build-snabbsajt-site starts from a brief instead.
 metadata:
-  skill-version: "1.2.0"
+  skill-version: "1.3.0"
   minimum-cli-version: "0.1.0"
   portable-format: "sajt-site@1"
   report-contract: "snabbsajt-import-report@1"
@@ -15,7 +15,9 @@ HTML, or a WordPress export. The deterministic importer runs first. AI may then
 improve the native mapping, but it cannot invent facts or bypass review.
 
 Read [the shared mapping rules](references/import-mapping-rules.md) completely
-before inspecting or changing a candidate package.
+before inspecting or changing a candidate package. Command flags, import
+statuses, and per-command failure modes are in
+[references/cli-commands.md](references/cli-commands.md).
 
 ## Safety contract
 

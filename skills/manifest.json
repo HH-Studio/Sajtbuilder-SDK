@@ -1,6 +1,6 @@
 {
   "manifestVersion": 1,
-  "releaseVersion": "1.2.0",
+  "releaseVersion": "1.3.0",
   "minimumCliVersion": "0.1.0",
   "portableFormat": {
     "format": "sajt-site",
@@ -12,47 +12,87 @@
   },
   "skills": [
     {
-      "name": "import-website",
-      "version": "1.2.0",
+      "name": "snabbsajt-getting-started",
+      "version": "1.0.0",
       "files": [
         {
           "path": "SKILL.md",
-          "sha256": "d2fb78f7b17617c96ea40fd30414277a7d6372d9c5916866adc9f78ddc1a0f8e"
+          "sha256": "0ce7996404d9cd89b7e5afbe376433e60a65239899d052264796db4d67b8337f"
+        },
+        {
+          "path": "references/cli-commands.md",
+          "source": "shared/cli-commands.md",
+          "sha256": "f7abed66eacb836a6afecd10be942d5d6b1ca656254434da25de5bb562e4480a"
+        },
+        {
+          "path": "references/mcp-tools.md",
+          "source": "shared/mcp-tools.md",
+          "sha256": "94924883c2cf2fb77b8e23bd98706785df8f5d5420c95aa958682f94917136e4"
+        }
+      ]
+    },
+    {
+      "name": "import-website",
+      "version": "1.3.0",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "f005a56e85bf8308cf919adbe455a8996b48d84a328024efc5b59a819cf2833c"
         },
         {
           "path": "references/import-mapping-rules.md",
           "source": "shared/import-mapping-rules.md",
           "sha256": "55b078378d75ff43b1a1ac7a01a6927dbd40c7c22f55c5fae66343f2f150a792"
+        },
+        {
+          "path": "references/cli-commands.md",
+          "source": "shared/cli-commands.md",
+          "sha256": "f7abed66eacb836a6afecd10be942d5d6b1ca656254434da25de5bb562e4480a"
         }
       ]
     },
     {
       "name": "build-snabbsajt-site",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "files": [
         {
           "path": "SKILL.md",
-          "sha256": "3871dfab5eb7dfbb3bddc5eb22b32c375148cbda46fa3aa3c899aeaa0c28b4f4"
+          "sha256": "22784af8005b28c014f7317e781b3f381b186d325225b858d465ae169f8d2748"
+        },
+        {
+          "path": "references/cli-commands.md",
+          "source": "shared/cli-commands.md",
+          "sha256": "f7abed66eacb836a6afecd10be942d5d6b1ca656254434da25de5bb562e4480a"
         }
       ]
     },
     {
       "name": "review-site-package",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "files": [
         {
           "path": "SKILL.md",
-          "sha256": "86b8f314f724fea754721b36569a1dd069e10eacbd058b5e7ff6ff6e9742808e"
+          "sha256": "821b8aae6912808b70f79d851e0ceb51bae81502d586fd995a99663f36f2b6ad"
+        },
+        {
+          "path": "references/cli-commands.md",
+          "source": "shared/cli-commands.md",
+          "sha256": "f7abed66eacb836a6afecd10be942d5d6b1ca656254434da25de5bb562e4480a"
         }
       ]
     },
     {
       "name": "manage-snabbsajt-site",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "files": [
         {
           "path": "SKILL.md",
-          "sha256": "a61654987dde7933cd51f299ef3ba6f23df3bddae25b159e87740a02e3aa387b"
+          "sha256": "c1b40d537e497fca13f5aeff6677b2e8ab90f6fe6e590eff55808f17dbe29749"
+        },
+        {
+          "path": "references/mcp-tools.md",
+          "source": "shared/mcp-tools.md",
+          "sha256": "94924883c2cf2fb77b8e23bd98706785df8f5d5420c95aa958682f94917136e4"
         }
       ]
     }

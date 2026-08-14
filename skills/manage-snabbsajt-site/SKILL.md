@@ -1,8 +1,8 @@
 ---
 name: manage-snabbsajt-site
-description: Safely read and edit a live SnabbSajt site over MCP - draft-first, honest reports, never publish without an explicit human ask.
+description: Read and edit a live SnabbSajt site over MCP - draft-first, honest reports, never publishing without an explicit human ask. Use when SnabbSajt is connected as an MCP server and the human says "update my site", "andra texten pa min sajt", "add a page", "what changed in my draft", "publicera", "publish my site", "check my leads/bookings", or names a live site. Operates on a site that already exists; build-snabbsajt-site and import-website produce a package instead.
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.1.0"
   minimum-cli-version: "0.4.0"
   portable-format: "sajt-site@1"
   report-contract: "snabbsajt-import-report@1"
@@ -64,6 +64,10 @@ customers.
 6. **Publish only on an explicit ask:** `prepare_publish` (this creates the
    review card and publishes nothing), then let the human approve. Tell them
    plainly that the approval is theirs to give.
+
+The full tool catalogue by scope, the confirm handshake, and what each denial
+means: [references/mcp-tools.md](references/mcp-tools.md). Read it before asking
+the human to widen a connection, and whenever a tool you expected is missing.
 
 ## Advanced tools
 

@@ -59,8 +59,13 @@ describe("AI-assisted import skill contract", () => {
     expect(rules).toContain("blocking");
     expect(rules).toContain("Do not mark the report `ready`");
 
+    // The release workflow stages skills and their shared references straight
+    // from the manifest, so a new skill or reference ships without editing it.
+    // Asserting the literal import-mapping paths here is what made this couple
+    // to one skill; assert the manifest-driven mechanism instead.
     const workflow = read(".github/workflows/release.yml");
-    expect(workflow).toContain("skills/shared/import-mapping-rules.md");
-    expect(workflow).toContain("references/import-mapping-rules.md");
+    expect(workflow).toContain("require('./skills/manifest.json').skills.map(s => s.name)");
+    expect(workflow).toContain("files.filter(f => f.source)");
+    expect(workflow).toContain('cp "skills/${source}"');
   });
 });

@@ -14,6 +14,23 @@ that validated against an older CLI still validates against a newer one.
 
 ### Added
 
+- **Skills 1.3.0: an entry-point skill, and reference material that ships with
+  them.** The four skills each described their own workflow well and told an
+  agent nothing about how to get connected, so a session that opened with
+  "koppla min sajt" or just "SnabbSajt" had no skill to land in and picked a
+  layer by guessing. `snabbsajt-getting-started` is now that landing point: it
+  state-checks the CLI and the link, picks between local package work, the
+  read-only delivery token, and MCP, and routes to the skill that does the job.
+  All five now also carry the reference material they need offline — the full
+  CLI surface with its credential split and per-command failure modes, and the
+  MCP tool catalogue with the scope each tool needs and what a denial means —
+  loaded only when a task reaches it, so the descriptions stay cheap. The four
+  existing descriptions were rewritten to say when to fire and how they differ
+  from each other, in Swedish as well as English, since a description is the
+  only thing an agent reads before choosing. The release workflow now stages
+  skills and their shared references straight from the manifest, so the next
+  skill ships without editing it.
+
 - **`admin pair` and `connect` open the approval page for you.** Device-code
   pairing asked you to move a URL from a terminal into a browser by hand, which
   was the slowest step of an otherwise one-command flow. Now the page opens when

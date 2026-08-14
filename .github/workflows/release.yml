@@ -126,14 +126,21 @@ jobs:
           set -euo pipefail
           version=$(node -p "require('./skills/manifest.json').releaseVersion")
           mkdir -p release-assets
-          for skill in import-website build-snabbsajt-site review-site-package manage-snabbsajt-site; do
+          # Manifest-driven: a new skill, or a new shared reference on an
+          # existing one, ships without editing this file. The hardcoded list it
+          # replaced could only ever go stale silently.
+          for skill in $(node -p "require('./skills/manifest.json').skills.map(s => s.name).join('\n')"); do
             archive="snabbsajt-${skill}-${version}.zip"
             staging=$(mktemp -d)
             cp -R "skills/${skill}" "${staging}/${skill}"
-            if [ "${skill}" = "import-website" ]; then
-              mkdir -p "${staging}/${skill}/references"
-              cp skills/shared/import-mapping-rules.md "${staging}/${skill}/references/import-mapping-rules.md"
-            fi
+            # Shared references live once under skills/shared/ and are copied
+            # into each skill that declares them with a `source` in the manifest.
+            node -p "require('./skills/manifest.json').skills.find(s => s.name === '${skill}').files.filter(f => f.source).map(f => f.path + '\t' + f.source).join('\n')" \
+              | while IFS=$'\t' read -r path source; do
+                  [ -n "${path}" ] || continue
+                  mkdir -p "${staging}/${skill}/$(dirname "${path}")"
+                  cp "skills/${source}" "${staging}/${skill}/${path}"
+                done
             (cd "${staging}" && zip -qr "${GITHUB_WORKSPACE}/release-assets/${archive}" "${skill}")
             rm -rf "${staging}"
             (cd release-assets && sha256sum "${archive}" > "${archive}.sha256")

@@ -1,8 +1,8 @@
 ---
 name: build-snabbsajt-site
-description: Build a constrained portable SnabbSajt package that customers can safely edit.
+description: Build a new SnabbSajt site package from a brief - constrained, portable, safe for a non-technical customer to edit. Use when the human says "build a site for <customer>", "bygg en sajt at <kund>", "scaffold a SnabbSajt package", "gor en ny sajt", or hands over a brief, copy, and images with no existing website. Creates a package from scratch; use import-website when a source website already exists, and manage-snabbsajt-site when the site is already live.
 metadata:
-  skill-version: "1.1.0"
+  skill-version: "1.2.0"
   minimum-cli-version: "0.1.0"
   portable-format: "sajt-site@1"
   report-contract: "snabbsajt-import-report@1"
@@ -24,7 +24,12 @@ safe for a non-technical customer to edit.
 
 ## Workflow
 
-1. Run `snabbsajt site doctor --json`.
+Full command surface, flags, and per-command failure modes:
+[references/cli-commands.md](references/cli-commands.md). Every command below
+runs locally and needs no credential.
+
+1. Run `snabbsajt site doctor --json`. Stop on an incompatible format — upgrade
+   the CLI rather than proceeding on an old contract.
 2. Create a starter with `snabbsajt site init <dir> --template nextjs` or
    `--template html`.
 3. Edit `site.json` and assets using the installed Site Kit types as the contract.

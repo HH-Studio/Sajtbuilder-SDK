@@ -1,8 +1,8 @@
 ---
 name: review-site-package
-description: Review a SnabbSajt portable package for correctness, safety, editability, and honest import evidence.
+description: Review a SnabbSajt site package before anyone imports it - correctness, safety, editability, and honest import evidence. Use when the human says "review this package", "granska paketet", "is this site package ready", "check the import report", or before packing or pushing a package a customer will edit. Read-only gate over an existing package directory; build-snabbsajt-site and import-website create one, this one signs it off.
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.1.0"
   minimum-cli-version: "0.1.0"
   portable-format: "sajt-site@1"
   report-contract: "snabbsajt-import-report@1"
@@ -30,3 +30,7 @@ Use this workflow before handing a generated or imported package to a customer.
 
 Report findings by severity, then give the exact validation evidence. Local
 review requires no API key or SnabbSajt login.
+
+Command flags and per-command failure modes:
+[references/cli-commands.md](references/cli-commands.md). An import status of
+`blocked` cannot be approved or packed — report it and stop.

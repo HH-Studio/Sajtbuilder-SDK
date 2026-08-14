@@ -224,10 +224,19 @@ snabbsajt skills list    --agent auto|codex|claude|all [--global] [--json]
 snabbsajt skills doctor  --agent auto|codex|claude|all [--global] [--json]
 ```
 
-Installs the agent skills (`import-website`, `build-snabbsajt-site`,
-`review-site-package`, and `manage-snabbsajt-site` for running a live site over
-MCP) into a coding agent's skill directory. `auto` detects which agents the
-repository already uses.
+Installs the agent skills into a coding agent's skill directory. `auto` detects
+which agents the repository already uses.
+
+- `snabbsajt-getting-started` — the entry point: picks the layer (local package
+  work, read-only delivery, or MCP), connects it, and routes to the others.
+- `import-website` — convert an existing site into a package.
+- `build-snabbsajt-site` — author a new package from a brief.
+- `review-site-package` — sign a package off before anyone imports it.
+- `manage-snabbsajt-site` — run a live site over MCP, draft-first.
+
+Each skill also carries the reference material it needs offline — the CLI
+surface with its credential model and failure modes, the MCP tool catalogue with
+scopes — so an agent never has to guess a flag or a tool name.
 
 Installation is **project-local unless you pass `--global`**. A skill file you
 have modified is preserved unless `--force` is explicit, and a backup is written

@@ -148,8 +148,12 @@ describe("snabbsajt skills", () => {
     const manifestPath = join(assets, "manifest.json");
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
     manifest.releaseVersion = "1.0.1";
-    manifest.skills[0].version = "1.0.1";
-    manifest.skills[0].files[0].sha256 = createHash("sha256").update(readFileSync(source)).digest("hex");
+    // By name, not by index: the manifest's skill order is a release detail, and
+    // an index here silently edited the wrong skill the moment one was added.
+    const entry = manifest.skills.find((skill: { name: string }) => skill.name === "import-website");
+    entry.version = "1.0.1";
+    entry.files.find((file: { path: string }) => file.path === "SKILL.md").sha256 =
+      createHash("sha256").update(readFileSync(source)).digest("hex");
     writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 
     const updated = runJson(["skills", "install", "--agent", "auto"], root, {
@@ -378,7 +382,9 @@ describe("snabbsajt skills", () => {
     expect(packageJson.files).toContain("dist/skills");
     expect(packageJson.scripts.build).toContain("sync-skills-assets.ts");
     const workflow = readFileSync(join(repoRoot, ".github/workflows/release.yml"), "utf8");
-    expect(workflow).toContain(skillNames.join(" "));
+    // The workflow reads the skill list out of the manifest rather than
+    // repeating it, so assert the mechanism, not a literal list.
+    expect(workflow).toContain("require('./skills/manifest.json').skills.map(s => s.name)");
     expect(workflow).toMatch(/sha256sum|shasum -a 256/);
     expect(workflow).toContain(".zip");
     expect(workflow).toContain('GITHUB_REF_NAME" = "v${version}');
