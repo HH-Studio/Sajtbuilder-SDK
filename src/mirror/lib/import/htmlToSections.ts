@@ -632,18 +632,17 @@ const EMPTY_VERDICTS: ImageVerdicts = new Map();
  *  final 20 slots leave room for brand assets or later manual additions while
  *  removing the old arbitrary 60-image truncation on ordinary multi-page
  *  sites. Network bytes and workspace storage remain independently bounded. */
-/** Section types that mean "this page's own content is on the page". A page
- *  with none of these has had every band decline it, and is where the
- *  last-resort readers below get their turn — hero, contact and footer are
- *  chrome the import adds to every page, so they do not count. */
-const CONTENT_BANDS: ReadonlySet<string> = new Set([
-  "about", "rich-text", "services", "service-detail", "highlights", "pricing",
-  "faq", "gallery", "team", "process", "testimonials", "statement", "legal",
-  "opening-hours", "location", "documents", "comparison", "before-after",
-  "bento", "banner", "social-proof", "certifications", "logos", "video",
-  "instagram", "booking", "lead-form", "newsletter", "cta-band", "posts",
-  "service-areas", "job-openings", "restaurant-menu", "product-grid",
-]);
+/** Section types that mean "this page's own content is on the page".
+ *
+ *  DERIVED from the registry, never hand-listed: the first version of this set
+ *  was typed out and immediately drifted — it named two types that do not exist
+ *  and missed eight that do, so a page that had already been given an `image`
+ *  or `scroll-tabs` band could still take the last-resort path below and gain a
+ *  second band saying the same thing. Hero, contact and footer are the chrome
+ *  every imported page gets, so they do not count as the page speaking. */
+const CONTENT_BANDS: ReadonlySet<string> = new Set(
+  Object.keys(SECTION_REGISTRY).filter((type) => !["hero", "contact", "footer"].includes(type)),
+);
 
 const MAX_IMPORT_ASSETS = 180;
 

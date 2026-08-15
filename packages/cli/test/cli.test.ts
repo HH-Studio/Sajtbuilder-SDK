@@ -253,7 +253,9 @@ describe("snabbsajt site CLI", () => {
     // About band instead of truncating.)
     const longSource = join(root, "wide", "index.html");
     mkdirSync(join(root, "wide"), { recursive: true });
-    const linked = Array.from({ length: 40 }, (_, index) => `page-${index + 1}.html`);
+    // Just past the 25-page ingestion cap: enough to truncate, cheap enough that
+    // three CLI runs over it stay inside a test timeout on a loaded machine.
+    const linked = Array.from({ length: 27 }, (_, index) => `page-${index + 1}.html`);
     writeFileSync(
       longSource,
       `<title>Wide</title><h1>Wide</h1>${linked.map((name) => `<a href="${name}">${name}</a>`).join("")}`,
@@ -299,8 +301,7 @@ describe("snabbsajt site CLI", () => {
     const readyBypassRefusal = run(["site", "import", "approve", readyBypassDir, "--yes"]);
     expect(readyBypassRefusal.status).toBe(1);
     expect(readyBypassRefusal.stderr).toContain("agent must not change import report status");
-  });
-
+  }, 120_000);
   it("still detects an imported package after the primary gate files are deleted", () => {
     const root = mkdtempSync(join(tmpdir(), "snabbsajt-cli-gate-removal-"));
     const source = join(root, "source.html");
