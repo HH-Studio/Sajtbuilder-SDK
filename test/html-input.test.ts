@@ -424,4 +424,100 @@ describe("bounded HTML input", () => {
     await expect(ingestHtmlInput("https://site.example/", { fetcher, timeoutMs: 1 }))
       .rejects.toThrow(/ingestion timeout/i);
   });
+
+  // Found on a real customer site (barkk.se, 2026-08-15): one rate-limited
+  // script fetch returned 429 and aborted the whole import. A subordinate
+  // resource we cannot read is evidence we did not collect, not a reason to
+  // abandon the page — the archive lane has always behaved this way. The
+  // security rejections above stay fatal; only an ordinary status is softened.
+  it("keeps importing when a subordinate resource answers a non-2xx status", async () => {
+    const html =
+      '<title>Home</title><link rel="stylesheet" href="/style.css">' +
+      '<script src="/app.js"></script><img src="/hero.png"><h1>Home</h1>';
+    const fetcher = async (url: string): Promise<SafeFetchResult> => {
+      if (url === "https://site.example/") {
+        return {
+          status: 200,
+          headers: { "content-type": "text/html" },
+          body: new TextEncoder().encode(html),
+          finalUrl: url,
+          redirects: [],
+        };
+      }
+      return {
+        status: url.endsWith(".png") ? 404 : 429,
+        headers: { "content-type": "text/plain" },
+        body: new TextEncoder().encode("no"),
+        finalUrl: url,
+        redirects: [],
+      };
+    };
+
+    const result = await ingestHtmlInput("https://site.example/", { fetcher });
+
+    expect(result.pages).toHaveLength(1);
+    expect(result.pages[0]!.title).toBe("Home");
+    expect(result.assets).toHaveLength(0);
+    expect(result.css).toHaveLength(0);
+    expect(result.warnings).toContainEqual(expect.stringContaining("HTTP 429"));
+    expect(result.warnings).toContainEqual(expect.stringContaining("HTTP 404"));
+    expect(result.warnings.filter((warning) => /HTTP \d{3}/.test(warning))).toHaveLength(3);
+  });
+
+  // Also found on barkk.se: the ingestion deadline is shared, so the LAST
+  // resources inherit a near-zero per-fetch budget and time out — which threw,
+  // and threw away a page we had already parsed. Running out of time means stop
+  // collecting and say so, not discard the import.
+  it("returns a truncated result when the ingestion deadline runs out mid-crawl", async () => {
+    const html = '<title>Home</title><img src="/a.png"><img src="/b.png"><h1>Home</h1>';
+    const fetcher = async (url: string): Promise<SafeFetchResult> => {
+      if (url !== "https://site.example/") {
+        await new Promise((resolve) => setTimeout(resolve, 40));
+        throw new SafeFetchError("TIMEOUT", "Fetch exceeded 5ms timeout");
+      }
+      return {
+        status: 200,
+        headers: { "content-type": "text/html" },
+        body: new TextEncoder().encode(html),
+        finalUrl: url,
+        redirects: [],
+      };
+    };
+
+    const result = await ingestHtmlInput("https://site.example/", { fetcher, timeoutMs: 50 });
+
+    expect(result.pages).toHaveLength(1);
+    expect(result.pages[0]!.title).toBe("Home");
+    expect(result.truncated).toBe(true);
+    expect(result.warnings).toContainEqual(expect.stringContaining("ingestion deadline"));
+  });
+
+  it("still rejects a policy refusal that happens to arrive late in the crawl", async () => {
+    const fetcher = async (url: string): Promise<SafeFetchResult> => {
+      if (url.endsWith("/private.png")) {
+        throw new SafeFetchError("UNSAFE_DESTINATION", "redirect resolved to metadata address");
+      }
+      return {
+        status: 200,
+        headers: { "content-type": "text/html" },
+        body: new TextEncoder().encode('<title>Home</title><img src="/private.png">'),
+        finalUrl: url,
+        redirects: [],
+      };
+    };
+    await expect(ingestHtmlInput("https://site.example/", { fetcher })).rejects.toMatchObject({
+      code: "UNSAFE_DESTINATION",
+    });
+  });
+
+  it("still rejects when the entry URL itself answers a non-2xx status", async () => {
+    const fetcher = async (url: string): Promise<SafeFetchResult> => ({
+      status: 503,
+      headers: { "content-type": "text/html" },
+      body: new TextEncoder().encode("down"),
+      finalUrl: url,
+      redirects: [],
+    });
+    await expect(ingestHtmlInput("https://site.example/", { fetcher })).rejects.toThrow(/HTTP 503/);
+  });
 });

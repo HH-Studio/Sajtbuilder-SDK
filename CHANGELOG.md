@@ -146,6 +146,30 @@ that validated against an older CLI still validates against a newer one.
 
 ### Fixed
 
+- **One unreadable file no longer throws away an entire real-site import.**
+  Found by running `snabbsajt site import html` against two live customer sites
+  on 2026-08-15. `barkk.se` rate-limits its own asset host, and a single
+  `HTTP 429` on one script aborted the whole run with exit 1 — nothing imported,
+  nothing reported. The URL lane treated every failed subordinate fetch as
+  fatal, while the archive lane had always recorded a missing file as a warning
+  and carried on. The two lanes now agree: an ordinary non-2xx status, or a
+  read that ran out of its slice of the shared time budget, is recorded as
+  `Skipped unreachable resource: …` and the import keeps going.
+
+  **What stays fatal, deliberately:** the entry URL itself (a site we never read
+  is not an import), every safe-fetch policy refusal including
+  `UNSAFE_DESTINATION`, a resource redirected off the selected origin, and every
+  ingestion cap — those are the reasons the crawl is bounded and safe at all.
+
+- **Running out of time now truncates the import instead of discarding it.**
+  The ingestion deadline is shared across the crawl, so on a site large enough
+  to spend it, the last resources inherited a near-zero per-fetch budget, timed
+  out, and took the whole import down — including pages already parsed. Hitting
+  the deadline after the entry page now stops collection, sets `truncated`, and
+  says so in the warnings, which is what `truncated` already meant for the page
+  cap. `barkk.se` goes from exit 1 to 25 pages, 33 assets and 4,708 CSS rules
+  with every skipped resource named.
+
 - **A release can no longer half-ship while every command reports success.** On
   2026-08-13 `@snabbsajt/cli@0.4.0` went to npm against a still-`0.3.0`
   `@snabbsajt/site-kit`, so `npm install @snabbsajt/cli` — the first command an

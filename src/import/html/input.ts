@@ -4,7 +4,7 @@ import { extractHtmlArchive } from "./archive";
 import { assetRecord, readLocalFile, resolveArchiveReference, resolveSameOrigin, type IngestedAsset } from "./assets";
 import { parseCssEvidence, type CssEvidence } from "./css";
 import { parseHtmlDocument, type FormEvidence, type HtmlDocumentInventory, type ScriptEvidence } from "./dom";
-import { safeFetch, type SafeFetchOptions, type SafeFetchResult } from "../net/safeFetch";
+import { SafeFetchError, safeFetch, type SafeFetchOptions, type SafeFetchResult } from "../net/safeFetch";
 
 export type HtmlInputLimits = {
   maxPages: number;
@@ -97,6 +97,18 @@ function localize(reference: string): string {
 function isMissing(error: unknown): boolean {
   return error instanceof Error && /not found/.test(error.message);
 }
+
+/** A single subordinate resource we could not read. The archive lane has always
+ *  treated this as a warning (`isMissing`); the URL lane threw, so one 429 on
+ *  one script aborted an entire real-site import. Only an ordinary HTTP status
+ *  becomes this error — every safe-fetch policy rejection, every origin escape,
+ *  and every ingestion-wide cap stays fatal, because those are the reasons the
+ *  crawl is bounded and safe at all. */
+class ResourceUnavailableError extends Error {}
+
+/** The one shared ingestion deadline. Fatal while fetching the entry URL — a
+ *  site we never read is not an import — and a graceful stop after that. */
+class IngestionDeadlineError extends Error {}
 
 function mergePageEvidence(result: HtmlIngestionResult, page: HtmlDocumentInventory): void {
   result.evidence.scripts.push(...page.evidence.scripts);
@@ -333,10 +345,23 @@ async function ingestUrl(input: string, options: HtmlIngestionOptions, limits: H
   };
   const fetched = new Map<string, SafeFetchResult>();
   const resourceKeys = new Set<string>();
+  const timeRemaining = (): number => limits.timeoutMs - (Date.now() - started);
   const assertTimeRemaining = (): number => {
-    const remaining = limits.timeoutMs - (Date.now() - started);
-    if (remaining <= 0) throw new Error(`ingestion timeout exceeded (${limits.timeoutMs}ms)`);
+    const remaining = timeRemaining();
+    if (remaining <= 0) throw new IngestionDeadlineError(`ingestion timeout exceeded (${limits.timeoutMs}ms)`);
     return remaining;
+  };
+  let deadlineReached = false;
+  /** Stop collecting, once, and say so. `truncated` already means "there was
+   *  more of this site than we took" for the page cap; the deadline is the
+   *  same statement for a different reason. */
+  const noteDeadline = (): void => {
+    if (deadlineReached) return;
+    deadlineReached = true;
+    result.truncated = true;
+    result.warnings.push(
+      `Stopped at the ingestion deadline (${limits.timeoutMs}ms); kept everything read before it.`,
+    );
   };
   const fetchResource = async (url: string, maxBytes: number): Promise<SafeFetchResult> => {
     const existing = fetched.get(url);
@@ -356,11 +381,42 @@ async function ingestUrl(input: string, options: HtmlIngestionOptions, limits: H
     if (selectedOrigin && new URL(response.finalUrl).origin !== selectedOrigin) {
       throw new Error(`resource left selected site origin ${selectedOrigin}: ${response.finalUrl}`);
     }
-    if (response.status < 200 || response.status >= 300) throw new Error(`HTTP ${response.status} for ${url}`);
+    if (response.status < 200 || response.status >= 300) {
+      throw new ResourceUnavailableError(`HTTP ${response.status} for ${url}`);
+    }
     result.totalBytes += response.body.byteLength;
     resourceKeys.add(url);
     fetched.set(url, response);
     return response;
+  };
+  /** Fetch a resource the import can do without. Returns null and records a
+   *  warning when it is merely unavailable or when time ran out; rethrows
+   *  everything else, so a policy refusal still fails the whole import. */
+  const tryFetchResource = async (url: string, maxBytes: number): Promise<SafeFetchResult | null> => {
+    if (deadlineReached || timeRemaining() <= 0) {
+      noteDeadline();
+      return null;
+    }
+    try {
+      return await fetchResource(url, maxBytes);
+    } catch (error) {
+      if (error instanceof IngestionDeadlineError) {
+        noteDeadline();
+        return null;
+      }
+      if (error instanceof ResourceUnavailableError) {
+        result.warnings.push(`Skipped unreachable resource: ${error.message}`);
+        return null;
+      }
+      // A per-resource read that ran out of its slice of the shared budget is
+      // one resource we could not read. Every other SafeFetchError code is a
+      // policy refusal (SSRF, unsafe destination) and must stay fatal.
+      if (error instanceof SafeFetchError && error.code === "TIMEOUT") {
+        result.warnings.push(`Skipped unreachable resource: ${error.message} for ${url}`);
+        return null;
+      }
+      throw error;
+    }
   };
 
   const first = await fetchResource(input, limits.maxHtmlBytes);
@@ -399,7 +455,10 @@ async function ingestUrl(input: string, options: HtmlIngestionOptions, limits: H
 
   while (pageQueue.length > 0) {
     const pageUrl = pageQueue.shift()!;
-    const response = await fetchResource(pageUrl, limits.maxHtmlBytes);
+    // The entry URL was fetched above and is fatal on failure; a linked page
+    // that answers 404/429 is one page missing, not a failed import.
+    const response = pageUrl === first.finalUrl ? first : await tryFetchResource(pageUrl, limits.maxHtmlBytes);
+    if (!response) continue;
     if (!isHtmlResponse(response)) {
       result.warnings.push(`Skipped non-HTML page candidate ${response.finalUrl} (${response.headers["content-type"] ?? "unknown content type"})`);
       continue;
@@ -437,29 +496,32 @@ async function ingestUrl(input: string, options: HtmlIngestionOptions, limits: H
       const list = scripts.get(url.href) ?? [];
       list.push(script); scripts.set(url.href, list);
     }
-    assertTimeRemaining();
+    if (timeRemaining() <= 0) { noteDeadline(); break; }
   }
   while (cssQueue.length > 0) {
     const url = cssQueue.shift()!;
-    const response = await fetchResource(url, limits.maxCssBytes);
+    const response = await tryFetchResource(url, limits.maxCssBytes);
+    if (!response) continue;
     const evidence = parseCssEvidence(TEXT_DECODER.decode(response.body), response.finalUrl);
     result.css.push(evidence);
     evidence.imports.forEach((reference) => queueCss(reference, response.finalUrl));
     evidence.media.forEach((reference) => queueAsset(reference, response.finalUrl));
-    assertTimeRemaining();
+    if (timeRemaining() <= 0) { noteDeadline(); break; }
   }
   for (const [url, scriptEvidence] of scripts) {
-    const response = await fetchResource(url, limits.maxScriptBytes);
+    const response = await tryFetchResource(url, limits.maxScriptBytes);
+    if (!response) continue;
     const text = TEXT_DECODER.decode(response.body).slice(0, EVIDENCE_TEXT_CAP);
     scriptEvidence.forEach((entry) => { entry.externalText = text; });
   }
   for (const url of assetQueue) {
-    const response = await fetchResource(url, limits.maxSingleAssetBytes);
+    const response = await tryFetchResource(url, limits.maxSingleAssetBytes);
+    if (!response) continue;
     const final = new URL(response.finalUrl);
     result.assets.push(assetRecord(final.pathname.slice(1) || basename(final.pathname), url, response.body, response.headers["content-type"]));
   }
   result.evidence.thirdPartyHosts = [...new Set(result.evidence.thirdPartyHosts)].sort();
-  assertTimeRemaining();
+  if (timeRemaining() <= 0) noteDeadline();
   return result;
 }
 
