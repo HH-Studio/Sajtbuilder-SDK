@@ -16,7 +16,7 @@
     "maxTotalAssetBytes": 209715200
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:1c9e70cb698a69b60c85419c433183e870e8d3e2f4139f984ab4fae3b5aea20e",
+  "hash": "sha256:b5b09de6bc0efd1b4125ccb669619c2edec80cd2d07399a8922ab90c46e44602",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1632,6 +1632,78 @@
                   },
                   "optional": true
                 },
+                "options": {
+                  "fieldType": {
+                    "type": "object",
+                    "value": {
+                      "asset": {
+                        "fieldType": {
+                          "type": "union",
+                          "value": [
+                            {
+                              "type": "literal",
+                              "value": "image"
+                            },
+                            {
+                              "type": "literal",
+                              "value": "video"
+                            }
+                          ]
+                        },
+                        "optional": true
+                      },
+                      "assetSide": {
+                        "fieldType": {
+                          "type": "union",
+                          "value": [
+                            {
+                              "type": "literal",
+                              "value": "start"
+                            },
+                            {
+                              "type": "literal",
+                              "value": "end"
+                            }
+                          ]
+                        },
+                        "optional": true
+                      },
+                      "assetStyle": {
+                        "fieldType": {
+                          "type": "union",
+                          "value": [
+                            {
+                              "type": "literal",
+                              "value": "default"
+                            },
+                            {
+                              "type": "literal",
+                              "value": "expand"
+                            }
+                          ]
+                        },
+                        "optional": true
+                      },
+                      "surface": {
+                        "fieldType": {
+                          "type": "union",
+                          "value": [
+                            {
+                              "type": "literal",
+                              "value": "plain"
+                            },
+                            {
+                              "type": "literal",
+                              "value": "card"
+                            }
+                          ]
+                        },
+                        "optional": true
+                      }
+                    }
+                  },
+                  "optional": true
+                },
                 "order": {
                   "fieldType": {
                     "type": "string"
@@ -1673,6 +1745,30 @@
                                       {
                                         "type": "literal",
                                         "value": "end"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "alignItems": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "start"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "center"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "end"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "stretch"
                                       }
                                     ]
                                   },
@@ -1932,6 +2028,30 @@
                                   },
                                   "optional": true
                                 },
+                                "alignItems": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "start"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "center"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "end"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "stretch"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
                                 "columns": {
                                   "fieldType": {
                                     "type": "number"
@@ -2181,6 +2301,30 @@
                                       {
                                         "type": "literal",
                                         "value": "end"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "alignItems": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "start"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "center"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "end"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "stretch"
                                       }
                                     ]
                                   },
@@ -2440,6 +2584,30 @@
                                   },
                                   "optional": true
                                 },
+                                "alignItems": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "start"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "center"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "end"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "stretch"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
                                 "columns": {
                                   "fieldType": {
                                     "type": "number"
@@ -2689,6 +2857,30 @@
                                       {
                                         "type": "literal",
                                         "value": "end"
+                                      }
+                                    ]
+                                  },
+                                  "optional": true
+                                },
+                                "alignItems": {
+                                  "fieldType": {
+                                    "type": "union",
+                                    "value": [
+                                      {
+                                        "type": "literal",
+                                        "value": "start"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "center"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "end"
+                                      },
+                                      {
+                                        "type": "literal",
+                                        "value": "stretch"
                                       }
                                     ]
                                   },
@@ -6149,6 +6341,30 @@
                                             },
                                             "optional": true
                                           },
+                                          "alignItems": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "start"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "center"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "end"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "stretch"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
                                           "columns": {
                                             "fieldType": {
                                               "type": "number"
@@ -6398,6 +6614,30 @@
                                                 {
                                                   "type": "literal",
                                                   "value": "end"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "alignItems": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "start"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "center"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "end"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "stretch"
                                                 }
                                               ]
                                             },
@@ -6657,6 +6897,30 @@
                                             },
                                             "optional": true
                                           },
+                                          "alignItems": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "start"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "center"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "end"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "stretch"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
                                           "columns": {
                                             "fieldType": {
                                               "type": "number"
@@ -6911,6 +7175,30 @@
                                             },
                                             "optional": true
                                           },
+                                          "alignItems": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "start"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "center"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "end"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "stretch"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
                                           "columns": {
                                             "fieldType": {
                                               "type": "number"
@@ -7160,6 +7448,30 @@
                                                 {
                                                   "type": "literal",
                                                   "value": "end"
+                                                }
+                                              ]
+                                            },
+                                            "optional": true
+                                          },
+                                          "alignItems": {
+                                            "fieldType": {
+                                              "type": "union",
+                                              "value": [
+                                                {
+                                                  "type": "literal",
+                                                  "value": "start"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "center"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "end"
+                                                },
+                                                {
+                                                  "type": "literal",
+                                                  "value": "stretch"
                                                 }
                                               ]
                                             },
@@ -7618,6 +7930,7 @@
         "image-left",
         "showcase",
         "split-head",
+        "stat-chips",
         "story-stats",
         "text-image",
         "text-only",
@@ -7640,6 +7953,8 @@
         "featured-work",
         "list",
         "mosaic",
+        "overlay-mosaic",
+        "picture-panel",
         "portfolio",
         "rail",
         "uniform",
@@ -7679,11 +7994,13 @@
         "boxed",
         "centered",
         "feature-tiles",
+        "glow-card",
         "gradient",
         "proof-row",
         "showpiece",
         "slab",
-        "split"
+        "split",
+        "ticker-band"
       ],
       "documents": [
         "grid",
@@ -7717,12 +8034,14 @@
       "footer": [
         "backdrop-contact",
         "backdrop-newsletter",
+        "brand-directory",
         "centered",
         "columns",
         "contact",
         "inset",
         "nested-card",
         "newsletter-box",
+        "newsletter-lede",
         "photo-directory-cta",
         "photo-newsletter",
         "promo-newsletter",
@@ -7743,12 +8062,17 @@
         "mosaic"
       ],
       "hero": [
+        "baseline-cta",
         "centered",
         "duo",
+        "facts-panel",
         "fan-cards",
+        "filmstrip",
         "gradient",
         "image-left",
         "image-right",
+        "inline-photos",
+        "inline-photos-left",
         "integration-masonry",
         "lattice-collage",
         "minimal",
@@ -7760,6 +8084,8 @@
         "overlay-light",
         "overlay-proof",
         "panel",
+        "photo-stack",
+        "photo-stack-left",
         "poster",
         "price-photo",
         "scatter",
@@ -7778,6 +8104,7 @@
         "figures",
         "grid-2",
         "grid-3",
+        "header-action",
         "icon-circles",
         "icon-list",
         "panel-cards",
@@ -7833,6 +8160,7 @@
         "centered",
         "inline",
         "orbits",
+        "panel-pill",
         "photo-hero"
       ],
       "opening-hours": [
@@ -7841,6 +8169,7 @@
         "table"
       ],
       "pricing": [
+        "lifted-cards",
         "packages",
         "rows",
         "simple-list",
@@ -7931,11 +8260,14 @@
         "grid",
         "grid-cta",
         "list",
+        "portrait-grid",
+        "portrait-grid-start",
         "portrait-reveal"
       ],
       "testimonials": [
         "card-carousel",
         "cards",
+        "feature-mosaic",
         "logos-quote",
         "marquee",
         "plain",

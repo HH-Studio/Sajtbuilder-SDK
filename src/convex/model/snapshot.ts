@@ -1,7 +1,12 @@
 import { v, type Infer } from "convex/values";
 import { themeTokens } from "./theme";
 import { resolvedSiteFonts } from "./fonts";
-import { sectionContent, sectionTypeLiteral, sectionLayoutValidator } from "./sections";
+import {
+  sectionContent,
+  sectionTypeLiteral,
+  sectionLayoutValidator,
+  sectionOptionsValidator,
+} from "./sections";
 import { sectionStyleOverrides } from "./slotStyle";
 import {
   address,
@@ -68,6 +73,10 @@ export const snapshotSection = v.object({
   motion: v.optional(sectionMotionValidator),
   layout: v.optional(sectionLayoutValidator),
   styleOverrides: v.optional(sectionStyleOverrides),
+  // Frozen at publish alongside layout/styleOverrides: the axes are part of how
+  // the band looks, so a published site must render them exactly as the draft
+  // did. Absent = the layout's own defaults, which is every older snapshot.
+  options: v.optional(sectionOptionsValidator),
   hiddenContentPaths: v.optional(v.array(v.string())),
   anchorId: v.optional(v.string()),
   content: sectionContent,

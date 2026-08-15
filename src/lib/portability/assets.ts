@@ -102,13 +102,36 @@ function remap(node: Json, map: AssetIdMap): Json | typeof DROP {
 }
 
 /**
- * Post-remap repair for the only section type with a *required* image ref:
- * `before-after` pairs (`{ before, after, label? }`, both images required and
- * living inside the `pairs` array). If a pair lost an image during remap, drop
- * that pair so the content stays schema-valid. Every other media ref is either
- * optional or an array element, so generic remap already leaves valid content.
+ * Post-remap repair for the two section types a dropped ref leaves *lying*.
+ *
+ * `before-after` pairs (`{ before, after, label? }`) need both images: a pair
+ * that lost one is not schema-valid, so it is dropped.
+ *
+ * `documents` items are schema-valid without their file — the ref is optional
+ * so a freshly added item validates before any upload — but an item that USED
+ * to have a file and lost it during remap is a download link with nothing
+ * behind it. The commit path is strict on purpose (`%PDF-` magic, size cap,
+ * quota), so a lost PDF is a real outcome, and an item promising a price list
+ * the visitor cannot open is worse than one we never claimed to have.
+ *
+ * `before` is the pre-remap content, and it is what tells those two cases
+ * apart: an item that never had a `document` is the owner's own placeholder
+ * and is left exactly where they put it. Without it, exporting a site with an
+ * unfilled document row and importing it back would silently delete the row.
+ * Omit `before` and the check is skipped rather than guessed at.
  */
-export function sanitizeAfterRemap(type: string, content: Json): Json {
+export function sanitizeAfterRemap(type: string, content: Json, before?: Json): Json {
+  if (type === "documents" && content && typeof content === "object" && before) {
+    const rec = content as Record<string, Json>;
+    const priorItems = (before as Record<string, Json>).items;
+    if (!Array.isArray(rec.items) || !Array.isArray(priorItems)) return content;
+    const hadDocument = (item: Json): boolean =>
+      !!item && typeof item === "object" && !!(item as Record<string, Json>).document;
+    // Remap drops a failed ref from its parent object but keeps the object, so
+    // the two arrays stay index-aligned.
+    const kept = rec.items.filter((item, i) => hadDocument(item) || !hadDocument(priorItems[i]));
+    return { ...rec, items: kept };
+  }
   if (type !== "before-after" || !content || typeof content !== "object") {
     return content;
   }

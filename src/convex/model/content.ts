@@ -163,6 +163,27 @@ export const openingDay = v.object({
 });
 export type OpeningDay = Infer<typeof openingDay>;
 
+/** One DATED exception to the weekly table — a holiday, a staff party, a day the
+ *  kitchen opens late. `date` is an ISO `YYYY-MM-DD` calendar day, never a
+ *  timestamp: an owner writes "24 December", not an instant, and the site's own
+ *  timezone decides when that day is.
+ *
+ *  Same open/closed vocabulary as `openingDay` so one renderer prints both. This
+ *  is a PROJECTION target: only the canonical restaurant facts write it today
+ *  (see `restaurantHoursMaterialize`), which is why there is no inline editor
+ *  for it — a section-local special day would be a second source of truth for
+ *  the fact a guest is most likely to be burned by. */
+export const openingSpecialDay = v.object({
+  date: v.string(), // "2026-12-24"
+  closed: v.boolean(),
+  open: v.optional(v.string()),
+  close: v.optional(v.string()),
+  breaks: v.optional(
+    v.array(v.object({ start: v.string(), end: v.string() })),
+  ),
+});
+export type OpeningSpecialDay = Infer<typeof openingSpecialDay>;
+
 /** A form field definition (contact / lead-form / booking). Field types are an
  *  allow-list - no arbitrary input rendering. */
 export const formField = v.object({

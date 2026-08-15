@@ -1,6 +1,10 @@
 import { v, type Infer } from "convex/values";
 import { themeTokens } from "./theme";
-import { sectionTypeLiteral, sectionLayoutValidator } from "./sections";
+import {
+  sectionTypeLiteral,
+  sectionLayoutValidator,
+  sectionOptionsValidator,
+} from "./sections";
 import { sectionStyleOverrides } from "./slotStyle";
 import {
   address,
@@ -316,6 +320,9 @@ export const portableSiteV1 = v.object({
       motion: v.optional(sectionMotionValidator),
       layout: v.optional(sectionLayoutValidator),
       styleOverrides: v.optional(sectionStyleOverrides),
+      // Bounded presentation axes on the layout. Optional keeps every older
+      // bundle valid; import re-validates against the registry before storage.
+      options: v.optional(sectionOptionsValidator),
       // Non-destructive optional-element visibility. Optional keeps older
       // bundles valid; import normalizes the bounded path list before storage.
       hiddenContentPaths: v.optional(v.array(v.string())),

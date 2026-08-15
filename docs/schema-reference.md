@@ -36,24 +36,24 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 
 | Type | Variants |
 | --- | --- |
-| `about` | `collage`, `image-left`, `showcase`, `split-head`, `story-stats`, `text-image`, `text-only`, `wide` |
+| `about` | `collage`, `image-left`, `showcase`, `split-head`, `stat-chips`, `story-stats`, `text-image`, `text-only`, `wide` |
 | `banner` | `bar`, `card`, `notice`, `split` |
 | `before-after` | `side-by-side`, `slider`, `stacked`, `wide` |
-| `bento` | `bento`, `featured-work`, `list`, `mosaic`, `portfolio`, `rail`, `uniform`, `work-index` |
+| `bento` | `bento`, `featured-work`, `list`, `mosaic`, `overlay-mosaic`, `picture-panel`, `portfolio`, `rail`, `uniform`, `work-index` |
 | `booking` | `button`, `inline` |
 | `certifications` | `badges`, `grid`, `ledger`, `list` |
 | `comparison` | `cards`, `features`, `plans`, `table` |
 | `comparison-slider` | `comparison-bars`, `comparison-cards`, `default` |
 | `contact` | `form-info`, `form-methods`, `form-panel`, `info-cards`, `info-only`, `info-strip`, `links` |
-| `cta-band` | `boxed`, `centered`, `feature-tiles`, `gradient`, `proof-row`, `showpiece`, `slab`, `split` |
+| `cta-band` | `boxed`, `centered`, `feature-tiles`, `glow-card`, `gradient`, `proof-row`, `showpiece`, `slab`, `split`, `ticker-band` |
 | `documents` | `grid`, `list` |
 | `external-product-grid` | `default`, `store-list`, `store-showcase` |
 | `faq` | `accordion`, `accordion-cta`, `beside-photo`, `cards`, `dashed`, `filled-rows`, `filtered`, `grouped`, `header-cta`, `numbered`, `outlined`, `split`, `two-column` |
 | `featured-product` | `default`, `spotlight-split`, `spotlight-strip` |
-| `footer` | `backdrop-contact`, `backdrop-newsletter`, `centered`, `columns`, `contact`, `inset`, `nested-card`, `newsletter-box`, `photo-directory-cta`, `photo-newsletter`, `promo-newsletter`, `ruled`, `simple`, `wordmark-contact`, `wordmark-cta`, `wordmark-directory`, `wordmark-newsletter` |
+| `footer` | `backdrop-contact`, `backdrop-newsletter`, `brand-directory`, `centered`, `columns`, `contact`, `inset`, `nested-card`, `newsletter-box`, `newsletter-lede`, `photo-directory-cta`, `photo-newsletter`, `promo-newsletter`, `ruled`, `simple`, `wordmark-contact`, `wordmark-cta`, `wordmark-directory`, `wordmark-newsletter` |
 | `gallery` | `carousel`, `full-bleed`, `grid-3`, `grid-4`, `lightbox`, `masonry`, `mosaic` |
-| `hero` | `centered`, `duo`, `fan-cards`, `gradient`, `image-left`, `image-right`, `integration-masonry`, `lattice-collage`, `minimal`, `overlay`, `overlay-full`, `overlay-full-left`, `overlay-full-left-centered`, `overlay-left`, `overlay-light`, `overlay-proof`, `panel`, `poster`, `price-photo`, `scatter`, `slideshow`, `split`, `split-bleed`, `spotlight`, `stage` |
-| `highlights` | `accent`, `alternating`, `checklist`, `chip-cards`, `credo`, `figures`, `grid-2`, `grid-3`, `icon-circles`, `icon-list`, `panel-cards`, `pillars`, `plain`, `ruled-columns`, `split-icons`, `stat-cards`, `values` |
+| `hero` | `baseline-cta`, `centered`, `duo`, `facts-panel`, `fan-cards`, `filmstrip`, `gradient`, `image-left`, `image-right`, `inline-photos`, `inline-photos-left`, `integration-masonry`, `lattice-collage`, `minimal`, `overlay`, `overlay-full`, `overlay-full-left`, `overlay-full-left-centered`, `overlay-left`, `overlay-light`, `overlay-proof`, `panel`, `photo-stack`, `photo-stack-left`, `poster`, `price-photo`, `scatter`, `slideshow`, `split`, `split-bleed`, `spotlight`, `stage` |
+| `highlights` | `accent`, `alternating`, `checklist`, `chip-cards`, `credo`, `figures`, `grid-2`, `grid-3`, `header-action`, `icon-circles`, `icon-list`, `panel-cards`, `pillars`, `plain`, `ruled-columns`, `split-icons`, `stat-cards`, `values` |
 | `illustration` | `default`, `inline`, `wide` |
 | `image` | `full`, `inset`, `wide` |
 | `imported` | `default` |
@@ -62,9 +62,9 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `legal` | `centered`, `document`, `paper` |
 | `location` | `address-only`, `map-card`, `map-first` |
 | `logos` | `grid`, `marquee`, `numbered-grid`, `row` |
-| `newsletter` | `boxed`, `centered`, `inline`, `orbits`, `photo-hero` |
+| `newsletter` | `boxed`, `centered`, `inline`, `orbits`, `panel-pill`, `photo-hero` |
 | `opening-hours` | `cards`, `compact`, `table` |
-| `pricing` | `packages`, `rows`, `simple-list`, `single`, `tiers-3`, `two-col` |
+| `pricing` | `lifted-cards`, `packages`, `rows`, `simple-list`, `single`, `tiers-3`, `two-col` |
 | `process` | `numbered-cards`, `steps-cta`, `steps-horizontal`, `steps-vertical`, `timeline` |
 | `product-grid` | `catalog-compact`, `catalog-list`, `default` |
 | `quote-flow` | `card`, `inline` |
@@ -76,8 +76,8 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `services` | `feature-cards`, `grid-2`, `grid-3`, `icon-grid`, `icon-grid-cta`, `labelled-cards`, `linked-cards`, `list`, `media-list`, `menu-grid`, `numbered`, `numbered-cells`, `numbered-split`, `photo-bento`, `ruled-grid`, `split`, `tiles` |
 | `social-proof` | `cards`, `divided`, `inline`, `split-grid`, `stats` |
 | `statement` | `bordered`, `centered`, `framed`, `lede`, `rule` |
-| `team` | `avatar-roster`, `cards`, `expanding-strips`, `grid`, `grid-cta`, `list`, `portrait-reveal` |
-| `testimonials` | `card-carousel`, `cards`, `logos-quote`, `marquee`, `plain`, `portrait`, `ragged`, `single`, `vertical-stack` |
+| `team` | `avatar-roster`, `cards`, `expanding-strips`, `grid`, `grid-cta`, `list`, `portrait-grid`, `portrait-grid-start`, `portrait-reveal` |
+| `testimonials` | `card-carousel`, `cards`, `feature-mosaic`, `logos-quote`, `marquee`, `plain`, `portrait`, `ragged`, `single`, `vertical-stack` |
 | `video` | `cinema`, `full`, `side` |
 
 ## Nested objects
@@ -253,6 +253,7 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `hiddenContentPaths?` | `string[]` |  |
 | `layout?` | `object` |  |
 | `motion?` | `"inherit" \| "none" \| "subtle" \| "full"` |  |
+| `options?` | `object` |  |
 | `order?` | `string` |  |
 | `pageTmpId` | `string` |  |
 | `styleOverrides?` | `Record<string, object>` |  |
@@ -273,6 +274,15 @@ declares - an unknown variant is rejected server-side, not silently ignored.
 | `paddingY?` | `"none" \| "compact" \| "normal" \| "spacious"` |  |
 | `parallax?` | `object` |  |
 | `width?` | `"normal" \| "wide" \| "full"` |  |
+
+### `sections[].options`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `asset?` | `"image" \| "video"` |  |
+| `assetSide?` | `"start" \| "end"` |  |
+| `assetStyle?` | `"default" \| "expand"` |  |
+| `surface?` | `"plain" \| "card"` |  |
 
 ### `services[]`
 
@@ -487,7 +497,7 @@ The smallest package the validator accepts: one page, one section, no assets.
       "tmpId": "s1",
       "pageTmpId": "p1",
       "type": "hero",
-      "variant": "centered",
+      "variant": "baseline-cta",
       "order": 0,
       "content": {
         "type": "hero",

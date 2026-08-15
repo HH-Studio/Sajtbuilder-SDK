@@ -54,6 +54,17 @@ export const SLOT_INK_KEYS = [
 export type SlotInk = (typeof SLOT_INK_KEYS)[number];
 
 export const SLOT_ALIGN_KEYS = ["start", "center", "end"] as const;
+/** Cross-axis alignment for a slot that lays its children out. `stretch` is
+ *  named rather than implied because it is a real choice an owner makes (cards
+ *  of equal height), not merely the absence of one — absence stays absent, and
+ *  the renderer's own fallback covers it. */
+export const SLOT_ALIGN_ITEMS_KEYS = [
+  "start",
+  "center",
+  "end",
+  "stretch",
+] as const;
+export type SlotAlignItems = (typeof SLOT_ALIGN_ITEMS_KEYS)[number];
 export const SLOT_TRANSFORM_KEYS = [
   "none",
   "uppercase",
@@ -95,6 +106,19 @@ export const slotTokens = v.object({
   spaceBottomStep: v.optional(v.number()),
   gapStep: v.optional(v.number()),
   radius: v.optional(v.union(...SLOT_RADIUS_KEYS.map((k) => v.literal(k)))),
+  /** How the children of a laying-out slot line up on the cross axis — the
+   *  difference between a row of cards that all stretch to the tallest one and
+   *  a row that sits on a common top edge.
+   *
+   *  A closed enum, and deliberately the four CSS already gives meaning to. The
+   *  absent value is not "default" but genuinely absent: the renderer's
+   *  fallback is whatever that container computes today, so a slot that never
+   *  sets this emits nothing and renders byte-identically. First of the P0-B
+   *  box-layout family (redesign spec §7.2); `direction`, `justify` and `wrap`
+   *  follow only as real container consumers are wired for them. */
+  alignItems: v.optional(
+    v.union(...SLOT_ALIGN_ITEMS_KEYS.map((k) => v.literal(k))),
+  ),
 
   // --- media --------------------------------------------------------------
   ratio: v.optional(v.union(...SLOT_RATIO_KEYS.map((k) => v.literal(k)))),

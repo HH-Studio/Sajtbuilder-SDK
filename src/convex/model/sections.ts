@@ -3,6 +3,7 @@ import {
   assetRef,
   ctaRef,
   openingDay,
+  openingSpecialDay,
   formField,
   address,
   bookingSource,
@@ -47,9 +48,11 @@ export const sectionContent = v.union(
     videoControls: v.optional(v.boolean()),
     primaryCta: v.optional(ctaRef),
     secondaryCta: v.optional(ctaRef),
-    // "overlay-proof" only - a short owner-authored fact anchored separately
-    // at the bottom of the photo. Optional by design: no claim appears unless
-    // the owner writes one, and the other hero layouts ignore it.
+    // "overlay-proof" and "centered" - a short owner-authored fact. Anchored at
+    // the bottom of the photo in the former; under the buttons in the latter,
+    // which is the same honest sentence for the hero that has no photo at all.
+    // Optional by design: no claim appears unless the owner writes one, and the
+    // other hero layouts ignore it.
     proofText: v.optional(v.string()),
     // "spotlight" only - small labelled chips floated over the hero media
     // ("Office cleaning", "Bathroom cleaning"). Names of things the business
@@ -57,6 +60,26 @@ export const sectionContent = v.union(
     // directly under it.
     tags: v.optional(
       v.array(v.object({ label: v.string(), icon: v.optional(siteIconKey) })),
+    ),
+    // "facts-panel" only - the short facts in the panel docked into the bottom
+    // corner of the photo ("15 ars erfarenhet", "Oppet 7 dagar", "Fran 890 kr").
+    // A cell renders `value` large over `label` when a value is stored and the
+    // icon over `label` when it is not, so the shape is DERIVED from what the
+    // owner filled in rather than from the cell's position in the row. Both
+    // leaves past `label` are optional, so a half-filled row degrades to a
+    // plain labelled strip instead of leaving holes.
+    //
+    // Deliberately not a reuse of `tags`: those are floated chips naming what
+    // the business does, and borrowing them would make "remove the third chip"
+    // mean "remove the third fact" on a different variant.
+    facts: v.optional(
+      v.array(
+        v.object({
+          label: v.string(),
+          value: v.optional(v.string()),
+          icon: v.optional(siteIconKey),
+        }),
+      ),
     ),
     // The EXTRA photo set: the ring around the headline in "scatter", the row
     // under it in "stage". Separate from `media` on purpose - `media` is the ONE
@@ -415,6 +438,19 @@ export const sectionContent = v.union(
     heading: v.optional(v.string()),
     note: v.optional(v.string()),
     days: v.array(openingDay),
+    // The three fields below are written ONLY by the publish-time projection of
+    // the canonical restaurant facts (`restaurantHoursMaterialize`), never by an
+    // editor. All optional, so every section authored before this — and every
+    // non-restaurant site — is unchanged and needs no migration.
+    //
+    // They exist because a weekly table alone can lie on exactly the days a
+    // guest most needs it: a restaurant that prints "Onsdag 11:00–22:00" on 24
+    // December has made a promise the kitchen is not there to keep.
+    timezone: v.optional(v.string()), // IANA; whose "today" the dated rows mean
+    specialHours: v.optional(v.array(openingSpecialDay)),
+    temporaryClosure: v.optional(
+      v.object({ startDate: v.string(), endDate: v.string() }),
+    ),
   }),
 
   v.object({
@@ -480,6 +516,15 @@ export const sectionContent = v.union(
     tiles: v.optional(
       v.array(v.object({ label: v.string(), icon: v.optional(siteIconKey) })),
     ),
+    // "ticker-band" only - the photo behind the closing ask. Optional, and the
+    // variant falls through to the ordinary centred band without it rather than
+    // drawing an empty dark box.
+    media: v.optional(assetRef),
+    // "ticker-band" only - the short phrases that scroll along the strip welded
+    // to the band's bottom edge ("Fri offert", "Rutavdrag", "Egna hantverkare").
+    // Owner-written words, never derived: this strip is the one place on the
+    // page where a sentence repeats forever, so it must be theirs.
+    ticker: v.optional(v.array(v.string())),
   }),
 
   v.object({
@@ -626,6 +671,12 @@ export const sectionContent = v.union(
       v.object({
         label: v.string(),
         logo: v.optional(assetRef),
+        // The same mark for a dark surface. `logos` allows the `dark` and
+        // `brand` tones, and a black wordmark on either of them is invisible -
+        // which is why a partner wall could look complete in the editor and be
+        // half-empty on the published page. Optional: without one, `logo` is
+        // used on every tone exactly as before.
+        logoDark: v.optional(assetRef),
       }),
     ),
   }),
@@ -1214,3 +1265,39 @@ export const sectionLayoutValidator = v.object({
   ),
 });
 export type SectionLayout = Infer<typeof sectionLayoutValidator>;
+
+// ---------------------------------------------------------------------------
+// Section OPTIONS - bounded presentation axes on the chosen layout.
+//
+// The alternative was modelling `Normal | Card` x `image | video` x
+// `Default | Expand` x `start | end` as variant keys, which multiplies the
+// registry by 16 and makes every combination need its own label, description,
+// thumbnail and copy-pool coverage. These are axes ON a layout, not layouts:
+// the test is whether the copy that fits one setting fits the other.
+//
+// Closed enums only - the same constraint that keeps `styleOverrides` from
+// becoming a CSS panel. Absent means "renders exactly as it does today", the
+// same non-breaking posture `layout` and `styleOverrides` took, so this ships
+// on every existing section without changing a single page.
+//
+// Which axes a given layout actually offers is declared in the registry
+// (`VariantDef.options`) and enforced server-side in `setSectionOptions` -
+// this validator is the outer bound, the registry is the inner one.
+// ---------------------------------------------------------------------------
+export const sectionOptionsValidator = v.object({
+  /** How the band's content block sits: flat on the section surface, or lifted
+   *  onto a card. */
+  surface: v.optional(v.union(v.literal("plain"), v.literal("card"))),
+  /** Which media the layout's asset slot shows. `video` routes through the
+   *  existing allow-listed embed path (`lib/sections/videoEmbed.ts`); it is
+   *  never an arbitrary iframe. */
+  asset: v.optional(v.union(v.literal("image"), v.literal("video"))),
+  /** Whether the asset sits inside the measure or expands past it. */
+  assetStyle: v.optional(v.union(v.literal("default"), v.literal("expand"))),
+  /** Which READING side the asset sits on. `start`/`end`, never left/right:
+   *  `ar` and `fa` are published site languages and `SiteShell` sets
+   *  `dir="rtl"`, so a physical side pins a mirrored layout to the wrong edge
+   *  while looking perfect in Swedish (design rule 9b). */
+  assetSide: v.optional(v.union(v.literal("start"), v.literal("end"))),
+});
+export type SectionOptions = Infer<typeof sectionOptionsValidator>;
