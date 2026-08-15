@@ -50,6 +50,15 @@ that validated against an older CLI still validates against a newer one.
 
 ### Fixed
 
+- **A gallery the mapper had already built reported itself as unconvertible.**
+  In zip mode a page is parsed against `https://archive.invalid/<path>` and its
+  references are then localized to archive paths, so matching the two raw
+  strings found nothing: the behaviour layer could not see that its gallery
+  evidence was already a `gallery` section and filed a review item against it.
+  Both lookups now go through the same normalizer, and a band the mapper built
+  from the page's own structure cites the agreeing evidence instead of leaving
+  it to the catch-all.
+
 - **`playwright` is external to the build.** The optional browser dependency of
   `site measure` was being bundled, which broke `bun run build` wherever a
   partial `playwright-core` was resolvable.

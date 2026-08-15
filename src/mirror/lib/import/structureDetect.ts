@@ -1592,3 +1592,46 @@ export function detectLooseList(
   }
   return null;
 }
+
+// --- an explicitly grouped gallery ------------------------------------------
+
+/** Wrapper classes/ids that mean "these pictures belong together as a gallery".
+ *  Deliberately narrow: a `grid` or a `row` is a layout, a `gallery` is a
+ *  statement about the content. */
+const GALLERY_BLOCK =
+  /(?:^|[\s_"'-])(?:gallery|galleri|bildgalleri|photo-?grid|image-?grid|portfolio-?grid|lightbox)(?:$|[\s_"'-])/i;
+
+/**
+ * Pictures the SOURCE grouped as a gallery, in document order.
+ *
+ * Why this exists: the gallery band was built from whatever the hero, About and
+ * the picture-owning detectors left over, so a page with exactly three
+ * photographs inside a `.gallery` wrapper lost its gallery — the hero took one,
+ * About took another, and the third had nowhere to go and was reported as
+ * "never referenced". The source had already said those three belong together,
+ * and an explicit grouping outranks our ranking.
+ *
+ * Returns null below three pictures: a gallery is three photographs, and one or
+ * two inside a wrapper is a layout choice, not a band. Chrome is excluded — a
+ * footer's partner strip is not this page's gallery.
+ */
+export function detectGalleryGroup(html: string, baseUrl: string): string[] | null {
+  const { html: body, offset } = bodyOf(html);
+  const chrome = chromeRanges(html);
+  for (const block of balancedBlocks(body, "div|section|ul|figure")) {
+    if (!GALLERY_BLOCK.test(block.attrs)) continue;
+    if (inChrome(offset + block.at, chrome)) continue;
+    const urls: string[] = [];
+    for (const img of block.inner.matchAll(/<img\b([^>]*)>/gi)) {
+      const src =
+        img[1].match(/\bsrc=["']([^"']+)["']/i)?.[1] ??
+        img[1].match(/\bdata-src=["']([^"']+)["']/i)?.[1];
+      if (!src || /^data:/i.test(src)) continue;
+      const url = absolute(decode(src), baseUrl);
+      if (url && !urls.includes(url)) urls.push(url);
+      if (urls.length >= 12) break;
+    }
+    if (urls.length >= 3) return urls;
+  }
+  return null;
+}

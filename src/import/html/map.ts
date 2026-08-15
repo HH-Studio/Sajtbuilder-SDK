@@ -20,7 +20,7 @@ import {
 import { detectHtmlBehavior, type BehaviorSignal } from "./behavior";
 import type { HtmlDocumentInventory } from "./dom";
 import type { HtmlIngestionResult } from "./input";
-import { buildSiteFromMirror } from "./sections";
+import { assetKeys, buildSiteFromMirror } from "./sections";
 
 export type HtmlMappedAssetFile = { fileName: string; bytes: Uint8Array };
 export type HtmlMappingResult = {
@@ -196,8 +196,16 @@ export function mapHtmlIngestion(input: HtmlIngestionResult, options: HtmlMappin
    *  adds from behaviour evidence points at the blob already in the package. */
   const assetByReference = new Map<string, string>();
   for (const asset of assets) {
-    const ingested = input.assets.find((entry) => entry.source === asset.url || entry.path === asset.url);
-    for (const key of [asset.url, ingested?.path, ingested?.source]) {
+    // Every spelling, through the same normalizer the reconciliation used. A
+    // zip's page is parsed against `https://archive.invalid/<path>` and then
+    // localized to the archive path, so comparing the two raw strings finds
+    // nothing — and a gallery the mapper had already built reported itself as
+    // "not enough importable blobs".
+    const keys = new Set(assetKeys(asset.url ?? ""));
+    const ingested = input.assets.find((entry) =>
+      [...assetKeys(entry.source), ...assetKeys(entry.path)].some((key) => keys.has(key)),
+    );
+    for (const key of [...keys, ...(ingested ? [...assetKeys(ingested.path), ...assetKeys(ingested.source)] : [])]) {
       if (key && !assetByReference.has(key)) assetByReference.set(key, asset.exportId);
     }
   }
@@ -231,7 +239,21 @@ export function mapHtmlIngestion(input: HtmlIngestionResult, options: HtmlMappin
   ): "added" | "already" | "no-page" => {
     const page = pages[pageIndex];
     if (!page) return "no-page";
-    if (sections.some((section) => section.pageTmpId === page.tmpId && section.type === type)) return "already";
+    if (sections.some((section) => section.pageTmpId === page.tmpId && section.type === type)) {
+      // The mapper read one off the page itself, which is the better band — it
+      // kept the source's own grouping. Still CITE the evidence: an uncited
+      // signal falls through to the catch-all below and reports a converted
+      // gallery as "no safe native conversion was selected".
+      items.push({
+        id: stableId("section-already", items.length),
+        disposition: "converted",
+        reason: `The source's own ${type} band was already mapped from the page structure; this evidence agrees with it`,
+        evidenceIds,
+        target: { kind: "section", id: `${page.tmpId}:${type}` },
+        blocking: false,
+      });
+      return "already";
+    }
     const order = generateKeyBetween(lastOrderByPage.get(page.tmpId) ?? null, null);
     lastOrderByPage.set(page.tmpId, order);
     sections.push({

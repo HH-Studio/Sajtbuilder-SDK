@@ -49,6 +49,7 @@ import {
   detectCtaBand,
   detectDocuments,
   detectFormFields,
+  detectGalleryGroup,
   detectIllustration,
   detectInstagram,
   detectLegal,
@@ -1134,6 +1135,12 @@ function buildPageSections(
   // now — the source's whole point, thrown away at the last step.
   const beforeAfter = detectBeforeAfter(html, baseUrl);
   const ranked = rankedPhotos(candidates);
+  // Pictures the SOURCE grouped as a gallery. An explicit grouping outranks our
+  // ranking for one decision only — which photo the hero takes — because the
+  // hero used to eat a member of a three-picture gallery, leaving two, which is
+  // one short of a gallery: the band vanished and the third photo was reported
+  // as never referenced. Verified on a real salon page.
+  const galleryGroup = detectGalleryGroup(html, baseUrl);
   // A captioned <figure> is owned the same way, and for the same reason: the
   // caption is the source telling us this picture carries meaning, and every
   // band that could otherwise take it - hero, About, gallery - stores the
@@ -1147,7 +1154,24 @@ function buildPageSections(
     ...captioned.map((f) => f.url),
     ...(beforeAfter?.pairs.flatMap((p) => [p.beforeUrl, p.afterUrl]) ?? []),
   ]);
-  const photos = ranked.filter((c) => !ownedUrls.has(c.url));
+  const photos = (() => {
+    const free = ranked.filter((c) => !ownedUrls.has(c.url));
+    if (!galleryGroup) return free;
+    const grouped = new Set(galleryGroup);
+    const loose = free.filter((c) => !grouped.has(c.url));
+    const inGroup = free.filter((c) => grouped.has(c.url));
+    // Loose photos first, so the hero takes one of those and the group stays
+    // whole. Below three the group is not a gallery anyway and the old order
+    // stands.
+    return inGroup.length >= 3 ? [...loose, ...inGroup] : free;
+  })();
+  /** True when every photograph on the page belongs to the source's gallery.
+   *  Then the hero goes text-only: three pictures the owner grouped beat a hero
+   *  photo plus two orphans, and the same picture must not appear twice. */
+  const heroYieldsToGallery =
+    galleryGroup !== null &&
+    ranked.filter((c) => !ownedUrls.has(c.url) && !new Set(galleryGroup).has(c.url)).length === 0 &&
+    ranked.filter((c) => !ownedUrls.has(c.url)).length >= 3;
   // Each image keeps the alt the SOURCE wrote. Falling back to the business name
   // on every image (the old behaviour) is worse than useless for a screen
   // reader: it says the same thing eight times and describes none of them.
@@ -1200,14 +1224,15 @@ function buildPageSections(
   // Hero - name + tagline + first image. Variant mirrors the source layout
   // (image-left/right/centered/overlay) so the imported hero feels familiar; a
   // source with no hero image falls back to a text-only "centered" hero.
+  const heroImageId = heroYieldsToGallery ? undefined : imageIds[0];
   built.push({
     type: "hero",
-    variant: imageIds[0] ? heroVariant : "centered",
+    variant: heroImageId ? heroVariant : "centered",
     content: {
       type: "hero",
       headline: name,
       ...(description ? { subheadline: description.slice(0, HERO_SUBHEADLINE_CHARS) } : {}),
-      ...(imageIds[0] ? { media: { assetId: imageIds[0], alt: altOf(imageIds[0]) } } : {}),
+      ...(heroImageId ? { media: { assetId: heroImageId, alt: altOf(heroImageId) } } : {}),
     },
   });
 
@@ -1243,7 +1268,7 @@ function buildPageSections(
   //   3       -> exactly one gallery. About takes none rather than breaking it.
   //   4+      -> About takes the LAST, so the gallery keeps a contiguous run of
   //              at least 3 and no photo appears twice on the page.
-  const galleryPool = imageIds.slice(imageIds[0] ? 1 : 0);
+  const galleryPool = heroYieldsToGallery ? imageIds : imageIds.slice(imageIds[0] ? 1 : 0);
   const aboutImage = !aboutBody
     ? undefined
     : galleryPool.length <= 2

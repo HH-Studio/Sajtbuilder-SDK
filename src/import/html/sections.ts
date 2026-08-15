@@ -59,7 +59,7 @@ const MAX_SCRIPT_CHARS = 512 * 1024;
  *  read out of the markup finds the blob the ingester stored. Zip pages are
  *  parsed against `https://archive.invalid/<path>` and then localized to the
  *  archive path, so both spellings have to resolve to the same file. */
-function assetKeys(value: string): string[] {
+export function assetKeys(value: string): string[] {
   const keys = new Set<string>([value]);
   const withoutQuery = value.split(/[?#]/, 1)[0]!;
   keys.add(withoutQuery);

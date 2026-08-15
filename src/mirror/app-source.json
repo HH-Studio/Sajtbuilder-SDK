@@ -1,5 +1,5 @@
 {
-  "commit": "c137f2d60ba7f0ca2a095acd7ad5770c666c3339",
+  "commit": "a0bc0fa64b872a26cb17d0284ed199baf6aa3b26",
   "files": {
     "convex/model/serviceSuggestions.ts": {
       "appSha256": "2adb371e1359f6a6b90f4ecbb0af0a1673b4f500e77cfc670d67268e38e5a89b",
@@ -26,8 +26,8 @@
       "mirrorSha256": "2f332a7d09c632a064a1b544db361d34578db5a189a563235a3fcf5f6cb4e9c1"
     },
     "lib/import/htmlToSections.ts": {
-      "appSha256": "d32e9ed736c10d5c805be9e07a79367814d18c0ea1800115e355629d644bb66f",
-      "mirrorSha256": "23ffe5f17c3c508c0ee09c75875b49cb878dd340621b30382e24d42c4002a1a6"
+      "appSha256": "cb9e0eac06d5dfe8b079153af376f6846320a08b2132372662d2d9a4a65e8b19",
+      "mirrorSha256": "5e554667a070651e6692a77a410b01e348f051222bd72a64780f76f3e86cef22"
     },
     "lib/import/imageCandidates.ts": {
       "appSha256": "8f259e32f15208dec8ca33e70cbb68f2ed127a7f12fba024f10a825a38093e8e",
@@ -58,8 +58,8 @@
       "mirrorSha256": "4228e3fa463d882d3a160a491bd5a4c27b602b389b19050bffd3c6dd78f67729"
     },
     "lib/import/structureDetect.ts": {
-      "appSha256": "0c0a1f88545aca5f82163dfcb4f6ae5845cedc922615c65d74acf0400adaa0ca",
-      "mirrorSha256": "e9ed9e7450d3fc5421269d37fd1901a8b952cca14eaa2e935427f0d1ae483871"
+      "appSha256": "bb205b84bc3965a8f46fe3ddfbd142cff026b48ce938355c85ef52d2fa6b7577",
+      "mirrorSha256": "f8ee767eb6efd7e0fbb6f2a70e03d40e6aaa27e5f5fbaf62f613484fbc731a1e"
     },
     "lib/net/url.ts": {
       "appSha256": "3c36028c3dd7a8b263cd33b7dda99f4afa0d5f05d64e8691f2247c20165d4b63",
