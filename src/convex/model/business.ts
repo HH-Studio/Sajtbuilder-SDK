@@ -240,6 +240,15 @@ export const SKIP_GOAL_BY_VERTICAL: Partial<Record<Vertical, Goal>> = {
 export const skipGoalFor = (v: Vertical | "" | undefined): Goal =>
   (v && SKIP_GOAL_BY_VERTICAL[v]) || "show_services";
 
+/** Hard ceiling on the owner's "vad gör er annorlunda" sentence. NOT a UI limit
+ *  — the field shows no counter and no `maxLength` (owner directive
+ *  2026-08-06) — just the abuse stop every free-text field needs. One number
+ *  for all three enforcement points (`patchDraft`, `differentiatorLead`, the
+ *  preview clamp) so the draft, the live preview and the generated site can
+ *  never truncate the same sentence at three different lengths. Kept in step
+ *  with the about field's 600. */
+export const DIFFERENTIATOR_LIMIT = 600;
+
 /** Admin UI languages — handwritten dictionary in lib/i18n.ts. Do not widen
  *  without translating the whole admin app. Customer websites use SITE_LOCALES. */
 export const LOCALES = ["sv", "en", "pl"] as const;
