@@ -38,14 +38,15 @@
   ],
   "scripts": {
     "build": "bun run build:site-kit && bun run --cwd packages/cli build",
-    "build:site-kit": "tsup src/index.ts src/cli.ts src/lib/site-kit/localFiles.ts --format esm --dts --clean && mkdir -p packages/site-kit/dist && cp -R dist/. packages/site-kit/dist/",
+    "build:site-kit": "tsup src/index.ts src/cli.ts src/lib/site-kit/localFiles.ts --format esm --dts --clean --external playwright && mkdir -p packages/site-kit/dist && cp -R dist/. packages/site-kit/dist/",
     "test": "vitest run && bun run --cwd packages/cli test",
     "typecheck": "tsc --noEmit && bun run --cwd packages/cli typecheck",
     "contract:check": "bun scripts/sync-contract.ts --check",
+    "mirror:check": "bun scripts/mirror-import.ts --check",
     "docs:schema": "bun scripts/gen-schema-reference.ts",
     "docs:schema:check": "bun scripts/gen-schema-reference.ts --check",
     "release:assets": "bun scripts/package-skill-assets.ts",
-    "check": "bun run build && bun run typecheck && bun run test && bun run contract:check && bun run docs:schema:check && bun run skills:manifest:check",
+    "check": "bun run build && bun run typecheck && bun run test && bun run mirror:check && bun run contract:check && bun run docs:schema:check && bun run skills:manifest:check",
     "prepare": "npm run build",
     "skills:manifest": "bun scripts/gen-skill-manifest.ts",
     "skills:manifest:check": "bun scripts/gen-skill-manifest.ts --check"

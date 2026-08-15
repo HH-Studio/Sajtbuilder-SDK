@@ -5,6 +5,7 @@ import { SECTION_REGISTRY } from "../../lib/sections/registry";
 import { validateSitePackage, type SiteKitReport } from "../../lib/site-kit/validate";
 import type { EvidenceItemV1 } from "../evidence";
 import { mapHtmlIngestion, type HtmlMappedAssetFile } from "../html/map";
+import { imageDimensions, imageExtension } from "../html/imageBytes";
 import type { HtmlIngestionResult } from "../html/input";
 import { IMPORT_DISPOSITIONS, IMPORT_REPORT_FORMAT, IMPORT_REPORT_FORMAT_VERSION, IMPORT_REPORT_REVISION, PORTABLE_SITE_FORMAT_VERSION, type ImportDisposition, type ImportReportItemV1, type ImportReportV1, validateImportReport } from "../report";
 import type { WxrDocument, WxrItem } from "./model";
@@ -91,6 +92,39 @@ export function mapWordpressImport(wxr: WxrDocument, html: HtmlIngestionResult, 
   const evidenceFor = (item: WxrItem) => evidence[wxrItems.indexOf(item)]!.id;
   const items: ImportReportItemV1[] = [];
 
+  // WXR names attachments the crawled pages may never show — a featured image
+  // on a post whose public URL we did not fetch, a gallery shortcode's ids. The
+  // HTML mapping only declares the images its own SECTIONS reference, so those
+  // attachments have to be declared here, with the blob the ingester already
+  // holds. Without this a featured image silently vanished the moment the
+  // section mapper stopped declaring every ingested file.
+  const assets: PortableSiteV1["assets"] = [...htmlMapped.site.assets];
+  const assetFiles: HtmlMappedAssetFile[] = [...htmlMapped.assetFiles];
+  let mintedAssets = 0;
+  const declareAttachment = (url: string, alt: string): string | undefined => {
+    const existing = assets.find((asset) => asset.url === url);
+    if (existing) return existing.exportId;
+    const ingested = html.assets.find((asset) => asset.source === url || asset.path === url);
+    if (!ingested || ingested.kind !== "image") return undefined;
+    mintedAssets += 1;
+    const exportId = `wxr-media-${mintedAssets}`;
+    const measured = imageDimensions(ingested.bytes, ingested.mediaType);
+    assets.push({
+      exportId,
+      url,
+      width: measured?.width ?? 1600,
+      height: measured?.height ?? 1066,
+      mimeType: ingested.mediaType,
+      kind: "image",
+      alt: alt.slice(0, 200),
+    });
+    assetFiles.push({
+      fileName: `${exportId}${imageExtension(ingested.path, ingested.mediaType)}`,
+      bytes: ingested.bytes,
+    });
+    return exportId;
+  };
+
   const usedSlugs = new Set<string>();
   let homeAssigned = false;
   const pages: PortableSiteV1["pages"] = wxrItems.map((item, index) => {
@@ -105,8 +139,8 @@ export function mapWordpressImport(wxr: WxrDocument, html: HtmlIngestionResult, 
     const media = item.featuredMediaSourceId
       ? wxr.items.find((candidate) => candidate.type === "attachment" && candidate.sourceId === item.featuredMediaSourceId)
       : undefined;
-    const portableAsset = media?.attachmentUrl
-      ? htmlMapped.site.assets.find((asset) => asset.url === media.attachmentUrl)
+    const portableAssetId = media?.attachmentUrl
+      ? declareAttachment(media.attachmentUrl, clean(item.title, 200))
       : undefined;
     const isDraft = item.status !== "publish";
     items.push({
@@ -120,7 +154,7 @@ export function mapWordpressImport(wxr: WxrDocument, html: HtmlIngestionResult, 
     if (item.terms.length > 0) {
       items.push({ id: `taxonomy-${item.sourceId}`, disposition: "manual", reason: `Preserved ${item.terms.length} WordPress taxonomy relationship(s) in evidence; SnabbSajt v1 has no category/tag fields`, evidenceIds: [evidenceFor(item)], blocking: false });
     }
-    if (item.featuredMediaSourceId && !portableAsset) {
+    if (item.featuredMediaSourceId && !portableAssetId) {
       items.push({ id: `media-${item.sourceId}`, disposition: "missing", reason: `Featured media ${item.featuredMediaSourceId} was not available as a verified blob from the public crawl`, evidenceIds: [evidenceFor(item)], blocking: false });
     }
     if (item.status === "publish" && !publishedAt(item)) {
@@ -134,7 +168,7 @@ export function mapWordpressImport(wxr: WxrDocument, html: HtmlIngestionResult, 
       showInNav: item.type === "page" && item.status === "publish",
       pageType: item.type as "page" | "post",
       ...(item.type === "post" ? { collectionTmpId: "wordpress-blog", excerpt: clean(item.excerpt || item.content, 300), ...(author ? { author } : {}) } : {}),
-      ...(portableAsset ? { featuredImage: { assetId: portableAsset.exportId, alt: clean(media?.title || item.title, 200) } } : {}),
+      ...(portableAssetId ? { featuredImage: { assetId: portableAssetId, alt: clean(media?.title || item.title, 200) } } : {}),
       ...(publishedAt(item) ? { firstPublishedAt: publishedAt(item) } : {}),
       ...(isDraft ? { excludeFromPublish: true } : {}),
       seo: {
@@ -153,8 +187,8 @@ export function mapWordpressImport(wxr: WxrDocument, html: HtmlIngestionResult, 
   const lastOrder = new Map<string, string | null>();
   const assetByAttachmentId = new Map(wxr.items.flatMap((item) => {
     if (item.type !== "attachment" || !item.attachmentUrl) return [];
-    const asset = htmlMapped.site.assets.find((candidate) => candidate.url === item.attachmentUrl);
-    return asset ? [[item.sourceId, asset.exportId] as const] : [];
+    const exportId = declareAttachment(item.attachmentUrl, clean(item.title, 200));
+    return exportId ? [[item.sourceId, exportId] as const] : [];
   }));
   const addSection = (pageTmpId: string, type: "hero" | "rich-text" | "gallery" | "footer", content: unknown) => {
     const order = generateKeyBetween(lastOrder.get(pageTmpId) ?? null, null);
@@ -241,10 +275,10 @@ export function mapWordpressImport(wxr: WxrDocument, html: HtmlIngestionResult, 
     redirects,
     sections,
     fonts: [],
-    assets: htmlMapped.site.assets,
+    assets,
   };
-  const validation = validateSitePackage(site, { assetFileNames: new Set(htmlMapped.assetFiles.map((asset) => asset.fileName)), fontFileNames: new Set() });
+  const validation = validateSitePackage(site, { assetFileNames: new Set(assetFiles.map((asset) => asset.fileName)), fontFileNames: new Set() });
   const reportValidation = validateImportReport(report);
   if (!reportValidation.ok) throw new Error(`generated an invalid WordPress report: ${reportValidation.issues[0]?.path} ${reportValidation.issues[0]?.message}`);
-  return { site, report, evidence, validation, assetFiles: htmlMapped.assetFiles, conflicts };
+  return { site, report, evidence, validation, assetFiles, conflicts };
 }

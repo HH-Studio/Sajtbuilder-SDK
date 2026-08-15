@@ -19,6 +19,15 @@ export type HtmlEvidence = {
 
 export type HtmlDocumentInventory = {
   url: string;
+  /** The URL the document was PARSED against, kept even when `url` is later
+   *  rewritten to an archive path (zip ingestion localizes every reference).
+   *  The section mapper resolves relative hrefs against this, so it must stay
+   *  a real absolute URL. */
+  baseUrl: string;
+  /** The source document, verbatim and already bounded by `maxHtmlBytes`.
+   *  The mapper reads real structure out of the markup — headings, repeats,
+   *  tables, figures — which no flattened inventory can express. */
+  html: string;
   title: string;
   text: string;
   headings: Array<{ level: number; text: string }>;
@@ -380,6 +389,8 @@ export function parseHtmlDocument(html: string, baseUrl: string): HtmlDocumentIn
 
   return {
     url: documentUrl.href,
+    baseUrl: base.href,
+    html,
     title,
     text: compact(descendantText(document, true)),
     headings,

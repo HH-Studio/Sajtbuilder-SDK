@@ -247,8 +247,20 @@ describe("snabbsajt site CLI", () => {
     expect(refusal.stderr).toContain("deterministic import findings must remain unchanged");
 
     const blockedDir = join(root, "blocked");
-    const longSource = join(root, "long.html");
-    writeFileSync(longSource, `<title>Long</title><h1>Long</h1><p>${"A".repeat(2_000)}</p>`);
+    // A source that genuinely blocks: more linked pages than the ingestion cap
+    // allows, so the draft is incomplete and the report says so. (It used to be
+    // one oversized paragraph, which the section mapper now carries into an
+    // About band instead of truncating.)
+    const longSource = join(root, "wide", "index.html");
+    mkdirSync(join(root, "wide"), { recursive: true });
+    const linked = Array.from({ length: 40 }, (_, index) => `page-${index + 1}.html`);
+    writeFileSync(
+      longSource,
+      `<title>Wide</title><h1>Wide</h1>${linked.map((name) => `<a href="${name}">${name}</a>`).join("")}`,
+    );
+    for (const name of linked) {
+      writeFileSync(join(root, "wide", name), `<title>${name}</title><h1>${name}</h1><p>En sida till i en sajt som har fler sidor an vi hamtar.</p>`);
+    }
     expect(runJson(["site", "import", "html", longSource, "-o", blockedDir])).toMatchObject({ status: "blocked" });
     const blockedReportPath = join(blockedDir, "import-report.json");
     const downgraded = JSON.parse(readFileSync(blockedReportPath, "utf8"));

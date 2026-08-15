@@ -12,6 +12,48 @@ that validated against an older CLI still validates against a newer one.
 
 ## [Unreleased]
 
+### Changed
+
+- **`snabbsajt site import html` now builds its sections with the app's own
+  section mapper, mirrored into `src/mirror`.** The CLI carried a mapper of its
+  own that emitted a fixed hero → rich-text → footer on every page and never
+  read the source, so a nine-block page converted to three sections while the
+  in-app import of the same page produced services, pricing, gallery and
+  contact bands. One product, two answers, and the CLI had the wrong one.
+
+  `scripts/mirror-import.ts` copies the app's pure detector modules and rewrites
+  their imports onto the mirrors this package already carries, so there is
+  exactly one `SECTION_REGISTRY` and one portable schema in the bundle. The
+  mirror is generated: `bun run mirror:check` fails when a mirrored file is
+  edited by hand, and CI additionally checks out the app at the pinned commit
+  and fails when the app has moved on.
+
+  What stays this package's job is what the app has no equivalent for: real
+  blobs (an asset the mapper registered but the package cannot back is removed,
+  along with the band that used it, rather than shipped pointing at nothing),
+  real pixel dimensions read from those blobs, verified-only tracking ids, and
+  the loss accounting in the report.
+
+  Measured on a real client site (a Swedish single-page therapist site exported
+  from Webflow): **3 sections → 6** (hero · rich-text · highlights · pricing ·
+  contact · footer), **0 usable photographs → 2** with the owner's own picture
+  in the hero, the price list imported instead of lost, phone and email
+  extracted, and the report went from `ready` / publish-ready to
+  `review_required` naming the 6 paragraphs and 1 heading that genuinely did not
+  come across.
+
+- **The report accounts for lost COPY, not only lost headings.** A page of
+  unbroken paragraphs can lose every word of it without losing a heading, and
+  the old accounting had nothing to say about that. Each page now compares its
+  own paragraphs with what the imported sections render, and reports the ones
+  that are missing.
+
+### Fixed
+
+- **`playwright` is external to the build.** The optional browser dependency of
+  `site measure` was being bundled, which broke `bun run build` wherever a
+  partial `playwright-core` was resolvable.
+
 ### Added
 
 - **Skills 1.3.0: an entry-point skill, and reference material that ships with

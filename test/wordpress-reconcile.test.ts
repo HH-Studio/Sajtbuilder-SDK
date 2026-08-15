@@ -51,8 +51,15 @@ describe("WordPress URL + WXR reconciliation", () => {
     expect(result.site.pages.filter((page) => page.excludeFromPublish)).toHaveLength(2);
     expect(result.site.contentCollections).toEqual([{ tmpId: "wordpress-blog", kind: "blog", name: "Blog", slugPrefix: "news", order: 0 }]);
     expect(result.site.pages.find((page) => page.tmpId === "wxr-201")?.seo?.metaTitle).toBe("Synthetic spring guide");
-    expect(result.site.pages.find((page) => page.tmpId === "wxr-201")?.featuredImage?.assetId).toBe("image-1");
+    // The section mapper declares the images its own sections show; a WXR
+    // attachment the crawl never rendered is declared by the WordPress mapper
+    // itself, which is what `wxr-media-*` marks.
+    expect(result.site.pages.find((page) => page.tmpId === "wxr-201")?.featuredImage?.assetId).toBe("wxr-media-1");
     expect(result.site.assets).toHaveLength(3);
+    // Every declared asset is backed by exactly one blob in the package.
+    for (const asset of result.site.assets) {
+      expect(result.assetFiles.filter((file) => file.fileName.startsWith(`${asset.exportId}.`))).toHaveLength(1);
+    }
     expect(result.site.sections.some((section) => section.pageTmpId === "wxr-104" && section.type === "gallery")).toBe(true);
     expect(result.site.redirects?.some((redirect) => redirect.fromPath === "2024/01/spring-guide-01" && redirect.toPath === "news/spring-guide-01")).toBe(true);
     expect(result.site.redirects?.some((redirect) => redirect.fromPath === "retired-guide-a")).toBe(false);

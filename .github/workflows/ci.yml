@@ -33,6 +33,20 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run check
       - run: bun scripts/sync-contract.ts --check-app-contract .canonical-app
+      - name: Read mirrored app source
+        id: app_mirror
+        run: |
+          commit=$(node -p "require('./src/mirror/app-source.json').commit")
+          [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || { echo "mirror ref must be a full commit SHA" >&2; exit 1; }
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+      - name: Check out the app the section mapper was mirrored from
+        uses: actions/checkout@v4
+        with:
+          repository: HH-Studio/simple-site-builder
+          ref: ${{ steps.app_mirror.outputs.commit }}
+          path: .canonical-app-mirror
+      - name: Verify the mirror still matches the app
+        run: bun scripts/mirror-import.ts --check-app .canonical-app-mirror
       - name: Pack npm tarballs
         id: pack
         run: |

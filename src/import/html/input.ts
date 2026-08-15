@@ -45,6 +45,11 @@ export type HtmlIngestionResult = {
   source: { kind: "url" | "html-file" | "zip"; value: string };
   pages: HtmlDocumentInventory[];
   css: CssEvidence[];
+  /** Linked stylesheets as TEXT, in load order — design evidence for the
+   *  section mapper, which reads brand colour, type scale, radius and hero
+   *  layout out of real declarations. `css` above stays the bounded parsed
+   *  summary that goes into the report; this never leaves the mapper. */
+  styleSheets: Array<{ source: string; text: string }>;
   assets: IngestedAsset[];
   evidence: {
     scripts: ScriptEvidence[];
@@ -136,6 +141,7 @@ async function ingestVirtual(
     source,
     pages: [],
     css: [],
+    styleSheets: [],
     assets: [],
     evidence: { scripts: [], forms: [], inlineHandlers: [], embeds: [], thirdPartyHosts: [] },
     warnings: [],
@@ -224,9 +230,11 @@ async function ingestVirtual(
       }
       throw error;
     }
-    const evidence = parseCssEvidence(TEXT_DECODER.decode(bytes), syntheticUrl(path));
+    const text = TEXT_DECODER.decode(bytes);
+    const evidence = parseCssEvidence(text, syntheticUrl(path));
     evidence.source = path;
     result.css.push(evidence);
+    result.styleSheets.push({ source: path, text });
     for (const imported of evidence.imports) {
       const resolved = syntheticPath(imported) ?? resolveArchiveReference(path, imported);
       if (resolved) loadCss(resolved);
@@ -339,7 +347,7 @@ async function ingestUrl(input: string, options: HtmlIngestionOptions, limits: H
   const started = Date.now();
   let selectedOrigin: string | undefined;
   const result: HtmlIngestionResult = {
-    source: { kind: "url", value: input }, pages: [], css: [], assets: [],
+    source: { kind: "url", value: input }, pages: [], css: [], styleSheets: [], assets: [],
     evidence: { scripts: [], forms: [], inlineHandlers: [], embeds: [], thirdPartyHosts: [] },
     warnings: [], truncated: false, totalBytes: 0,
   };
@@ -502,8 +510,10 @@ async function ingestUrl(input: string, options: HtmlIngestionOptions, limits: H
     const url = cssQueue.shift()!;
     const response = await tryFetchResource(url, limits.maxCssBytes);
     if (!response) continue;
-    const evidence = parseCssEvidence(TEXT_DECODER.decode(response.body), response.finalUrl);
+    const text = TEXT_DECODER.decode(response.body);
+    const evidence = parseCssEvidence(text, response.finalUrl);
     result.css.push(evidence);
+    result.styleSheets.push({ source: response.finalUrl, text });
     evidence.imports.forEach((reference) => queueCss(reference, response.finalUrl));
     evidence.media.forEach((reference) => queueAsset(reference, response.finalUrl));
     if (timeRemaining() <= 0) { noteDeadline(); break; }

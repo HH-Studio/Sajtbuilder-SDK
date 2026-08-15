@@ -81,7 +81,10 @@ describe("structural HTML inventory", () => {
     ]);
     expect(result.stylesheets).toEqual(["https://example.com/theme.css"]);
     expect(result.media).toEqual(["https://example.com/hero.webp"]);
-    expect(JSON.stringify(result)).not.toContain("data.json");
+    // `html` is the source verbatim, so it mentions everything the page did —
+    // what matters is that nothing CLASSIFIED it as a resource to fetch.
+    const { html: _source, ...classified } = result;
+    expect(JSON.stringify(classified)).not.toContain("data.json");
   });
 
   it("parses srcset candidates without turning data URL commas into network requests", () => {

@@ -1,5 +1,4 @@
 import { createHash } from "node:crypto";
-import { extname } from "node:path";
 import { generateKeyBetween } from "fractional-indexing";
 import type { PortableSiteV1 } from "../../convex/model/portable";
 import type { ThemeTokens } from "../../convex/model/theme";
@@ -21,6 +20,7 @@ import {
 import { detectHtmlBehavior, type BehaviorSignal } from "./behavior";
 import type { HtmlDocumentInventory } from "./dom";
 import type { HtmlIngestionResult } from "./input";
+import { buildSiteFromMirror } from "./sections";
 
 export type HtmlMappedAssetFile = { fileName: string; bytes: Uint8Array };
 export type HtmlMappingResult = {
@@ -155,59 +155,6 @@ function reportSummary(items: ImportReportItemV1[]) {
   return { total: items.length, blocking: items.filter((item) => item.blocking).length, byDisposition };
 }
 
-function imageExtension(path: string, mediaType: string): string {
-  const extension = extname(path).toLowerCase().replace(/[^.a-z0-9]/g, "");
-  if (extension) return extension;
-  return ({ "image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp", "image/avif": ".avif", "image/gif": ".gif" } as Record<string, string>)[mediaType] ?? ".bin";
-}
-
-function imageDimensions(bytes: Uint8Array, mediaType: string): { width: number; height: number } | null {
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  const valid = (width: number, height: number) => Number.isSafeInteger(width) && Number.isSafeInteger(height) && width > 0 && height > 0
-    ? { width, height }
-    : null;
-  if (mediaType === "image/png" && bytes.byteLength >= 24 && [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a].every((value, index) => bytes[index] === value)) {
-    return valid(view.getUint32(16), view.getUint32(20));
-  }
-  const header = bytes.byteLength >= 12 ? new TextDecoder().decode(bytes.subarray(0, 12)) : "";
-  if (mediaType === "image/gif" && bytes.byteLength >= 10 && (header.startsWith("GIF87a") || header.startsWith("GIF89a"))) {
-    return valid(view.getUint16(6, true), view.getUint16(8, true));
-  }
-  if (mediaType === "image/jpeg" && bytes.byteLength >= 4 && bytes[0] === 0xff && bytes[1] === 0xd8) {
-    let offset = 2;
-    const sof = new Set([0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf]);
-    while (offset + 9 < bytes.byteLength) {
-      if (bytes[offset] !== 0xff) { offset += 1; continue; }
-      const marker = bytes[offset + 1]!;
-      if (marker === 0xd8 || marker === 0xd9 || (marker >= 0xd0 && marker <= 0xd7)) { offset += 2; continue; }
-      const length = view.getUint16(offset + 2);
-      if (length < 2 || offset + 2 + length > bytes.byteLength) return null;
-      if (sof.has(marker)) return valid(view.getUint16(offset + 7), view.getUint16(offset + 5));
-      offset += 2 + length;
-    }
-  }
-  if (mediaType === "image/webp" && bytes.byteLength >= 30 && new TextDecoder().decode(bytes.subarray(0, 4)) === "RIFF" && new TextDecoder().decode(bytes.subarray(8, 12)) === "WEBP") {
-    const chunk = new TextDecoder().decode(bytes.subarray(12, 16));
-    if (chunk === "VP8X") {
-      const width = 1 + bytes[24]! + (bytes[25]! << 8) + (bytes[26]! << 16);
-      const height = 1 + bytes[27]! + (bytes[28]! << 8) + (bytes[29]! << 16);
-      return valid(width, height);
-    }
-    if (chunk === "VP8 " && bytes.byteLength >= 30) return valid(view.getUint16(26, true) & 0x3fff, view.getUint16(28, true) & 0x3fff);
-    if (chunk === "VP8L" && bytes.byteLength >= 25 && bytes[20] === 0x2f) {
-      return valid(1 + bytes[21]! + ((bytes[22]! & 0x3f) << 8), 1 + (bytes[22]! >> 6) + (bytes[23]! << 2) + ((bytes[24]! & 0x0f) << 10));
-    }
-  }
-  if (mediaType === "image/avif" && bytes.byteLength >= 16 && header.slice(4, 8) === "ftyp" && /(?:avif|avis)/.test(header.slice(8))) {
-    for (let offset = 4; offset + 16 <= bytes.byteLength; offset += 1) {
-      if (bytes[offset] === 0x69 && bytes[offset + 1] === 0x73 && bytes[offset + 2] === 0x70 && bytes[offset + 3] === 0x65) {
-        return valid(view.getUint32(offset + 8), view.getUint32(offset + 12));
-      }
-    }
-  }
-  return null;
-}
-
 export function mapHtmlIngestion(input: HtmlIngestionResult, options: HtmlMappingOptions = {}): HtmlMappingResult {
   const sourceInputId = "source-001";
   const behavior = detectHtmlBehavior(input);
@@ -231,155 +178,158 @@ export function mapHtmlIngestion(input: HtmlIngestionResult, options: HtmlMappin
   });
   const evidence = [...pageEvidence, ...behaviorEvidence, ...assetEvidence, ...cssEvidence];
   const evidenceIdForSignal = (target: BehaviorSignal) => behaviorEvidence[behavior.signals.indexOf(target)]!.id;
-  const locale = localeFrom(input.pages);
-  const firstPage = input.pages[0];
-  const businessName = cleanText(firstPage?.title || firstPage?.headings.find((heading) => heading.level === 1)?.text || (locale === "sv" ? "Importerad webbplats" : "Imported website"), 120);
-  const slugs = uniqueSlugs(input.pages);
-  const navTargets = new Set(input.pages.flatMap((page) => page.navigation.map((entry) => entry.href)));
-
-  const imageInputs = input.assets
-    .filter((asset) => asset.kind === "image" && asset.mediaType !== "image/svg+xml")
-    .map((asset) => ({ asset, dimensions: imageDimensions(asset.bytes, asset.mediaType) }))
-    .filter((entry): entry is { asset: typeof input.assets[number]; dimensions: { width: number; height: number } } => entry.dimensions !== null)
-    .slice(0, 100);
+  // Everything above this line is the SDK's own work: bounded ingestion, inert
+  // evidence, real blobs. The SECTIONS are the app's, mirrored under
+  // `src/mirror` and driven here — one mapper for the CLI and the in-app
+  // import, so the same page converts the same way in both.
+  const mirror = buildSiteFromMirror(input);
+  const site = mirror.site;
+  const locale: "sv" | "en" = site.site.language === "en" ? "en" : "sv";
+  const businessName = site.site.businessName;
+  const pages = site.pages;
+  const sections = site.sections;
+  const assets = site.assets ?? [];
+  const assetFiles: HtmlMappedAssetFile[] = mirror.assetFiles;
+  const pageIndexByTmpId = new Map(pages.map((page, index) => [page.tmpId, index]));
+  const evidenceIdForPage = (tmpId: string) => pageEvidence[pageIndexByTmpId.get(tmpId) ?? 0]!.id;
+  /** Source reference → the export id the mapper gave it, so a band this file
+   *  adds from behaviour evidence points at the blob already in the package. */
   const assetByReference = new Map<string, string>();
-  const assetFiles: HtmlMappedAssetFile[] = [];
-  const assets: PortableSiteV1["assets"] = imageInputs.map(({ asset, dimensions }, index) => {
-    const exportId = `image-${index + 1}`;
-    const fileName = `${exportId}${imageExtension(asset.path, asset.mediaType)}`;
-    assetFiles.push({ fileName, bytes: asset.bytes });
-    assetByReference.set(asset.path, exportId);
-    assetByReference.set(asset.source, exportId);
-    return { exportId, url: asset.source, ...dimensions, mimeType: asset.mediaType, kind: "image", alt: businessName };
-  });
+  for (const asset of assets) {
+    const ingested = input.assets.find((entry) => entry.source === asset.url || entry.path === asset.url);
+    for (const key of [asset.url, ingested?.path, ingested?.source]) {
+      if (key && !assetByReference.has(key)) assetByReference.set(key, asset.exportId);
+    }
+  }
 
-  const pages: PortableSiteV1["pages"] = input.pages.map((page, index) => ({
-    tmpId: `page-${index + 1}`,
-    slug: slugs[index]!,
-    title: cleanText(page.title || page.headings[0]?.text || (index === 0 ? businessName : `Page ${index + 1}`), 120),
-    order: index * 10,
-    showInNav: index === 0 || navTargets.has(page.url),
-    seo: { sourceUrl: /^https?:\/\//.test(page.url) ? page.url : undefined },
+  const items: ImportReportItemV1[] = [];
+  sections.forEach((section, index) => items.push({
+    id: stableId("section", index),
+    disposition: "converted",
+    reason: `Mapped inert HTML evidence to native ${section.type} content`,
+    evidenceIds: [evidenceIdForPage(section.pageTmpId)],
+    target: { kind: "section", id: `${section.pageTmpId}:${section.type}` },
+    blocking: false,
   }));
 
-  const sections: PortableSiteV1["sections"] = [];
-  const items: ImportReportItemV1[] = [];
-  let lastSectionOrder: string | null = null;
-  const addSection = (pageIndex: number, type: keyof typeof SECTION_REGISTRY, content: unknown, evidenceIds: string[], anchorId?: string) => {
-    const sectionIndex = sections.length;
-    const order = generateKeyBetween(lastSectionOrder, null);
-    lastSectionOrder = order;
+  // A band added from BEHAVIOUR evidence — a verified booking provider, a
+  // mailto form, a gallery grid — but only where the mapper did not already
+  // read one of that type off the page itself. Two contact bands on one page
+  // is a worse import than one.
+  const lastOrderByPage = new Map<string, string>();
+  for (const section of sections) {
+    if (section.order === undefined) continue;
+    const current = lastOrderByPage.get(section.pageTmpId);
+    if (current === undefined || section.order > current) lastOrderByPage.set(section.pageTmpId, section.order);
+  }
+  const addSection = (
+    pageIndex: number,
+    type: keyof typeof SECTION_REGISTRY,
+    content: unknown,
+    evidenceIds: string[],
+    anchorId?: string,
+  ): "added" | "already" | "no-page" => {
+    const page = pages[pageIndex];
+    if (!page) return "no-page";
+    if (sections.some((section) => section.pageTmpId === page.tmpId && section.type === type)) return "already";
+    const order = generateKeyBetween(lastOrderByPage.get(page.tmpId) ?? null, null);
+    lastOrderByPage.set(page.tmpId, order);
     sections.push({
-      pageTmpId: pages[pageIndex]!.tmpId,
+      pageTmpId: page.tmpId,
       type,
       variant: defaultVariant(type),
       order,
       ...(anchorId ? { anchorId } : {}),
       content,
+    } as PortableSiteV1["sections"][number]);
+    items.push({
+      id: stableId("section-behavior", sections.length),
+      disposition: "converted",
+      reason: `Converted verified behaviour evidence to a native ${type} section`,
+      evidenceIds,
+      target: { kind: "section", id: `${page.tmpId}:${type}` },
+      blocking: false,
     });
-    items.push({ id: stableId("section", sectionIndex), disposition: "converted", reason: `Mapped inert HTML evidence to native ${type} content`, evidenceIds, target: { kind: "section", id: `${pages[pageIndex]!.tmpId}:${type}` }, blocking: false });
+    return "added";
   };
 
-  input.pages.forEach((page, pageIndex) => {
-    const pageEvidenceId = pageEvidence[pageIndex]!.id;
-    const h1 = cleanText(page.headings.find((heading) => heading.level === 1)?.text || page.title || businessName, 160);
-    const paragraphs = page.contentBlocks.filter((block) => block.kind === "paragraph").map((block) => cleanText(block.text, 1_200));
-    const pageAssetIds = page.media.map((reference) => assetByReference.get(reference)).filter((id): id is string => Boolean(id));
-    addSection(pageIndex, "hero", {
-      type: "hero", headline: h1,
-      ...(paragraphs[0] ? { subheadline: paragraphs[0].slice(0, 240) } : {}),
-      ...(pageAssetIds[0] ? { media: { assetId: pageAssetIds[0], alt: h1 } } : {}),
-    }, [pageEvidenceId]);
-
-    const flow = page.contentBlocks.filter((block) => !(block.kind === "heading" && block.level === 1));
-    const heroParagraphIndex = flow.findIndex((block) => block.kind === "paragraph" && cleanText(block.text, 1_200) === paragraphs[0]);
-    if (heroParagraphIndex >= 0 && paragraphs[0]!.length <= 240) flow.splice(heroParagraphIndex, 1);
-    const richBlocks: Array<{ kind: "h" | "p"; text: string } | { kind: "ul"; items: string[] }> = [];
-    for (const block of flow.slice(0, 80)) {
-      if (block.kind === "heading") richBlocks.push({ kind: "h", text: cleanText(block.text, 240) });
-      else if (block.kind === "paragraph") richBlocks.push({ kind: "p", text: cleanText(block.text, 1_200) });
-      else {
-        const previous = richBlocks.at(-1);
-        if (previous?.kind === "ul" && previous.items.length < 50) previous.items.push(cleanText(block.text, 300));
-        else richBlocks.push({ kind: "ul", items: [cleanText(block.text, 300)] });
-      }
-    }
-    if (richBlocks.length > 0) {
-      addSection(pageIndex, "rich-text", {
-        type: "rich-text",
-        blocks: richBlocks,
-      }, [pageEvidenceId]);
-    }
-    // Say what the shape cost. Every heading in `richBlocks` is a block the
-    // source presented as its own thing — Priser, Om mig, a gallery — and that
-    // this mapper folded into one undifferentiated rich-text section because it
-    // emits a fixed sequence rather than reading the source. Until it does
-    // (`docs/plans/open/2026-07-27-migration-onramp-platform.md` §1.1), the
-    // least we owe the operator is the list, by name.
-    const mergedHeadings = richBlocks
-      .filter((block): block is { kind: "h"; text: string } => block.kind === "h")
-      .map((block) => block.text)
-      .filter(Boolean);
-    if (mergedHeadings.length > 0) {
-      const named = mergedHeadings.slice(0, 12).map((heading) => `"${heading}"`).join(", ");
-      const rest = mergedHeadings.length > 12 ? ` and ${mergedHeadings.length - 12} more` : "";
+  // What the source shows that the import does not. The mapper reads the real
+  // structure now, so this list is usually short — but it is the plan's promise
+  // ("nothing vanishes silently"), and it is checked against the headings the
+  // emitted sections actually render rather than against a guess about them.
+  mirror.unmappedHeadings.forEach(({ pageUrl, headings }, index) => {
+    const pageIndex = Math.max(0, input.pages.findIndex((page) => page.url === pageUrl));
+    const evidenceId = pageEvidence[pageIndex]!.id;
+    const named = headings.slice(0, 12).map((heading) => `"${heading}"`).join(", ");
+    const rest = headings.length > 12 ? ` and ${headings.length - 12} more` : "";
+    items.push({
+      id: stableId("structure-unmapped", index),
+      disposition: "merged",
+      reason: `${headings.length} heading(s) the source shows are not shown by any imported section: ${named}${rest}. Their copy may have been merged into a neighbouring band, and their own layout was not preserved.`,
+      evidenceIds: [evidenceId],
+      blocking: false,
+    });
+    // A page that lost this much shape is not something to publish unreviewed.
+    if (headings.length > 3) {
       items.push({
-        id: stableId("structure-merged", pageIndex), disposition: "merged",
-        reason: `${mergedHeadings.length} source heading(s) became text inside one rich-text section rather than sections of their own: ${named}${rest}. Layout and per-block media were not preserved.`,
-        evidenceIds: [pageEvidenceId], target: { kind: "section", id: `${pages[pageIndex]!.tmpId}:rich-text` },
+        id: stableId("structure-unmapped-review", index),
+        disposition: "manual",
+        reason: `Compare this page with its source before publishing: ${headings.length} of its headings are missing from the import`,
+        evidenceIds: [evidenceId],
         blocking: false,
       });
-      // A page that lost this much shape is not something to publish
-      // unreviewed. Three is the line: below it the page genuinely was mostly
-      // one block of prose, above it the owner is looking at a different page
-      // from the one they had.
-      if (mergedHeadings.length > 3) {
-        items.push({
-          id: stableId("structure-merged-review", pageIndex), disposition: "manual",
-          reason: `Rebuild the ${mergedHeadings.length} merged blocks on this page as native sections, and reattach their images, before publishing`,
-          evidenceIds: [pageEvidenceId], blocking: false,
-        });
-      }
     }
-    if (flow.length > 80) {
-      items.push({
-        id: stableId("content-truncated", pageIndex), disposition: "missing",
-        reason: `${flow.length - 80} content blocks exceeded the safe per-page conversion cap and require manual review`,
-        evidenceIds: [pageEvidenceId], blocking: true,
-      });
-    }
-    const oversizedContent = page.contentBlocks.filter((block) => {
-      const length = block.text.replace(/\s+/g, " ").trim().length;
-      return block.kind === "heading" ? length > (block.level === 1 ? 160 : 240) : length > (block.kind === "paragraph" ? 1_200 : 300);
-    });
-    if (oversizedContent.length > 0) {
-      items.push({
-        id: stableId("content-value-truncated", pageIndex), disposition: "missing",
-        reason: `${oversizedContent.length} text block(s) exceeded native field limits; bounded copy was preserved but the import requires manual reconstruction`,
-        evidenceIds: [pageEvidenceId], blocking: true,
-      });
-    }
-    const missingMedia = page.media.filter((reference) => !assetByReference.has(reference));
-    if (missingMedia.length > 0) {
-      items.push({
-        id: stableId("media-unavailable", pageIndex), disposition: "missing",
-        reason: `${missingMedia.length} referenced media files were not available as verified local blobs and were not imported`,
-        evidenceIds: [pageEvidenceId], blocking: false,
-      });
-    }
-    addSection(pageIndex, "footer", { type: "footer", businessName }, [pageEvidenceId]);
   });
+  // Loss with no heading over it. A page of unbroken paragraphs can lose every
+  // word and produce no unmapped heading at all, which is how a 100-paragraph
+  // page reported `ready` with nothing on it but a hero and a footer.
+  mirror.lostProse.forEach(({ pageUrl, missing, total }, index) => {
+    const pageIndex = Math.max(0, input.pages.findIndex((page) => page.url === pageUrl));
+    const evidenceId = pageEvidence[pageIndex]!.id;
+    items.push({
+      id: stableId("prose-missing", index),
+      disposition: "missing",
+      reason: `${missing} of this page's ${total} paragraphs are not shown by any imported section; their copy is in the source evidence but not on the imported page`,
+      evidenceIds: [evidenceId],
+      blocking: false,
+    });
+    items.push({
+      id: stableId("prose-missing-review", index),
+      disposition: "manual",
+      reason: "Copy the missing paragraphs across from the source before publishing this page",
+      evidenceIds: [evidenceId],
+      blocking: false,
+    });
+  });
+  if (mirror.droppedAssetUrls.length > 0) {
+    items.push({
+      id: "assets-unavailable",
+      disposition: "missing",
+      reason: `${mirror.droppedAssetUrls.length} image(s) the source used were not available as verified local blobs; the bands that used them were removed rather than shipped pointing at nothing`,
+      evidenceIds: [pageEvidence[0]!.id],
+      blocking: false,
+    });
+  }
+  mirror.droppedSections.forEach((dropped, index) => items.push({
+    id: stableId("section-dropped", index),
+    disposition: "missing",
+    reason: `A ${dropped.type} section could not be kept once its unavailable images were removed; rebuild it by hand`,
+    evidenceIds: [evidenceIdForPage(dropped.pageTmpId)],
+    blocking: false,
+  }));
 
   input.assets.forEach((asset, index) => {
-    const mappedIndex = imageInputs.findIndex((entry) => entry.asset === asset);
+    const placed = mirror.usedAssetPaths.has(asset.path)
+      ? assets.find((entry) => assetByReference.get(asset.path) === entry.exportId)
+      : undefined;
     items.push({
-      id: stableId(mappedIndex >= 0 ? "asset-mapped" : "asset-skipped", index),
-      disposition: mappedIndex >= 0 ? "converted" : "skipped",
-      reason: mappedIndex >= 0
+      id: stableId(placed ? "asset-mapped" : "asset-skipped", index),
+      disposition: placed ? "converted" : "skipped",
+      reason: placed
         ? "Copied a verified inert image blob into the portable package"
-        : `Preserved ${asset.mediaType} as evidence but did not place it in the native image-only asset set`,
+        : `Preserved ${asset.mediaType} as evidence but no imported section referenced it`,
       evidenceIds: [assetEvidence[index]!.id],
-      ...(mappedIndex >= 0 ? { target: { kind: "asset", id: `image-${mappedIndex + 1}` } } : {}),
+      ...(placed ? { target: { kind: "asset" as const, id: placed.exportId } } : {}),
       blocking: false,
     });
   });
@@ -454,10 +404,13 @@ export function mapHtmlIngestion(input: HtmlIngestionResult, options: HtmlMappin
   behavior.galleries.forEach((entry, index) => {
     const pageIndex = input.pages.findIndex((page) => page.url === entry.pageUrl);
     const assetIds = entry.references.map((reference) => assetByReference.get(reference)).filter((id): id is string => Boolean(id));
-    const mapped = pageIndex >= 0 && new Set(assetIds).size >= 3;
-    if (mapped) {
-      addSection(pageIndex, "gallery", { type: "gallery", images: [...new Set(assetIds)].slice(0, 24).map((assetId) => ({ assetId, alt: businessName })) }, [evidenceIdForSignal(entry.signal)]);
-    } else {
+    const outcome = pageIndex >= 0 && new Set(assetIds).size >= 3
+      ? addSection(pageIndex, "gallery", { type: "gallery", images: [...new Set(assetIds)].slice(0, 24).map((assetId) => ({ assetId, alt: businessName })) }, [evidenceIdForSignal(entry.signal)])
+      : "no-page";
+    // "already" means the mapper read a gallery off this page itself, which is
+    // the better one — it kept the source's own grouping. Only a grid we could
+    // neither map nor back with blobs is worth an operator's time.
+    if (outcome === "no-page") {
       items.push({
         id: stableId("gallery-signal", index), disposition: "manual",
         reason: "Gallery-like media references lacked enough importable image blobs and require review",
@@ -518,15 +471,35 @@ export function mapHtmlIngestion(input: HtmlIngestionResult, options: HtmlMappin
     summary: reportSummary(items),
   };
 
-  const site: PortableSiteV1 = {
-    format: "sajt-site", version: 1, exportedAt: completedAt,
-    site: {
-      businessName, vertical: "generic", goal: behavior.booking.length > 0 ? "get_bookings" : "show_services", language: locale,
-      theme: themeFrom(input), contact,
-      ...(Object.keys(behavior.tracking).length > 0 ? { tracking: behavior.tracking } : {}),
-    },
-    folders: [], pages, sections, fonts: [], assets,
+  // The mapper's site, with the two facts this file is stricter about. It sees
+  // one page at a time and takes the first `tel:`/`mailto:` it trusts; the
+  // ingester has read every page, so where IT found two different values the
+  // honest answer is none — a wrong phone number on an imported site is worse
+  // than a missing one, because nobody checks a field that looks filled in.
+  const contactConflictFree = { ...(site.site.contact ?? {}), ...contact };
+  if (contactEvidence.emailConflict) delete contactConflictFree.email;
+  if (contactEvidence.phoneConflict) delete contactConflictFree.phone;
+  // Tracking ids come from the SDK's own VERIFIED detection, not the mapper's.
+  // The mapper reads any `G-`/`GTM-` string it finds, which is right for an
+  // in-app import an owner is watching; a package written to disk has to hold a
+  // higher bar, and `detectHtmlBehavior` is where that bar lives — it rejects
+  // placeholder and prose ids, and reports two conflicting ones instead of
+  // picking. Writing a bogus measurement id into a customer's site is a defect
+  // nobody notices for months.
+  const conflictingProviders = new Set<string>(behavior.trackingConflicts.map((entry) => entry.provider));
+  const tracking = { ...behavior.tracking };
+  for (const provider of Object.keys(tracking) as Array<keyof typeof tracking>) {
+    if (conflictingProviders.has(provider)) delete tracking[provider];
+  }
+  site.exportedAt = completedAt;
+  const nextSite = {
+    ...site.site,
+    contact: contactConflictFree,
+    ...(behavior.booking.length > 0 ? { goal: "get_bookings" as const } : {}),
   };
+  if (Object.keys(tracking).length > 0) nextSite.tracking = tracking;
+  else delete nextSite.tracking;
+  site.site = nextSite;
   const validation = validateSitePackage(site, { assetFileNames: new Set(assetFiles.map((asset) => asset.fileName)), fontFileNames: new Set() });
   const reportValidation = validateImportReport(report);
   if (!reportValidation.ok) {
