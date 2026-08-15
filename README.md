@@ -11,15 +11,15 @@ SnabbSajt's typed sections, validate it locally, and pack it as a safe bundle.
 
 | | Version |
 | --- | --- |
-| **Published on npm** (what `npm install` gives you) | **`0.3.0`** |
-| This source tree | `0.4.0` — not yet published |
+| **Published on npm** (what `npm install` gives you) | **`0.4.0`** |
+| This source tree | `0.4.0` |
 
 The package format, validator, HTML/WordPress converters, CLI, skills, and
 bundle format match the production SnabbSajt importer.
 
-**Everything listed next is on npm.** `npm install` gives you `0.3.0`, which
-caught the mirrored contract up to the app, so that everything the importer
-already accepted became expressible from Site Kit:
+**Everything listed next is on npm.** `0.3.0` caught the mirrored contract up to
+the app, so that everything the importer already accepted became expressible
+from Site Kit:
 
 - **Your own brand.** `theme.customPalette` carries 13 raw CSS colours per
   light/dark surface, `customFonts` carries your typefaces, `customBrandHex`
@@ -35,10 +35,16 @@ already accepted became expressible from Site Kit:
 - **No hand-written order keys.** Section `order` is optional — omit it and the
   importer orders by array position.
 
-`0.4.0` is **not** published yet. It includes the `--json` error fix plus the
-multilingual contract, terminal site linking, scoped admin commands and update
-flow listed under Unreleased in the changelog. Build from this tree if you need
-those changes before the npm release.
+`0.4.0` **is published** (2026-08-13) and is what `npm install` gives you today.
+It adds the `--json` error fix plus the multilingual contract, terminal site
+linking, scoped admin commands and the update flow.
+
+Two things about that release are worth knowing if you hit them: for about
+seven hours on release day `@snabbsajt/cli@0.4.0` was live against a still-`0.3.0`
+`@snabbsajt/site-kit`, so a clean install failed with `ETARGET` — fixed, and the
+publish script now refuses to skip a package and verifies each one against the
+registry before publishing the next. Neither package carries npm provenance yet,
+and there is no `v0.4.0` git tag; both are owed.
 
 ## Install
 
