@@ -310,6 +310,37 @@ export function mapHtmlIngestion(input: HtmlIngestionResult, options: HtmlMappin
         blocks: richBlocks,
       }, [pageEvidenceId]);
     }
+    // Say what the shape cost. Every heading in `richBlocks` is a block the
+    // source presented as its own thing — Priser, Om mig, a gallery — and that
+    // this mapper folded into one undifferentiated rich-text section because it
+    // emits a fixed sequence rather than reading the source. Until it does
+    // (`docs/plans/open/2026-07-27-migration-onramp-platform.md` §1.1), the
+    // least we owe the operator is the list, by name.
+    const mergedHeadings = richBlocks
+      .filter((block): block is { kind: "h"; text: string } => block.kind === "h")
+      .map((block) => block.text)
+      .filter(Boolean);
+    if (mergedHeadings.length > 0) {
+      const named = mergedHeadings.slice(0, 12).map((heading) => `"${heading}"`).join(", ");
+      const rest = mergedHeadings.length > 12 ? ` and ${mergedHeadings.length - 12} more` : "";
+      items.push({
+        id: stableId("structure-merged", pageIndex), disposition: "merged",
+        reason: `${mergedHeadings.length} source heading(s) became text inside one rich-text section rather than sections of their own: ${named}${rest}. Layout and per-block media were not preserved.`,
+        evidenceIds: [pageEvidenceId], target: { kind: "section", id: `${pages[pageIndex]!.tmpId}:rich-text` },
+        blocking: false,
+      });
+      // A page that lost this much shape is not something to publish
+      // unreviewed. Three is the line: below it the page genuinely was mostly
+      // one block of prose, above it the owner is looking at a different page
+      // from the one they had.
+      if (mergedHeadings.length > 3) {
+        items.push({
+          id: stableId("structure-merged-review", pageIndex), disposition: "manual",
+          reason: `Rebuild the ${mergedHeadings.length} merged blocks on this page as native sections, and reattach their images, before publishing`,
+          evidenceIds: [pageEvidenceId], blocking: false,
+        });
+      }
+    }
     if (flow.length > 80) {
       items.push({
         id: stableId("content-truncated", pageIndex), disposition: "missing",

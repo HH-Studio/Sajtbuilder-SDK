@@ -125,6 +125,45 @@ describe("deterministic HTML mapping", () => {
     expect(mapped.report.items).toContainEqual(expect.objectContaining({ id: "content-value-truncated-001", blocking: true }));
   });
 
+  // A real client page with nine named blocks imported as hero + one rich-text
+  // blob + footer, and the report called it Ready with 0 blocking findings.
+  // Every skipped script was itemised; losing two thirds of the page's
+  // structure produced nothing. "Nothing vanishes silently" has to cover
+  // layout, not only behaviour.
+  it("reports the source headings it merged into one rich-text block", async () => {
+    const root = mkdtempSync(join(tmpdir(), "snabbsajt-merged-structure-"));
+    const blocks = ["Services", "Pricing", "About", "Gallery", "Contact"]
+      .map((heading) => `<h2>${heading}</h2><p>Copy for ${heading}.</p>`)
+      .join("");
+    writeFileSync(join(root, "index.html"), `<title>Studio</title><h1>Studio</h1>${blocks}`);
+
+    const mapped = mapHtmlIngestion(await ingestHtmlInput(join(root, "index.html")));
+    const merged = mapped.report.items.find((item) => item.id === "structure-merged-001")!;
+
+    expect(merged).toBeDefined();
+    expect(merged.disposition).toBe("merged");
+    expect(merged.reason).toContain("5");
+    expect(merged.reason).toContain("Services");
+    // Five named blocks folded into one is not something to publish unreviewed.
+    expect(mapped.report.items).toContainEqual(
+      expect.objectContaining({ id: "structure-merged-review-001", disposition: "manual" }),
+    );
+    expect(mapped.report.status).toBe("review_required");
+  });
+
+  it("stays ready when a page has too little structure to have lost any", async () => {
+    const root = mkdtempSync(join(tmpdir(), "snabbsajt-simple-page-"));
+    writeFileSync(join(root, "index.html"), `<title>Studio</title><h1>Studio</h1><h2>About</h2><p>We do good work.</p>`);
+
+    const mapped = mapHtmlIngestion(await ingestHtmlInput(join(root, "index.html")));
+
+    expect(mapped.report.items).toContainEqual(
+      expect.objectContaining({ id: "structure-merged-001", disposition: "merged" }),
+    );
+    expect(mapped.report.items.some((item) => item.id === "structure-merged-review-001")).toBe(false);
+    expect(mapped.report.status).toBe("ready");
+  });
+
   it("keeps booking and forms on their source page and preserves verified image dimensions", async () => {
     const root = mkdtempSync(join(tmpdir(), "snabbsajt-page-map-"));
     const png = new Uint8Array(24);

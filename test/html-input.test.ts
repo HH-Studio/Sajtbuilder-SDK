@@ -29,10 +29,9 @@ describe("structural HTML inventory", () => {
     expect(result.text).toContain("Visible copy");
     expect(result.text).not.toContain("window.evil");
     expect(result.links).toContain("https://example.com/about");
-    expect(result.media).toEqual(expect.arrayContaining([
-      "https://example.com/hero.jpg",
-      "https://example.com/small.jpg",
-    ]));
+    // One image, one reference: `/small.jpg` is the same photograph at 480w and
+    // is deliberately no longer inventoried (see the srcset tests below).
+    expect(result.media).toEqual(["https://example.com/hero.jpg"]);
     expect(result.stylesheets).toEqual(["https://example.com/style.css"]);
     expect(result.evidence.scripts).toEqual(expect.arrayContaining([
       expect.objectContaining({ src: "https://example.com/app.js" }),
@@ -91,6 +90,44 @@ describe("structural HTML inventory", () => {
     `, "https://example.com/page/");
 
     expect(result.media).toEqual(["https://example.com/page/hero.png"]);
+  });
+
+  // A Webflow export of a two-photograph client page produced fourteen assets,
+  // twelve of them `-p-500`/`-p-800`/… renditions that nothing referenced. One
+  // image is one asset; the other widths are the same photograph.
+  it("takes one reference per image rather than every srcset rendition", () => {
+    const result = parseHtmlDocument(`
+      <img src="hero.jpg" srcset="hero-p-500.jpg 500w, hero-p-800.jpg 800w, hero-p-2000.jpg 2000w">
+    `, "https://example.com/");
+
+    expect(result.media).toEqual(["https://example.com/hero.jpg"]);
+  });
+
+  it("falls back to the largest rendition when a source carries no src", () => {
+    const result = parseHtmlDocument(`
+      <picture><source srcset="wide-500.jpg 500w, wide-2000.jpg 2000w, wide-800.jpg 800w"></picture>
+    `, "https://example.com/");
+
+    expect(result.media).toEqual(["https://example.com/wide-2000.jpg"]);
+  });
+
+  it("reads density descriptors too, and keeps every rendition host as evidence", () => {
+    const result = parseHtmlDocument(`
+      <img srcset="https://cdn.example/a.jpg 1x, https://img.example/b.jpg 3x, https://cdn.example/c.jpg 2x">
+    `, "https://example.com/");
+
+    expect(result.media).toEqual(["https://img.example/b.jpg"]);
+    expect(result.evidence.thirdPartyHosts.sort()).toEqual(["cdn.example", "img.example"]);
+  });
+
+  it("does not mistake one image's renditions for a gallery", () => {
+    const result = parseHtmlDocument(`
+      <div class="gallery">
+        <img src="one.jpg" srcset="one-500.jpg 500w, one-800.jpg 800w, one-1600.jpg 1600w">
+      </div>
+    `, "https://example.com/");
+
+    expect(result.mediaGroups ?? []).toHaveLength(0);
   });
 
   it("inventories video posters and track media", () => {

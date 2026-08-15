@@ -86,9 +86,16 @@ function resolveReference(value: string | undefined, base: URL): string | undefi
   }
 }
 
-function srcsetReferences(value: string | undefined, base: URL): string[] {
+/** One `srcset` entry: the URL, and how big the author said it is. `weight` is
+ *  the leading number of the `w`/`x` descriptor (`hero.jpg 800w` → 800), or 1
+ *  when there is none. Only ever compared within a single `srcset`, where the
+ *  descriptor type is the same for every candidate, so the raw number is
+ *  enough — no unit conversion is implied. */
+type SrcsetCandidate = { url: string; weight: number };
+
+function srcsetCandidates(value: string | undefined, base: URL): SrcsetCandidate[] {
   if (!value) return [];
-  const candidates: string[] = [];
+  const candidates: SrcsetCandidate[] = [];
   let offset = 0;
   while (offset < value.length) {
     while (offset < value.length && (/[\t\n\f\r ]/.test(value[offset]!) || value[offset] === ",")) offset += 1;
@@ -100,22 +107,49 @@ function srcsetReferences(value: string | undefined, base: URL): string[] {
       candidate = candidate.slice(0, -1);
       endedWithComma = true;
     }
-    if (candidate && !/^(?:data|javascript|blob):/i.test(candidate)) candidates.push(candidate);
-    if (endedWithComma) continue;
+    const accepted = candidate && !/^(?:data|javascript|blob):/i.test(candidate) ? candidate : null;
+    if (endedWithComma) {
+      if (accepted) candidates.push({ url: accepted, weight: 1 });
+      continue;
+    }
 
-    // Skip density/width descriptors up to the next top-level comma. Parentheses
+    // Read density/width descriptors up to the next top-level comma. Parentheses
     // are allowed in future descriptors and must not split a candidate.
     let parentheses = 0;
+    const descriptorStart = offset;
     while (offset < value.length) {
       const character = value[offset++]!;
       if (character === "(") parentheses += 1;
       else if (character === ")" && parentheses > 0) parentheses -= 1;
       else if (character === "," && parentheses === 0) break;
     }
+    if (!accepted) continue;
+    const descriptor = value.slice(descriptorStart, offset).trim();
+    const measure = /^([0-9]*\.?[0-9]+)\s*[wx]/i.exec(descriptor);
+    candidates.push({ url: accepted, weight: measure ? Number(measure[1]) : 1 });
   }
   return candidates
-    .map((candidate) => resolveReference(candidate, base))
-    .filter((candidate): candidate is string => Boolean(candidate));
+    .map((candidate) => ({ ...candidate, url: resolveReference(candidate.url, base) }))
+    .filter((candidate): candidate is SrcsetCandidate => Boolean(candidate.url));
+}
+
+function srcsetReferences(value: string | undefined, base: URL): string[] {
+  return srcsetCandidates(value, base).map((candidate) => candidate.url);
+}
+
+/** The single reference worth importing for one image element.
+ *
+ *  A `srcset` lists the SAME photograph at other widths. Importing every entry
+ *  turned a real two-photograph page into fourteen assets, twelve of which no
+ *  section referenced, and made one image inside a `.gallery` wrapper look like
+ *  a three-image gallery. Prefer the author's `src`; with none — a `<picture>`
+ *  `<source>` — take the largest rendition, which is the one an owner would
+ *  want to keep. Every rendition is still classified for third-party evidence
+ *  by the caller. */
+function primaryImageReference(src: string | undefined, candidates: SrcsetCandidate[]): string | undefined {
+  if (src) return src;
+  if (candidates.length === 0) return undefined;
+  return candidates.reduce((best, candidate) => (candidate.weight > best.weight ? candidate : best)).url;
 }
 
 function addThirdParty(value: string | undefined, base: URL, hosts: Set<string>): void {
@@ -212,9 +246,13 @@ export function parseHtmlDocument(html: string, baseUrl: string): HtmlDocumentIn
         while (groupStack.length > 0 && references.length < 24) {
           const candidate = groupStack.pop()!;
           if (isElement(candidate) && candidate.tagName.toLowerCase() === "img") {
-            const source = resolveReference(attribute(candidate, "src"), base);
+            // One entry per image, for the same reason `media` takes one: a
+            // gallery is three photographs, not one photograph at three widths.
+            const source = primaryImageReference(
+              resolveReference(attribute(candidate, "src"), base),
+              srcsetCandidates(attribute(candidate, "srcset"), base),
+            );
             if (source) references.push(source);
-            references.push(...srcsetReferences(attribute(candidate, "srcset"), base));
           }
           if ("childNodes" in candidate) {
             for (let index = candidate.childNodes.length - 1; index >= 0; index -= 1) groupStack.push(candidate.childNodes[index]!);
@@ -254,11 +292,10 @@ export function parseHtmlDocument(html: string, baseUrl: string): HtmlDocumentIn
       }
       if (tag === "img" || tag === "source" || tag === "video" || tag === "audio" || tag === "track") {
         const src = resolveReference(attribute(node, "src"), base);
-        if (src) media.add(src);
-        for (const candidate of srcsetReferences(attribute(node, "srcset"), base)) {
-          media.add(candidate);
-          addThirdParty(candidate, documentUrl, thirdPartyHosts);
-        }
+        const candidates = srcsetCandidates(attribute(node, "srcset"), base);
+        const primary = primaryImageReference(src, candidates);
+        if (primary) media.add(primary);
+        for (const candidate of candidates) addThirdParty(candidate.url, documentUrl, thirdPartyHosts);
         addThirdParty(src, documentUrl, thirdPartyHosts);
         if (tag === "video") {
           const poster = resolveReference(attribute(node, "poster"), base);

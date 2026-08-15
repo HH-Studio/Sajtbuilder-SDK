@@ -146,6 +146,31 @@ that validated against an older CLI still validates against a newer one.
 
 ### Fixed
 
+- **One image is one asset.** A `srcset` lists the same photograph at other
+  widths, and the importer treated every entry as its own asset. A real
+  two-photograph client page came in as 14 assets, 12 of them `-p-500`…`-p-2000`
+  renditions that no section referenced — and the 12 resulting "never
+  referenced" warnings buried the 3 that were real. The author's `src` now wins;
+  a `<picture>` `<source>` with no `src` keeps its largest rendition. Every
+  rendition is still classified for third-party host evidence.
+
+  The same rule fixed a symptom nobody had reported: gallery detection counts
+  distinct images, so a single image inside a `.gallery` wrapper could be
+  detected as a three-image gallery on the strength of its own renditions.
+
+- **The import report now says what the mapping cost.** Generic HTML maps to
+  hero + one rich-text section + footer, so a nine-block page arrived as three
+  sections — and the report called it `Ready` with **0 blocking findings**.
+  Every skipped script was itemised; losing two thirds of the page's structure
+  produced nothing at all. Behaviour did not vanish silently; layout did.
+
+  Each page now carries a `merged` finding naming the source headings that
+  became text inside one rich-text section instead of sections of their own, and
+  a page that loses more than three named blocks also gets a `manual` item, so
+  its status is `review_required` rather than publishable-as-is. The underlying
+  mapper still emits a fixed sequence rather than reading the source; this makes
+  that visible instead of quiet.
+
 - **One unreadable file no longer throws away an entire real-site import.**
   Found by running `snabbsajt site import html` against two live customer sites
   on 2026-08-15. `barkk.se` rate-limits its own asset host, and a single
