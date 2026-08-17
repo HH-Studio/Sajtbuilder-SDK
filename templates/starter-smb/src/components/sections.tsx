@@ -3,7 +3,7 @@ import type {
   ResolvedAsset,
   TypedSiteKitSection,
 } from "@snabbsajt/site-kit";
-import { Star } from "lucide-react";
+import { IconStarFilled } from "@tabler/icons-react";
 import { Band, Eyebrow, Heading } from "@/components/ui/section";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
@@ -159,7 +159,7 @@ function Testimonials({ c }: { c: Content<"testimonials"> }) {
             {typeof q.rating === "number" && (
               <div className="mb-3 flex gap-0.5" aria-label={`${q.rating} out of 5`}>
                 {Array.from({ length: q.rating }).map((_, s) => (
-                  <Star key={s} className="h-4 w-4 fill-primary text-primary" />
+                  <IconStarFilled key={s} className="h-4 w-4 text-primary" />
                 ))}
               </div>
             )}

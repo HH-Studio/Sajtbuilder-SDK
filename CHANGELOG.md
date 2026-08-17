@@ -14,6 +14,14 @@ that validated against an older CLI still validates against a newer one.
 
 ### Changed
 
+- **The `starter-smb` template renders its icons with Tabler, and no longer
+  depends on Lucide.** SnabbSajt uses `@tabler/icons-react` as its only icon
+  system, but the editable starter still declared `lucide-react` and imported a
+  single `Star` from it, so anyone scaffolding from the template inherited an
+  icon library the product had already dropped. The rating stars now come from
+  `IconStarFilled`, which fills with `currentColor` and therefore needs only
+  `text-primary` where the old markup needed `fill-primary text-primary`.
+
 - **`snabbsajt site import html` now builds its sections with the app's own
   section mapper, mirrored into `src/mirror`.** The CLI carried a mapper of its
   own that emitted a fixed hero → rich-text → footer on every page and never
