@@ -130,7 +130,7 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       },
       {
         key: "centered",
-        label: { sv: "Centrerad", en: "Centered", pl: "Wyśrodkowane" },
+        label: { sv: "Text i mitten", en: "Centred text", pl: "Tekst na środku" },
         description: {
           sv: "Rubrik, text och knappar mitt på sidan. Skriver du en faktarad står den under knapparna – annars syns ingenting där.",
           en: "Heading, text and buttons centred on the page. If you write a fact line it sits under the buttons – otherwise nothing shows there.",
@@ -139,7 +139,7 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       },
       {
         key: "split",
-        label: { sv: "Delad", en: "Split", pl: "Podzielone" },
+        label: { sv: "Text och sidobild", en: "Text and photo", pl: "Tekst i zdjęcie" },
         description: {
           sv: "Texten och fotot delar bredden lika, sida vid sida på större skärmar.",
           en: "The text and the photo share the width equally, side by side on larger screens.",
@@ -153,19 +153,19 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
         key: "split-bleed",
         options: { assetSide: ["end", "start"] },
         label: {
-          sv: "Delad, bild ut i kanten",
-          en: "Split, image to the edge",
-          pl: "Podzielone, zdjęcie do krawędzi",
+          sv: "Bild till kanten",
+          en: "Photo to edge",
+          pl: "Obraz do brzegu",
         },
         description: {
-          sv: "Samma delade hjälte som \"Delad\", men bilden går ut i sidkanten och fyller hela höjden i stället för att sitta i en ruta.",
-          en: "The same split hero as \"Split\", but the photo runs out to the page edge and fills the full height instead of sitting in a box.",
-          pl: "Ten sam podzielony hero co \"Podzielone\", ale zdjęcie wychodzi do krawędzi strony i wypełnia całą wysokość zamiast siedzieć w ramce.",
+          sv: "Samma text och sidobild som i \"Text och sidobild\", men bilden går ut i sidkanten och fyller hela höjden i stället för att sitta i en ruta.",
+          en: "The same text and photo as \"Text and photo\", but the photo runs out to the page edge and fills the full height instead of sitting in a box.",
+          pl: "Ten sam tekst i zdjęcie co w \"Tekst i zdjęcie\", ale zdjęcie wychodzi do krawędzi strony i wypełnia całą wysokość zamiast siedzieć w ramce.",
         },
       },
       {
         key: "minimal",
-        label: { sv: "Enkel", en: "Minimal", pl: "Proste" },
+        label: { sv: "Text utan bild", en: "Text, no photo", pl: "Tekst bez zdjęcia" },
         description: {
           sv: "Bara rubrik, en rad text och knapparna – inget foto alls. Den lugnaste starten.",
           en: "Just the heading, one line of text and the buttons – no photo at all. The quietest opening.",
@@ -184,9 +184,9 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       {
         key: "overlay-left",
         label: {
-          sv: "Bild bakom, vänster",
-          en: "Image behind, left",
-          pl: "Zdjęcie w tle, po lewej",
+          sv: "Bakgrund, vänster",
+          en: "Background, left",
+          pl: "Tło, po lewej",
         },
         description: {
           sv: "Samma foto bakom texten, men rubriken och knapparna står vänsterställda i stället för centrerat.",
@@ -196,7 +196,7 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       },
       {
         key: "gradient",
-        label: { sv: "Färgtoning", en: "Gradient", pl: "Przejście kolorów" },
+        label: { sv: "Tonad bakgrund", en: "Gradient backdrop", pl: "Tło z gradientem" },
         description: {
           sv: "Ingen bild – i stället en mjuk färgtoning i sidans egen färg bakom texten.",
           en: "No picture – a soft gradient in the site's own colour behind the text instead.",
@@ -206,9 +206,9 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       {
         key: "overlay-full",
         label: {
-          sv: "Helskärm med bild",
-          en: "Full-screen image",
-          pl: "Zdjęcie na pełny ekran",
+          sv: "Helskärmsbild",
+          en: "Full-screen photo",
+          pl: "Pełny ekran",
         },
         description: {
           sv: "Samma bild bakom texten som \"Bild bakom\", men den fyller hela första vyn i stället för en fast bandhöjd.",
@@ -219,9 +219,9 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       {
         key: "overlay-full-left",
         label: {
-          sv: "Helskärm, vänsterställd",
-          en: "Full-screen, left aligned",
-          pl: "Pełny ekran, wyrównanie do lewej",
+          sv: "Text uppe vänster",
+          en: "Top-left text",
+          pl: "Lewy górny tekst",
         },
         description: {
           sv: "Bilden fyller hela första vyn medan rubrik, text och knapp står smalt och högt till vänster.",
@@ -232,9 +232,9 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       {
         key: "overlay-full-left-centered",
         label: {
-          sv: "Helskärm, vänster i mitten",
-          en: "Full-screen, centred left",
-          pl: "Pełny ekran, po lewej na środku",
+          sv: "Vänster, mitt på",
+          en: "Left, middle",
+          pl: "Tekst po lewej",
         },
         description: {
           sv: "Bilden fyller hela första vyn medan en smal vänsterspalt med liten rad, rubrik, text och två knappar ligger mitt på höjden.",
@@ -245,9 +245,9 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       {
         key: "overlay-proof",
         label: {
-          sv: "Helskärm med faktarad",
-          en: "Full-screen with fact line",
-          pl: "Pełny ekran z krótkim faktem",
+          sv: "Helskärm med fakta",
+          en: "Fact line on photo",
+          pl: "Fakt na zdjęciu",
         },
         description: {
           sv: "Samma helskärmsbild med centrerad rubrik, plus en separat kort faktarad längst ned. Raden visas bara när ni skriver den.",
@@ -258,22 +258,22 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       {
         key: "overlay-light",
         label: {
-          sv: "Ljus bild bakom",
-          en: "Light image behind",
-          pl: "Jasne zdjęcie w tle",
+          sv: "Ljus bakgrundsbild",
+          en: "Bright background",
+          pl: "Jasne tło",
         },
         description: {
-          sv: "För ljusa, lugna bilder: ingen mörk toning, texten i sajtens egen färg i stället för vit.",
-          en: "For bright, calm photos: no dark scrim, and the text in the site's own colour instead of white.",
-          pl: "Do jasnych, spokojnych zdjęć: bez ciemnej przesłony, tekst w kolorze strony zamiast białego.",
+          sv: "För ljusa, lugna bilder: en mjukare toning än helskärmsbilden, samlad bakom texten så att bilden behåller sitt ljus.",
+          en: "For bright, calm photos: a softer shade than the full-screen photo, pooled behind the text so the picture keeps its light.",
+          pl: "Do jasnych, spokojnych zdjęć: łagodniejsze przyciemnienie niż zdjęcie pełnoekranowe, skupione za tekstem, więc zdjęcie zachowuje swoje światło.",
         },
       },
       {
         key: "poster",
         label: {
-          sv: "Affisch",
-          en: "Poster",
-          pl: "Plakat",
+          sv: "Stor bildrubrik",
+          en: "Big photo heading",
+          pl: "Tytuł na zdjęciu",
         },
         description: {
           sv: "Bilden fyller hela bandet och rubriken står stor längs bildens underkant. Bäst med en kort rubrik på ett eller två ord.",
@@ -296,7 +296,7 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       },
       {
         key: "stage",
-        label: { sv: "Scen", en: "Stage", pl: "Scena" },
+        label: { sv: "Bildrad under text", en: "Photo row below", pl: "Rząd zdjęć" },
         description: {
           sv: "Rubrik och knapp centrerat överst, och under dem en rad foton i olika höjd som visar arbetet.",
           en: "Heading and button centred at the top, and under them a row of photos at varying heights showing the work.",
@@ -328,9 +328,9 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       {
         key: "spotlight",
         label: {
-          sv: "Rubrik över bilden",
-          en: "Headline over the photo",
-          pl: "Nagłówek na zdjęciu",
+          sv: "Rubrik på foto",
+          en: "Heading on photo",
+          pl: "Tytuł na zdjęciu",
         },
         description: {
           sv: "Rubriken står stor mitt på bilden med knapparna under, och små etiketter för det ni gör svävar runt den.",
@@ -367,9 +367,9 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       {
         key: "lattice-collage",
         label: {
-          sv: "Bildkollage i rutnät",
-          en: "Lattice collage",
-          pl: "Kolaż na siatce",
+          sv: "Rutnätskollage",
+          en: "Grid collage",
+          pl: "Kolaż w siatce",
         },
         description: {
           sv: "Rubrik och knappar till vänster med tre överlappande foton på ett diskret rutnät till höger.",
@@ -393,9 +393,9 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       {
         key: "slideshow",
         label: {
-          sv: "Bildspel",
-          en: "Slideshow",
-          pl: "Pokaz zdjęć",
+          sv: "Växlande bilder",
+          en: "Changing photos",
+          pl: "Zmienne zdjęcia",
         },
         description: {
           sv: "Flera foton byter av varandra i helskärm medan rubriken står still nedtill. Besökaren kan dra i sidled eller välja bild med punkterna.",
@@ -432,9 +432,9 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       {
         key: "photo-stack-left",
         label: {
-          sv: "Foton på hög, vänsterställd",
-          en: "Stacked photos, left aligned",
-          pl: "Zdjęcia na stosie, do lewej",
+          sv: "Bildhög, vänster",
+          en: "Photo stack, left",
+          pl: "Stos z lewej",
         },
         description: {
           sv: "Samma tre överlappande foton som \"Foton på hög\", men rubrik, text och knappar står vänsterställda i stället för centrerat.",
@@ -445,9 +445,9 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       {
         key: "inline-photos",
         label: {
-          sv: "Foton i rubriken",
-          en: "Photos in the headline",
-          pl: "Zdjęcia w nagłówku",
+          sv: "Foton i rubrik",
+          en: "Photos in heading",
+          pl: "Zdjęcia w tytule",
         },
         description: {
           sv: "Centrerad rubrik där ett par små foton sitter inne i texten, mellan orden. Bäst med en lång rubrik på flera ord.",
@@ -458,22 +458,22 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       {
         key: "inline-photos-left",
         label: {
-          sv: "Foton i rubriken, vänsterställd",
-          en: "Photos in the headline, left aligned",
-          pl: "Zdjęcia w nagłówku, do lewej",
+          sv: "Fotorubrik vänster",
+          en: "Photo heading left",
+          pl: "Zdjęcia z lewej",
         },
         description: {
-          sv: "Samma foton inne i rubriken som \"Foton i rubriken\", men allt står vänsterställt i stället för centrerat.",
-          en: "The same photos inside the headline as \"Photos in the headline\", but everything is ranged left instead of centred.",
-          pl: "Te same zdjęcia w nagłówku co \"Zdjęcia w nagłówku\", ale wszystko jest wyrównane do lewej zamiast wyśrodkowane.",
+          sv: "Samma foton inne i rubriken som \"Foton i rubrik\", men allt står vänsterställt i stället för centrerat.",
+          en: "The same photos inside the heading as \"Photos in heading\", but everything is ranged left instead of centred.",
+          pl: "Te same zdjęcia co w \"Zdjęcia w tytule\", ale wszystko jest wyrównane do lewej zamiast wyśrodkowane.",
         },
       },
       {
         key: "facts-panel",
         label: {
           sv: "Foto med faktaruta",
-          en: "Photo with facts panel",
-          pl: "Zdjęcie z ramką faktów",
+          en: "Photo and fact box",
+          pl: "Ramka faktów",
         },
         description: {
           sv: "Fotot fyller hela första vyn med rubriken högt upp, och en ljus ruta i nedre hörnet visar några korta fakta bredvid varandra – till exempel öppettider, år i branschen eller pris från.",
@@ -484,9 +484,9 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       {
         key: "baseline-cta",
         label: {
-          sv: "Stor rubrik med knapp på raden",
-          en: "Big headline, button on the line",
-          pl: "Duży nagłówek z przyciskiem w linii",
+          sv: "Rubrik med knapp",
+          en: "Button in heading",
+          pl: "Przycisk w tytule",
         },
         description: {
           sv: "Fotot fyller hela första vyn och texten står längst ner: en kort inledning överst och därunder en mycket stor rubrik med knappen på samma rad, i slutet av rubriken.",
@@ -728,6 +728,32 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           pl: "Usługi stoją po trzy w rzędzie w polach z cienkimi liniami, każda numerowana 01, 02, 03. Bez zdjęcia i bez ceny – tylko nazwa i krótki opis.",
         },
       },
+      {
+        key: "price-rows",
+        label: {
+          sv: "Prisrader",
+          en: "Price rows",
+          pl: "Wiersze cen",
+        },
+        description: {
+          sv: "Tjänsterna under varandra med en hårfin linje emellan: namnet och en kort rad åt ena hållet, priset åt det andra. Ger du flera tjänster samma kategori får varje grupp sin egen rubrik – som prislistan på väggen i en salong eller klinik.",
+          en: "Services under each other with a hairline between them: the name and a short line on one side, the price on the other. Give several services the same category and each group gets its own heading – like the price list on a salon or clinic wall.",
+          pl: "Usługi jedna pod drugą z cienką linią pomiędzy: nazwa i krótki opis z jednej strony, cena z drugiej. Nadaj kilku usługom tę samą kategorię, a każda grupa dostanie własny nagłówek – jak cennik na ścianie salonu lub kliniki.",
+        },
+      },
+      {
+        key: "photo-pairs",
+        label: {
+          sv: "Fotopar",
+          en: "Photo pairs",
+          pl: "Pary ze zdjęciem",
+        },
+        description: {
+          sv: "Två tjänster i bredd med ett högt foto överst, namnet och en pil på samma rad under fotot, och därunder en kort rad och priset. Ingen ram – fotot är kortet. Från fem tjänster blir samma rutor smalare och radas fyra i bredd. Kräver ett foto per tjänst.",
+          en: "Two services across with a tall photo on top, the name and an arrow on one line under it, then a short line and the price. No frame – the photo is the card. From five services the same cells narrow and run four across. Needs a photo per service.",
+          pl: "Dwie usługi obok siebie z wysokim zdjęciem u góry, nazwą i strzałką w jednym wierszu pod nim, a niżej krótki opis i cena. Bez ramki – zdjęcie jest kartą. Od pięciu usług te same pola zwężają się i układają po cztery w rzędzie. Wymaga zdjęcia przy każdej usłudze.",
+        },
+      },
     ],
     defaultVariant: "grid-3",
     defaultTone: "light",
@@ -771,9 +797,18 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
         key: "columns",
         label: { sv: "Kategorier i spalter", en: "Category columns", pl: "Kategorie w kolumnach" },
         description: {
-          sv: "Menyn delas i spalter, en per kategori – för en meny med många rätter under några få rubriker.",
+          sv: "Menyn delas i två spalter, en per kategori – för en meny med många rätter under några få rubriker.",
           en: "The menu splits into columns, one per category – for a menu with many dishes under a few headings.",
           pl: "Menu dzieli się na kolumny, po jednej na kategorię – dla menu z wieloma daniami pod kilkoma nagłówkami.",
+        },
+      },
+      {
+        key: "ruled-list",
+        label: { sv: "Prislista", en: "Ruled price list", pl: "Cennik z liniami" },
+        description: {
+          sv: "Varje rätt på en egen rad med priset längst till höger och en tunn linje emellan – som en tryckt meny, och lättast att söka pris i.",
+          en: "Every dish on its own row with the price at the end and a hairline between – like a printed menu, and the easiest to scan for a price.",
+          pl: "Każde danie we własnym wierszu z ceną na końcu i cienką linią między nimi – jak drukowane menu, najłatwiej szukać ceny.",
         },
       },
       {
@@ -783,6 +818,19 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "Hela menyn i en enda spalt, kategori efter kategori – lättast att läsa på mobil.",
           en: "The whole menu in a single column, category after category – easiest to read on a phone.",
           pl: "Całe menu w jednej kolumnie, kategoria po kategorii – najłatwiej czytać na telefonie.",
+        },
+      },
+      {
+        key: "broadsheet",
+        label: {
+          sv: "Menyblad",
+          en: "Menu sheet",
+          pl: "Karta menu",
+        },
+        description: {
+          sv: "Hela menyn som ett tryckt blad: kategorierna packas fyra i bredd på stora skärmar, två på surfplatta och en på mobil. För menyn med många korta rubriker – hela utbudet ryms på en sida i stället för en lång rullning.",
+          en: "The whole menu as a printed sheet: the categories pack four across on a large screen, two on a tablet and one on a phone. For a menu with many short headings – the entire offer fits on one page instead of one long scroll.",
+          pl: "Całe menu jak drukowana karta: kategorie układają się po cztery na dużym ekranie, po dwie na tablecie i po jednej na telefonie. Dla menu z wieloma krótkimi nagłówkami – cała oferta mieści się na jednej stronie zamiast długiego przewijania.",
         },
       },
     ],
@@ -834,6 +882,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "Fotot överst och all text under, i en spalt.",
           en: "The photo on top and all the text under it, in one column.",
           pl: "Zdjęcie u góry, cały tekst pod spodem, w jednej kolumnie.",
+        },
+      },
+      {
+        key: "bullets-lead",
+        label: { sv: "Punkterna först", en: "Checklist first", pl: "Najpierw lista" },
+        description: {
+          sv: "Det som ingår står först, i en ruta till vänster, med texten bredvid. För en tjänst som jämförs på pris är listan svaret och texten sammanhanget.",
+          en: "What is included comes first, in a box on the reading side, with the prose beside it. For a service compared on price the list is the answer and the prose is the context.",
+          pl: "To, co wchodzi w cenę, jest pierwsze – w polu z brzegu, z tekstem obok. Przy usłudze porównywanej ceną to lista jest odpowiedzią.",
         },
       },
     ],
@@ -1081,6 +1138,45 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: 'Teamrutnätet plus en "vi anställer"-banner längst ner.',
           en: 'The team grid plus a "We\'re hiring" banner at the end.',
           pl: 'Siatka zespołu plus pasek "Szukamy pracowników" na końcu.',
+        },
+      },
+      {
+        key: "portrait-panels",
+        label: {
+          sv: "Helskärmsporträtt",
+          en: "Full-bleed portraits",
+          pl: "Portrety na całą szerokość",
+        },
+        description: {
+          sv: "Ett foto per person i full bredd, nästan en skärm högt, med namnet stort mitt i bilden och rollen under. Personerna kommer en i taget när besökaren rullar. Kräver ett stående foto per person – utan foto står namnet på en tonad platta i stället.",
+          en: "One full-width photo per person, nearly a screen tall, with the name set large in the middle of the picture and the role under it. The people arrive one at a time as the visitor scrolls. Needs a standing photo per person – without one the name sits on a tinted plate instead.",
+          pl: "Jedno zdjęcie na osobę, na całą szerokość i prawie na wysokość ekranu, z imieniem dużą czcionką na środku zdjęcia i rolą pod spodem. Osoby pojawiają się pojedynczo, gdy gość przewija. Wymaga pionowego zdjęcia przy każdej osobie – bez niego imię stoi na przygaszonej płycie.",
+        },
+      },
+      {
+        key: "contact-cards",
+        label: {
+          sv: "Kort med kontaktuppgifter",
+          en: "Cards with contact details",
+          pl: "Karty z kontaktem",
+        },
+        description: {
+          sv: "Varje person i ett kort med ett litet runt foto, namnet och rollen bredvid, och under en tunn linje personens egen telefon och e-post som klickbara länkar. För er där besökaren ska veta vem hen ska ringa. Utan foto står initialerna i stället.",
+          en: "Each person in a card with a small round photo, the name and role beside it, and under a hairline their own phone and email as links to tap. For a team where the visitor needs to know who to call. Without a photo the initials stand there instead.",
+          pl: "Każda osoba w karcie z małym okrągłym zdjęciem, imieniem i rolą obok, a pod cienką linią jej własny telefon i e-mail jako klikalne linki. Dla zespołu, w którym gość musi wiedzieć, do kogo zadzwonić. Bez zdjęcia stoją tam inicjały.",
+        },
+      },
+      {
+        key: "credential-cards",
+        label: {
+          sv: "Kort med behörigheter",
+          en: "Cards with credentials",
+          pl: "Karty z uprawnieniami",
+        },
+        description: {
+          sv: "Varje person i ett kort: kvadratiskt foto överst, namnet, rollen i företagets färg, presentationen och sist behörigheterna som små etiketter. Utan foto står initialerna i stället. För mottagningar och byråer där utbildningen är själva argumentet.",
+          en: "Each person in a card: a square photo on top, the name, the role in the brand colour, the bio, and last the qualifications as small chips. Without a photo the initials stand there instead. For practices and firms where the training is the argument.",
+          pl: "Każda osoba w karcie: kwadratowe zdjęcie u góry, imię, rola w kolorze firmy, biogram, a na końcu uprawnienia jako małe etykiety. Bez zdjęcia stoją tam inicjały. Dla gabinetów i biur, w których wykształcenie jest argumentem.",
         },
       },
     ],
@@ -1376,12 +1472,34 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
         },
       },
       {
+        key: "seam",
+        label: { sv: "Skarv", en: "Seam", pl: "Szew" },
+        description: {
+          sv: "Före och efter ligger kant i kant med en tunn skarv emellan, utan ram och utan mellanrum – paret läses som en enda bild delad på mitten.",
+          en: "Before and after butt together with a hairline seam and no gap or frame – the pair reads as one picture split down the middle.",
+          pl: "Przed i po stykają się z cienkim szwem, bez ramki i odstępu – para czyta się jak jedno zdjęcie przecięte na pół.",
+        },
+      },
+      {
         key: "slider",
         label: { sv: "Dragreglage", en: "Drag slider", pl: "Suwak" },
         description: {
           sv: "Bilderna ligger ovanpå varandra och besökaren drar en handtagslinje i sidled för att avslöja efterbilden.",
           en: "The two photos lie on top of each other and the visitor drags a handle sideways to reveal the after shot.",
           pl: "Zdjęcia leżą jedno na drugim, a gość przeciąga uchwyt w bok, żeby odsłonić zdjęcie „po”.",
+        },
+      },
+      {
+        key: "filtered",
+        label: {
+          sv: "Filtrerad",
+          en: "Filtered",
+          pl: "Z filtrem",
+        },
+        description: {
+          sv: "Flera dragreglage i ett rutnät med besökarens egna filterknappar överst – en knapp per grupp du satt på paren. Alla par finns kvar på sidan; filtret döljer bara. Utan grupper blir det ett vanligt rutnät.",
+          en: "Several drag sliders in a grid with filter buttons above them – one per group you gave the pairs. Every pair stays on the page; the filter only hides. With no groups it is an ordinary grid.",
+          pl: "Kilka suwaków w siatce z przyciskami filtra na górze – po jednym na grupę nadaną parom. Wszystkie pary zostają na stronie; filtr tylko je ukrywa. Bez grup to zwykła siatka.",
         },
       },
     ],
@@ -1475,6 +1593,19 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "Varje paket får en egen bred rad: namn och pris till vänster, det som ingår till höger. Bra när paketen innehåller mycket.",
           en: "Each plan gets its own wide row: name and price on the left, what's included on the right. Good when the plans contain a lot.",
           pl: "Każdy pakiet ma własny szeroki wiersz: nazwa i cena po lewej, zawartość po prawej. Dobre, gdy pakiety zawierają dużo.",
+        },
+      },
+      {
+        key: "offer-cards",
+        label: {
+          sv: "Erbjudandekort",
+          en: "Offer cards",
+          pl: "Karty ofert",
+        },
+        description: {
+          sv: "För kampanjer i stället för paket: din egen etikett överst (”Sommar”), namnet och en mening under, och nederst – under en tunn linje – priset stort med knappen bredvid. Ingen bockad lista, så korten håller samma höjd.",
+          en: "For campaigns rather than plans: your own label on top (”Summer”), the name and a sentence under it, and at the foot – under a hairline – the price set large with the button beside it. No ticked list, so the cards keep one height.",
+          pl: "Dla kampanii zamiast pakietów: własna etykieta u góry („Lato”), nazwa i zdanie pod nią, a na dole – pod cienką linią – duża cena z przyciskiem obok. Bez listy z haczykami, więc karty trzymają jedną wysokość.",
         },
       },
     ],
@@ -1713,6 +1844,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
         },
       },
       {
+        key: "ruled-rows",
+        label: { sv: "Numrerade rader", en: "Numbered rows", pl: "Numerowane wiersze" },
+        description: {
+          sv: "Varje steg på en egen rad med ett stort nummer till vänster och en tunn linje emellan – läses som en lista att bocka av. Numren räknas om själva om du flyttar ett steg.",
+          en: "Each step on its own row with a large number on the reading side and a hairline between – it reads as a list to tick off. The numbers renumber themselves if you move a step.",
+          pl: "Każdy krok we własnym wierszu z dużym numerem z brzegu i cienką linią między nimi – czyta się jak listę do odhaczenia. Numery przeliczają się same.",
+        },
+      },
+      {
         key: "numbered-cards",
         label: {
           sv: "Numrerade kort",
@@ -1766,6 +1906,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "Orterna under varandra som en lista.",
           en: "The places one under the other as a list.",
           pl: "Miejscowości jedna pod drugą jako lista.",
+        },
+      },
+      {
+        key: "columns",
+        label: { sv: "Spalter", en: "Columns", pl: "Kolumny" },
+        description: {
+          sv: "Orterna som en tät lista i flera spalter, uppifrån och ner. För er som täcker många orter – fyrtio etiketter blir en vägg, fyrtio i spalter går att läsa.",
+          en: "The places as a dense list in several columns, reading top to bottom. For a trade that covers many towns – forty chips is a wall, forty in columns can be scanned.",
+          pl: "Miejscowości jako gęsta lista w kilku kolumnach, od góry do dołu. Dla firm obsługujących wiele miejscowości.",
         },
       },
       {
@@ -1941,6 +2090,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
         },
       },
       {
+        key: "week-strip",
+        label: { sv: "Veckoband", en: "Week strip", pl: "Pasek tygodnia" },
+        description: {
+          sv: "Alla sju dagar bredvid varandra, var och en i en egen ruta med tiden under dagens namn – som skylten på dörren. Radas om till två rader på mobil.",
+          en: "All seven days side by side, each in its own cell with the hours under the day name – like the sign on the door. Wraps to two rows on a phone.",
+          pl: "Wszystkie siedem dni obok siebie, każdy we własnym polu z godzinami pod nazwą – jak tabliczka na drzwiach. Na telefonie zawija się do dwóch rzędów.",
+        },
+      },
+      {
         key: "cards",
         label: { sv: "Dagskort", en: "Day cards", pl: "Karty dni" },
         description: {
@@ -1992,6 +2150,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
         },
       },
       {
+        key: "inline-row",
+        label: { sv: "Rad", en: "One line", pl: "Jeden wiersz" },
+        description: {
+          sv: "Adressen och kartlänken på en enda rad mellan två tunna linjer – för sidan som bara behöver säga var ni finns, till exempel ovanför sidfoten.",
+          en: "The address and the map link on a single row between two hairlines – for the page that only needs to say where you are, above the footer say.",
+          pl: "Adres i link do mapy w jednym wierszu między dwiema cienkimi liniami – dla strony, która ma tylko powiedzieć, gdzie jesteście.",
+        },
+      },
+      {
         key: "address-only",
         label: { sv: "Bara adress", en: "Address only", pl: "Tylko adres" },
         description: {
@@ -2001,12 +2168,35 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
         },
       },
       {
+        // The KEY is historical and no longer describes the layout. It was
+        // written when this cut was going to lead with an embedded map; that
+        // map was dropped (there is no maps API key at runtime, and the grey
+        // placeholder box read as a map that had failed to load), and what
+        // remains is a centred address with the link under it.
+        //
+        // The key is deliberately NOT renamed: it is the stored value on every
+        // live section using this layout, so changing it would rewrite customer
+        // data to fix a word only developers ever read. The label and
+        // description below are what an owner sees, and they are accurate.
         key: "map-first",
         label: { sv: "Centrerad", en: "Centered", pl: "Wyśrodkowany" },
         description: {
           sv: "Adressen ligger centrerad med länken till kartan under.",
           en: "The address is centered with the map link below it.",
           pl: "Adres jest wyśrodkowany, a link do mapy pod nim.",
+        },
+      },
+      {
+        key: "branches",
+        label: {
+          sv: "Flera adresser",
+          en: "Several addresses",
+          pl: "Kilka adresów",
+        },
+        description: {
+          sv: "För er med mer än ett ställe: varje adress får en egen ruta med sitt namn, sin adress och en kartlänk – och om du vill ett foto, ett telefonnummer och en egen knapp. Två i bredd, tre om ni har fler. Fyller du inte i några ställen visas huvudadressen som vanligt.",
+          en: "For a business with more than one place: each address gets its own box with its name, its address and a map link – plus a photo, a phone number and its own button if you want them. Two across, three if you have more. Fill in no places and the main address shows as usual.",
+          pl: "Dla firm z więcej niż jednym miejscem: każdy adres dostaje własne pole z nazwą, adresem i linkiem do mapy – a jeśli chcesz, ze zdjęciem, numerem telefonu i własnym przyciskiem. Dwa w rzędzie, trzy przy większej liczbie. Bez wpisanych miejsc pokazuje się główny adres jak zwykle.",
         },
       },
     ],
@@ -2069,6 +2259,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "Certifieringarna visas som en enkel rad med emblem.",
           en: "Certifications shown as a simple row of badges.",
           pl: "Certyfikaty pokazane jako prosty rząd odznak.",
+        },
+      },
+      {
+        key: "rows",
+        label: { sv: "Rader", en: "Rows", pl: "Wiersze" },
+        description: {
+          sv: "En behörighet per rad med märket till vänster, namnet bredvid och en tunn linje emellan. För er där behörigheterna är själva argumentet.",
+          en: "One qualification per row with the mark on the reading side, the name beside it and a hairline between. For a trade whose certifications are the argument.",
+          pl: "Jeden certyfikat na wiersz: znak z brzegu, nazwa obok, cienka linia między nimi. Dla firm, dla których certyfikaty są argumentem.",
         },
       },
       {
@@ -2212,6 +2411,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
         },
       },
       {
+        key: "strip",
+        label: { sv: "Remsa", en: "Strip", pl: "Pasek" },
+        description: {
+          sv: "Bilderna i en enda rad kant i kant, utan mellanrum och utan marginal – blir en yta längst ner på sidan i stället för ett eget avsnitt.",
+          en: "The pictures in one edge-to-edge row with no gaps and no margin – it becomes a texture at the foot of the page rather than a section of its own.",
+          pl: "Zdjęcia w jednym rzędzie od krawędzi do krawędzi, bez odstępów – to raczej faktura na dole strony niż osobna sekcja.",
+        },
+      },
+      {
         key: "collage",
         label: { sv: "Kollage", en: "Collage", pl: "Kolaż" },
         description: {
@@ -2229,9 +2437,16 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
 
   "cta-band": {
     type: "cta-band",
-    label: { sv: "Uppmaning", en: "Call to action", pl: "Zachęta do działania" },
+    // This is the STATIC name, and it only shows in the add-section catalogue
+    // and on a band whose buttons say nothing recognisable. Everywhere an
+    // owner meets a real one - the page tree, the panel header, the go-to
+    // list - `sectionDisplayName` (lib/sections/sectionName.ts) names it after
+    // the ask its button makes: "Boka tid", "Begär offert", "Ring oss".
+    // "Uppmaning" was jargon and "Nästa steg" said even less (owner directives,
+    // 2026-08-16); the catalogue entry now just describes the shape.
+    label: { sv: "Rubrik och knapp", en: "Headline and button", pl: "Nagłówek i przycisk" },
     whenToUse: {
-      sv: "En tydlig uppmaningsremsa. Använd mellan sektioner för att putta besökaren till handling.",
+      sv: "En tydlig remsa med nästa steg. Använd mellan sektioner för att putta besökaren till handling.",
       en: "A bold call-to-action strip. Use between sections to nudge visitors to act.",
       pl: "Wyraźny pasek z zachętą. Użyj między sekcjami, żeby popchnąć gościa do działania.",
     },
@@ -2242,7 +2457,7 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
         key: "centered",
         label: { sv: "Centrerad", en: "Centered", pl: "Wyśrodkowane" },
         description: {
-          sv: "Uppmaningen centrerad med knappen under – den enklaste.",
+          sv: "Texten centrerad med knappen under – den enklaste.",
           en: "The ask centred with the button under it – the simplest one.",
           pl: "Zachęta wyśrodkowana z przyciskiem pod spodem – najprostsza.",
         },
@@ -2269,7 +2484,7 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
         key: "boxed",
         label: { sv: "I ram", en: "Boxed", pl: "W ramce" },
         description: {
-          sv: "Uppmaningen ligger i en inramad ruta istället för en bred remsa.",
+          sv: "Texten ligger i en inramad ruta istället för en bred remsa.",
           en: "The call to action sits inside a bordered card instead of a full-width band.",
           pl: "Zachęta znajduje się w karcie z obramowaniem zamiast na pasku przez całą szerokość.",
         },
@@ -2282,7 +2497,7 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           pl: "Karta z poświatą",
         },
         description: {
-          sv: "Uppmaningen står i en rundad ruta med tunn kant och ett mjukt sken i sidans egen färg bakom sig – som \"I ram\", men upplyst i stället för bara uppritad.",
+          sv: "Texten står i en rundad ruta med tunn kant och ett mjukt sken i sidans egen färg bakom sig – som \"I ram\", men upplyst i stället för bara uppritad.",
           en: "The ask sits in a rounded card with a hairline border and a soft wash of the site's own colour behind it – like \"Boxed\", but lit rather than only drawn.",
           pl: "Zachęta stoi w zaokrąglonej karcie z cienką ramką i miękką poświatą w kolorze strony za nią – jak \"W ramce\", ale rozświetlona, a nie tylko obrysowana.",
         },
@@ -2295,7 +2510,7 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           pl: "Zdjęcie z przewijanym paskiem",
         },
         description: {
-          sv: "Uppmaningen ligger över ett foto, och längst ner sitter en rad korta ord som rullar förbi – till exempel \"Fri offert\" eller \"Rutavdrag\". Utan foto visas den vanliga centrerade uppmaningen.",
+          sv: "Texten ligger över ett foto, och längst ner sitter en rad korta ord som rullar förbi – till exempel \"Fri offert\" eller \"Rutavdrag\". Utan foto visas den vanliga centrerade texten.",
           en: "The ask sits over a photo, with a strip of short phrases scrolling along the bottom edge – \"Free quote\", \"Fixed price\". Without a photo it falls back to the ordinary centred band.",
           pl: "Zachęta leży na zdjęciu, a przy dolnej krawędzi przewija się pasek krótkich haseł – \"Darmowa wycena\", \"Stała cena\". Bez zdjęcia pokazuje zwykły wyśrodkowany pas.",
         },
@@ -2322,7 +2537,7 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
         key: "feature-tiles",
         label: { sv: "Med etiketter", en: "With tiles", pl: "Z kafelkami" },
         description: {
-          sv: "Uppmaningen följs av små rutor som säger vad som ingår. Rutorna är etiketter, inte länkar.",
+          sv: "Texten följs av små rutor som säger vad som ingår. Rutorna är etiketter, inte länkar.",
           en: "The ask is followed by small tiles saying what is included. The tiles are labels, not links.",
           pl: "Po wezwaniu małe kafelki mówiące, co jest w cenie. Kafelki to etykiety, nie linki.",
         },
@@ -2335,7 +2550,7 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           pl: "Ciemna płyta",
         },
         description: {
-          sv: "Uppmaningen ligger på en mörk, rundad platta med luft runt om, och rubriken, texten och knappen sitter förskjutna mot varandra.",
+          sv: "Texten ligger på en mörk, rundad platta med luft runt om, och rubriken, texten och knappen sitter förskjutna mot varandra.",
           en: "The call to action sits on a dark rounded slab with air around it, and the heading, text and button are offset against each other.",
           pl: "Zachęta leży na ciemnej, zaokrąglonej płycie z przestrzenią wokół, a nagłówek, tekst i przycisk są wobec siebie przesunięte.",
         },
@@ -2380,6 +2595,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "Bara en knapp som öppnar bokningen – minst möjliga.",
           en: "Just one button that opens booking – the smallest possible.",
           pl: "Tylko przycisk, który otwiera rezerwację – najmniejsze możliwe.",
+        },
+      },
+      {
+        key: "banner",
+        label: { sv: "Färgat band", en: "Colour band", pl: "Kolorowy pas" },
+        description: {
+          sv: "Bokningen som ett band i sidans egen färg, centrerat och stort. För sidan vars hela poäng är att man bokar.",
+          en: "Booking as a band in the site's own colour, centred and large. For the page whose whole point is that you book.",
+          pl: "Rezerwacja jako pas w kolorze strony, wyśrodkowany i duży. Dla strony, której celem jest rezerwacja.",
         },
       },
       {
@@ -2534,6 +2758,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "Frågorna i ett kort med kant, ett steg i taget.",
           en: "The questions in a bordered card, one step at a time.",
           pl: "Pytania w karcie z ramką, krok po kroku.",
+        },
+      },
+      {
+        key: "stepper",
+        label: { sv: "Med stegräknare", en: "With step index", pl: "Ze wskaźnikiem kroków" },
+        description: {
+          sv: "Samma frågor, men med en numrerad rad överst som visar hur många steg det är. Den vanligaste orsaken till att någon hoppar av är att de inte vet om det är tre frågor eller trettio.",
+          en: "The same questions, with a numbered index on top showing how many steps there are. The commonest reason somebody abandons a quote form is not knowing whether it is three questions or thirty.",
+          pl: "Te same pytania, ale z numerowanym paskiem u góry pokazującym liczbę kroków. Najczęstszy powód porzucenia formularza to niewiedza, czy pytań jest trzy czy trzydzieści.",
         },
       },
       {
@@ -2914,6 +3147,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
         },
       },
       {
+        key: "columns",
+        label: { sv: "Två spalter", en: "Two columns", pl: "Dwie kolumny" },
+        description: {
+          sv: "Samma text men i två spalter på breda skärmar, så halva rullningen försvinner. På mobil blir det en spalt.",
+          en: "The same text in two columns on wide screens, which halves the scroll. One column on a phone.",
+          pl: "Ten sam tekst w dwóch kolumnach na szerokich ekranach, co skraca przewijanie o połowę. Na telefonie jedna kolumna.",
+        },
+      },
+      {
         key: "paper",
         label: { sv: "Dokumentark", en: "Paper", pl: "Kartka dokumentu" },
         description: {
@@ -2976,6 +3218,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "Logotyperna rullar kontinuerligt i en rad – bra när det är fler logotyper än vad som får plats.",
           en: "Logos scroll continuously in a row – good for more logos than fit on one screen.",
           pl: "Logotypy przesuwają się bez przerwy w jednym rzędzie – dobre, gdy jest ich więcej, niż mieści się na ekranie.",
+        },
+      },
+      {
+        key: "ruled-row",
+        label: { sv: "Rad med linjer", en: "Ruled row", pl: "Rząd z liniami" },
+        description: {
+          sv: "Logotyperna på en rad med tunna linjer emellan och linjer över och under – blir ett register i stället för logotyper som råkat hamna på rad.",
+          en: "The logos on a row with hairlines between them and rules above and below – it becomes a register rather than logos that happened to land in a line.",
+          pl: "Logotypy w rzędzie z cienkimi liniami między nimi oraz nad i pod – to rejestr, a nie logotypy, które przypadkiem trafiły w rząd.",
         },
       },
       {
@@ -3201,6 +3452,45 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "Spalter mellan två hårfina linjer där den lilla etiketten står i företagets färg och SJÄLVA MENINGEN sätts stor. För tre korta löften eller ledord, inte för längre text.",
           en: "Columns between two hairline rules where the small label takes the brand colour and THE SENTENCE ITSELF is set large. For three short promises or guiding words, not for longer text.",
           pl: "Kolumny między dwiema cienkimi liniami, gdzie mała etykieta ma kolor firmy, a SAMO ZDANIE jest duże. Dla trzech krótkich obietnic lub motta, nie dla dłuższego tekstu.",
+        },
+      },
+      {
+        key: "check-columns",
+        label: {
+          sv: "Bockade spalter",
+          en: "Ticked columns",
+          pl: "Kolumny z haczykami",
+        },
+        description: {
+          sv: "Två eller tre spalter, var och en med sin rubrik, en rad text och en bockad lista under. För det som gäller före och efter – till exempel inför och efter en behandling.",
+          en: "Two or three columns, each with its own heading, one line of text and a ticked list under it. For what applies before and after – ahead of a treatment and after it, for instance.",
+          pl: "Dwie lub trzy kolumny, każda z własnym nagłówkiem, jednym wierszem tekstu i listą z haczykami pod spodem. Do tego, co obowiązuje przed i po – na przykład przed zabiegiem i po nim.",
+        },
+      },
+      {
+        key: "ruled-tiles",
+        label: {
+          sv: "Rutade fält",
+          en: "Ruled tiles",
+          pl: "Kafelki w siatce",
+        },
+        description: {
+          sv: "Punkterna ligger i ett rutnät utan mellanrum, delade av hårfina linjer, var och en med sin ikon i en tonad ruta, rubriken och en rad under. Läses som en enda tabell i stället för som lösa kort – bra direkt under toppen av sidan.",
+          en: "The points sit in a grid with no gutters, divided by hairlines, each with its icon in a tinted square, the heading and one line under it. Reads as one table rather than as loose cards – good directly under the top of the page.",
+          pl: "Punkty leżą w siatce bez odstępów, rozdzielone cienkimi liniami, każdy z ikoną w przygaszonym kwadracie, nagłówkiem i jednym wierszem pod spodem. Czyta się jak jedna tabela, a nie luźne karty – dobre tuż pod górą strony.",
+        },
+      },
+      {
+        key: "icon-row",
+        label: {
+          sv: "Ikonrad",
+          en: "Icon row",
+          pl: "Rząd ikon" ,
+        },
+        description: {
+          sv: "En tät rad små rutor: ikonen i en tonad kvadrat, rubriken under och en kort rad om du skriver en. Två i bredd på mobil, upp till fyra på stora skärmar – för fem korta trygghetslöften i rad, inte för längre text.",
+          en: "A tight row of small cells: the icon in a tinted square, the heading under it and a short line if you write one. Two across on a phone, up to four on a large screen – for a handful of short reassurances in a row, not for longer text.",
+          pl: "Ciasny rząd małych pól: ikona w przygaszonym kwadracie, nagłówek pod nią i krótki wiersz, jeśli go napiszesz. Dwa w rzędzie na telefonie, do czterech na dużym ekranie – dla kilku krótkich zapewnień, nie dla dłuższego tekstu.",
         },
       },
     ],
@@ -3494,6 +3784,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
         options: { assetSide: ["end", "start"] },
       },
       {
+        key: "framed",
+        label: { sv: "I ram", en: "Framed", pl: "W ramce" },
+        description: {
+          sv: "Filmen ligger i en tonad ruta med rubriken över och texten inuti ramen, så hela blocket läses som en sak. Lugnare än biobredd.",
+          en: "The film sits in a tinted panel with the heading above and the caption inside the frame, so the block reads as one object. Quieter than cinema width.",
+          pl: "Film w stonowanym panelu, nagłówek nad nim, podpis w ramce – blok czyta się jako jedna rzecz. Spokojniejszy niż szerokość kinowa.",
+        },
+      },
+      {
         key: "cinema",
         label: { sv: "Biobredd", en: "Cinema", pl: "Szerokość kinowa" },
         description: {
@@ -3734,6 +4033,19 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           pl: "Zdanie stoi wyśrodkowane i duże, pod nim cienka linia, a niżej przypisanie wyrównane do lewej.",
         },
       },
+      {
+        key: "on-photo",
+        label: {
+          sv: "På foto",
+          en: "Over a photo",
+          pl: "Na zdjęciu",
+        },
+        description: {
+          sv: "Meningen står stor över ett foto som fyller hela bredden, med en mjuk mörk ton bara i den kant texten står i – så syns bilden fortfarande. En andningspaus mitt på sidan. Lägger du inget foto blir det samma lugna centrerade uttalande som vanligt.",
+          en: "The sentence stands large over a photo that fills the width, with a soft dark wash only along the edge the text sits in – so the picture is still visible. A breathing pause mid-page. Add no photo and it renders as the ordinary calm centred statement.",
+          pl: "Zdanie stoi duże na zdjęciu wypełniającym całą szerokość, z delikatnym ciemnym przyciemnieniem tylko przy krawędzi, gdzie stoi tekst – więc zdjęcie nadal widać. Oddech w środku strony. Bez zdjęcia renderuje się jak zwykłe spokojne, wyśrodkowane zdanie.",
+        },
+      },
     ],
     defaultVariant: "centered",
     defaultTone: "clear",
@@ -3849,6 +4161,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "Bilden fyller hela skärmen – kant till kant, utan marginaler.",
           en: "The photo fills the whole screen – edge to edge, with no margins.",
           pl: "Zdjęcie wypełnia cały ekran – od krawędzi do krawędzi, bez marginesów.",
+        },
+      },
+      {
+        key: "caption-beside",
+        label: { sv: "Text bredvid", en: "Caption beside", pl: "Podpis obok" },
+        description: {
+          sv: "Bilden behåller sidans bredd och bildtexten står i marginalen bredvid i stället för under. På mobil hamnar texten under bilden.",
+          en: "The picture keeps the page width and the caption sits in the margin beside it rather than under it. On a phone the caption drops below.",
+          pl: "Zdjęcie zachowuje szerokość strony, a podpis stoi na marginesie obok, nie pod spodem. Na telefonie podpis schodzi pod zdjęcie.",
         },
       },
       {
@@ -4036,6 +4357,15 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           sv: "Enkel lista med en rad per dokument.",
           en: "A simple list with one row per document.",
           pl: "Prosta lista, jeden wiersz na dokument.",
+        },
+      },
+      {
+        key: "ruled",
+        label: { sv: "Rader", en: "Ruled rows", pl: "Wiersze z liniami" },
+        description: {
+          sv: "Filerna som rader mellan tunna linjer i stället för kort. Hela raden går att klicka, så det är lätt att träffa på mobil.",
+          en: "The files as rows between hairlines rather than cards. The whole row is clickable, so it is easy to hit on a phone.",
+          pl: "Pliki jako wiersze między cienkimi liniami, nie karty. Cały wiersz jest klikalny, więc łatwo trafić na telefonie.",
         },
       },
       {
@@ -4265,10 +4595,13 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       {
         key: "default",
         label: { sv: "Standard", en: "Default", pl: "Standard" },
+        // Was a copy-paste of `featured-product`'s description, so the one
+        // sentence describing a captured block talked about prices and buy
+        // buttons.
         description: {
-          sv: "En vara visas stor med bild, pris och köpknapp – för det du helst vill sälja.",
-          en: "One product shown large with its picture, price and buy button – for the thing you most want to sell.",
-          pl: "Jeden produkt pokazany duży ze zdjęciem, ceną i przyciskiem kupna – dla tego, co chcesz sprzedać najbardziej.",
+          sv: "Delen från din gamla sida, med sin egen form. Du ändrar texter, bilder och länkar direkt på sidan.",
+          en: "The piece from your old site, in its own shape. Text, images and links are changed straight on the page.",
+          pl: "Fragment Twojej starej strony, w swojej własnej formie. Tekst, obrazy i linki zmieniasz wprost na stronie.",
         },
       },
     ],
@@ -4281,6 +4614,64 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
       type: "imported",
       nodes: [],
       slots: {},
+    }),
+  },
+
+  "events": {
+    type: "events",
+    label: { sv: "Kalender", en: "What's on", pl: "Kalendarz" },
+    whenToUse: {
+      sv: "Lista det som är på gång: kurser, klasser, prova-på-kvällar, öppet hus. Använd när besökaren behöver veta VAD som händer och NÄR. Inte för att boka en tid hos er, det gör Bokning.",
+      en: "List what is coming up: courses, classes, taster evenings, open days. Use when a visitor needs to know WHAT is happening and WHEN. Not for booking a slot with you, which is what Booking does.",
+      pl: "Pokaż, co się dzieje: kursy, zajęcia, wieczory próbne, dni otwarte. Użyj, gdy odwiedzający musi wiedzieć CO i KIEDY. Nie do rezerwacji terminu, od tego jest Rezerwacja.",
+    },
+    category: "content",
+    icon: "CalendarDays",
+    variants: [
+      {
+        key: "list",
+        label: { sv: "Lista", en: "List", pl: "Lista" },
+        description: {
+          sv: "Ett tillfälle per rad med datumet till vänster och en tunn linje emellan. Lättast att läsa när ni har många datum.",
+          en: "One occasion per row with the date on the reading side and a hairline between. The easiest to read when you have many dates.",
+          pl: "Jedno wydarzenie na wiersz, data z brzegu i cienka linia między nimi. Najłatwiej czytać przy wielu terminach.",
+        },
+      },
+      {
+        key: "cards",
+        label: { sv: "Kort", en: "Cards", pl: "Karty" },
+        description: {
+          sv: "Varje tillfälle i ett eget kort med plats för foto och en knapp. Bra när ni har några få och vill visa dem ordentligt.",
+          en: "Each occasion in its own card with room for a photo and a button. Good when you have a few and want to show them properly.",
+          pl: "Każde wydarzenie we własnej karcie ze zdjęciem i przyciskiem. Dobre, gdy masz kilka i chcesz je pokazać porządnie.",
+        },
+      },
+      {
+        key: "agenda",
+        label: { sv: "Datumspalt", en: "Date column", pl: "Kolumna dat" },
+        description: {
+          sv: "Datumet står stort i en egen spalt till vänster med tillfället bredvid. Läses som ett program eller en anslagstavla.",
+          en: "The date stands large in its own column with the occasion beside it. It reads as a programme or a noticeboard.",
+          pl: "Data stoi duża we własnej kolumnie, wydarzenie obok. Czyta się jak program albo tablica ogłoszeń.",
+        },
+      },
+    ],
+    defaultVariant: "list",
+    defaultTone: "light",
+    allowedTones: ["light", "clear", "dark"],
+    defaultContent: (lang) => ({
+      type: "events",
+      heading: pick(lang, "På gång", "What's on", "Co się dzieje"),
+      // No invented dates. A programme is the one thing a default cannot guess
+      // without publishing a course that does not exist, so this ships empty
+      // and the section says so until the owner fills it in.
+      items: [],
+      emptyNote: pick(
+        lang,
+        "Inget inbokat just nu. Hör av dig så berättar vi när nästa tillfälle kommer.",
+        "Nothing booked in right now. Get in touch and we will tell you when the next one is.",
+        "Nic nie jest teraz zaplanowane. Napisz do nas, a powiemy, kiedy będzie następne.",
+      ),
     }),
   },
 
@@ -4375,6 +4766,9 @@ export const ARRAY_DEFAULTS: Record<string, (lang: Locale) => unknown> = {
       "A short description of the service.",
       "Krótki opis usługi.",
     ),
+  }),
+  "events.items": (l) => ({
+    title: pick(l, "Nytt tillfälle", "New occasion", "Nowe wydarzenie"),
   }),
   "faq.items": (l) => ({
     question: pick(l, "Ny fråga?", "New question?", "Nowe pytanie?"),

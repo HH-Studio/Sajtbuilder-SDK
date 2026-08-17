@@ -14,6 +14,20 @@ that validated against an older CLI still validates against a newer one.
 
 ### Changed
 
+- **The mirror validates the `events` section type and 32 new variants the app
+  had already been accepting.** Four mirrored files had drifted from
+  simple-site-builder (`convex/model/sections.ts`, `convex/model/snapshot.ts`,
+  `convex/model/visitorAssistant.ts`, `lib/sections/registry.ts`), so the two
+  repos no longer generated the same contract and `site-kit` rejected a bundle
+  authoring `events`, `before-after.seam`, `team.portrait-panels`,
+  `restaurant-menu.broadsheet` or any of the other new variants.
+
+  Synced app -> SDK with `bun run sync:site-kit-mirrors`, then regenerated
+  everything downstream: `contract/portable-v1.json`, the
+  `contract/app-source.json` provenance, `docs/schema-reference.md`,
+  `skills/shared/section-schema.md` and the skill manifest hashes that reference
+  it. No hand edits: the section models are the app's and the rest is generated.
+
 - **The `starter-smb` template renders its icons with Tabler, and no longer
   depends on Lucide.** SnabbSajt uses `@tabler/icons-react` as its only icon
   system, but the editable starter still declared `lucide-react` and imported a

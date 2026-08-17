@@ -16,7 +16,7 @@
     "maxTotalAssetBytes": 209715200
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:b5b09de6bc0efd1b4125ccb669619c2edec80cd2d07399a8922ab90c46e44602",
+  "hash": "sha256:24e524cec2a4b566eb0678766079ae9a54b1fdba4d6a7659745c828e0b4b943a",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -3334,6 +3334,10 @@
                       {
                         "type": "literal",
                         "value": "imported"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "events"
                       }
                     ]
                   },
@@ -7891,6 +7895,7 @@
       "contact",
       "cta-band",
       "documents",
+      "events",
       "external-product-grid",
       "faq",
       "featured-product",
@@ -7943,6 +7948,8 @@
         "split"
       ],
       "before-after": [
+        "filtered",
+        "seam",
         "side-by-side",
         "slider",
         "stacked",
@@ -7961,6 +7968,7 @@
         "work-index"
       ],
       "booking": [
+        "banner",
         "button",
         "inline"
       ],
@@ -7968,7 +7976,8 @@
         "badges",
         "grid",
         "ledger",
-        "list"
+        "list",
+        "rows"
       ],
       "comparison": [
         "cards",
@@ -8004,6 +8013,12 @@
       ],
       "documents": [
         "grid",
+        "list",
+        "ruled"
+      ],
+      "events": [
+        "agenda",
+        "cards",
         "list"
       ],
       "external-product-grid": [
@@ -8098,6 +8113,7 @@
       "highlights": [
         "accent",
         "alternating",
+        "check-columns",
         "checklist",
         "chip-cards",
         "credo",
@@ -8107,10 +8123,12 @@
         "header-action",
         "icon-circles",
         "icon-list",
+        "icon-row",
         "panel-cards",
         "pillars",
         "plain",
         "ruled-columns",
+        "ruled-tiles",
         "split-icons",
         "stat-cards",
         "values"
@@ -8121,6 +8139,7 @@
         "wide"
       ],
       "image": [
+        "caption-beside",
         "full",
         "inset",
         "wide"
@@ -8131,7 +8150,8 @@
       "instagram": [
         "collage",
         "grid",
-        "row"
+        "row",
+        "strip"
       ],
       "lead-form": [
         "card",
@@ -8141,11 +8161,14 @@
       ],
       "legal": [
         "centered",
+        "columns",
         "document",
         "paper"
       ],
       "location": [
         "address-only",
+        "branches",
+        "inline-row",
         "map-card",
         "map-first"
       ],
@@ -8153,7 +8176,8 @@
         "grid",
         "marquee",
         "numbered-grid",
-        "row"
+        "row",
+        "ruled-row"
       ],
       "newsletter": [
         "boxed",
@@ -8166,10 +8190,12 @@
       "opening-hours": [
         "cards",
         "compact",
-        "table"
+        "table",
+        "week-strip"
       ],
       "pricing": [
         "lifted-cards",
+        "offer-cards",
         "packages",
         "rows",
         "simple-list",
@@ -8179,6 +8205,7 @@
       ],
       "process": [
         "numbered-cards",
+        "ruled-rows",
         "steps-cta",
         "steps-horizontal",
         "steps-vertical",
@@ -8191,10 +8218,13 @@
       ],
       "quote-flow": [
         "card",
-        "inline"
+        "inline",
+        "stepper"
       ],
       "restaurant-menu": [
+        "broadsheet",
         "columns",
+        "ruled-list",
         "stacked"
       ],
       "rich-text": [
@@ -8213,9 +8243,11 @@
       "service-areas": [
         "cards",
         "chips",
+        "columns",
         "list"
       ],
       "service-detail": [
+        "bullets-lead",
         "media-left",
         "media-right",
         "stacked"
@@ -8235,6 +8267,8 @@
         "numbered-cells",
         "numbered-split",
         "photo-bento",
+        "photo-pairs",
+        "price-rows",
         "ruled-grid",
         "split",
         "tiles"
@@ -8251,17 +8285,21 @@
         "centered",
         "framed",
         "lede",
+        "on-photo",
         "rule"
       ],
       "team": [
         "avatar-roster",
         "cards",
+        "contact-cards",
+        "credential-cards",
         "expanding-strips",
         "grid",
         "grid-cta",
         "list",
         "portrait-grid",
         "portrait-grid-start",
+        "portrait-panels",
         "portrait-reveal"
       ],
       "testimonials": [
@@ -8278,6 +8316,7 @@
       ],
       "video": [
         "cinema",
+        "framed",
         "full",
         "side"
       ]
