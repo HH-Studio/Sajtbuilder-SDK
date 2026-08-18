@@ -109,8 +109,9 @@ export function normalizeTrustMarks(raw: unknown): TrustMark[] {
  * owner stating a fact about their own business, which they can be held to; a
  * badge reading "Försäkrad" would imply we checked, and we did not.
  *
- * "Godkänd för F-skatt" is not here. It is read from the company's invoicing
- * profile, so a site can never say one thing while its invoices say another.
+ * "Godkänd för F-skatt" is not a mark here. It is read from the company's
+ * invoicing profile (`F_SKATT_LABELS` below, appended by `trustBandContent`), so
+ * a site can never say one thing while its invoices say another.
  *
  * Lives here rather than in `generation/build.ts` because generation is no
  * longer the only writer: Settings materialises the same band onto a site that
@@ -140,13 +141,59 @@ export const TRUST_MARK_LABELS: Record<TrustMarkKey, Record<Locale, string>> = {
   },
 };
 
+/**
+ * "Godkänd för F-skatt", in the site's own language.
+ *
+ * Not a trust MARK, and deliberately not tickable: the fact lives on
+ * `companies.invoicing.fSkatt`, where the invoices read it, and a second copy
+ * would let the site and the invoice disagree. The wizard step says so out loud
+ * ("hämtar vi från dina faktureringsuppgifter"), which is a promise the band has
+ * to keep - so the band prints the canonical value instead of storing its own.
+ */
+export const F_SKATT_LABELS: Record<Locale, string> = {
+  sv: "Godkänd för F-skatt",
+  en: "Approved for Swedish F-tax",
+  pl: "Zatwierdzony podatek F-skatt",
+};
+
+/** Every statement this module writes, in every language it writes them in.
+ *  Lower-cased for comparison only. */
+const OUR_STATEMENTS: ReadonlySet<string> = new Set(
+  [
+    ...Object.values(TRUST_MARK_LABELS).flatMap((byLang) =>
+      Object.values(byLang),
+    ),
+    ...Object.values(F_SKATT_LABELS),
+  ].map((label) => label.trim().toLowerCase()),
+);
+
+/**
+ * True when this `certifications` item is a sentence WE wrote.
+ *
+ * `certifications` is the general editor section for qualifications, licences,
+ * memberships and awards, so a site can hold one the owner filled in herself.
+ * Settings may refresh the statements it owns and must leave everything else
+ * exactly as she typed it, which is what this tells the two apart. Matching in
+ * every language on purpose: a site whose language changed after the band was
+ * written still holds the older wording, and forgetting that would turn our own
+ * sentence into "the owner's" and duplicate it.
+ */
+export function isTrustStatement(label: string): boolean {
+  return OUR_STATEMENTS.has(label.trim().toLowerCase());
+}
+
 /** The trust band's content for a set of ticked marks: the owner's statements,
  *  in their site's language, in the order the vocabulary defines them. One
  *  source for the generator and for the Settings door, so a band written last
- *  month and a band written today say the same thing. */
+ *  month and a band written today say the same thing.
+ *
+ *  `fSkatt` is the company's canonical invoicing value, and it is appended only
+ *  when the owner ticked something: a band that exists for the F-tax line alone
+ *  would appear on a site whose owner answered no question at all. */
 export function trustBandContent(
   marks: readonly TrustMark[],
   lang: Locale,
+  opts?: { fSkatt?: boolean },
 ): {
   type: "certifications";
   heading: string;
@@ -159,6 +206,9 @@ export function trustBandContent(
       return mark.note ? { label, note: mark.note } : { label };
     })
     .filter((item): item is { label: string; note?: string } => item !== null);
+  if (items.length > 0 && opts?.fSkatt) {
+    items.push({ label: F_SKATT_LABELS[lang] });
+  }
   return {
     type: "certifications",
     heading:

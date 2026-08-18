@@ -434,6 +434,12 @@ export const sectionContent = v.union(
     // deleted, so the band can never point at a page that is gone. Town pages
     // hang off this band and not the header menu - six extra nav items is how a
     // small site stops being navigable.
+    //
+    // `area` is a JOIN key, not prose: the renderer matches it against the
+    // visible `areas[]` entry. The translation pass therefore never translates
+    // it on its own (`SKIP_KEYS` in lib/site/multilang.ts) and rebuilds it from
+    // the localized label instead, so a differently translated or
+    // hand-corrected town name cannot quietly unlink that town's page.
     areaLinks: v.optional(
       v.array(v.object({ area: v.string(), pageSlug: v.string() })),
     ),
