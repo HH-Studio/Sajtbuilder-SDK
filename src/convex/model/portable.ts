@@ -26,6 +26,7 @@ import {
 } from "./content";
 import { fontSource, fontStyle, fontLicense } from "./fonts";
 import { verticalValidator, goalValidator, siteLocaleValidator } from "./business";
+import { trustMarksValidator } from "./trustMarks";
 import { CONTENT_TYPES } from "../../lib/content/contentTypes";
 import { navMegaMenu } from "./navigation";
 import {
@@ -162,6 +163,23 @@ export const portableSiteV1 = v.object({
       address: v.optional(address),
     }),
     socials: v.optional(socialsValidator),
+    /** The two website-level facts the discovery work added, and both are
+     *  EVIDENCE rather than presentation, which is why they travel.
+     *
+     *  `trustMarks` is what the owner ticked about their own firm, and it is the
+     *  only thing that makes a guarantee or credentials claim sayable
+     *  (`generation/honesty.ts`). `serviceAreas` is the towns they travel to,
+     *  and it feeds `areaServed` in the published LocalBusiness markup plus the
+     *  town pages an owner can ask for.
+     *
+     *  Without them here, a backup or a duplicate carried sections that still
+     *  displayed the badges and listed the towns while the website row knew
+     *  neither: the prepublish check reported the marks missing, town-page
+     *  management had no candidates, and the next snapshot emitted no
+     *  `areaServed`. Optional and additive, so every V1 bundle written before
+     *  this imports exactly as it did. */
+    trustMarks: v.optional(trustMarksValidator),
+    serviceAreas: v.optional(v.array(v.string())),
     // The header menu the owner built on top of the page list: extra links
     // that are not pages (`navLinks`) and the order both kinds sit in
     // (`navOrder`). Without these a round-trip — and every import of a site
