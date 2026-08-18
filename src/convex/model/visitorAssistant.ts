@@ -1,5 +1,11 @@
 import { v, type Infer } from "convex/values";
 
+import {
+  canonicalDocumentMime,
+  DOCUMENT_EXTENSIONS,
+  DOCUMENT_MIME_TYPES,
+} from "../../lib/uploads/documentTypes";
+
 export const MAX_ASSISTANT_SOURCES = 5;
 export const MAX_SOURCE_BYTES = 5 * 1024 * 1024;
 export const MAX_SOURCE_CHARS = 120_000;
@@ -34,14 +40,14 @@ export function selectRelevantVisitorAssistantMatches<T extends { _score: number
 // --- Visitor attachments ---------------------------------------------------
 // A visitor can attach a photo of the problem ("is this the part you replace?")
 // or a document ("here is the quote I got"). Deliberately narrow: an image goes
-// through the same vision pre-pass the owner chat uses, a PDF through the same
-// text extractor the knowledge sources use, and everything else is refused at
-// the mutation. Nothing here is ever placed into the website - it is untrusted
+// through the same vision pre-pass the owner chat uses, a document through the
+// same text extractor the knowledge sources use, and everything else is refused
+// at the mutation. Nothing here is ever placed into the website - it is untrusted
 // visitor input that only ever becomes context for one answer.
 
 export const MAX_ATTACHMENTS_PER_MESSAGE = 3;
 export const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
-/** How much extracted PDF text reaches the model. One turn's context, not a
+/** How much extracted document text reaches the model. One turn's context, not a
  *  knowledge base: a visitor upload is never embedded or retrieved later. */
 export const MAX_ATTACHMENT_TEXT_CHARS = 6_000;
 export const MAX_ATTACHMENT_NAME_CHARS = 120;
@@ -53,20 +59,47 @@ export const ATTACHMENT_IMAGE_MIME_TYPES = [
   "image/gif",
   "image/heic",
 ] as const;
-export const ATTACHMENT_DOCUMENT_MIME_TYPES = ["application/pdf"] as const;
+/** Every document type the product takes, so the widget, the preview composer
+ *  and the mutation cannot disagree. The list itself lives in
+ *  lib/uploads/documentTypes.ts. A file whose text we cannot get out is not
+ *  refused here - the turn answers with "the visitor sent a file we could not
+ *  read", which is better than a picker that greys out their menu. */
+export const ATTACHMENT_DOCUMENT_MIME_TYPES = DOCUMENT_MIME_TYPES;
 export const ATTACHMENT_MIME_TYPES = [
   ...ATTACHMENT_IMAGE_MIME_TYPES,
   ...ATTACHMENT_DOCUMENT_MIME_TYPES,
 ] as const;
 
 /** The browser `accept` string for the visitor + preview composers. Derived so
- *  the picker and the server allow-list can never drift apart. */
-export const ATTACHMENT_ACCEPT = ATTACHMENT_MIME_TYPES.join(",");
+ *  the picker and the server allow-list can never drift apart. Extensions are
+ *  listed too: a phone reports no type at all for a .md, and a picker that
+ *  greys out the file the visitor wants is worse than one that lets the server
+ *  refuse it. */
+export const ATTACHMENT_ACCEPT = [
+  ...ATTACHMENT_MIME_TYPES,
+  ...DOCUMENT_EXTENSIONS,
+].join(",");
 
 export function isAllowedAttachmentMimeType(value: string): boolean {
   return (ATTACHMENT_MIME_TYPES as readonly string[]).includes(
     value.toLowerCase().trim(),
   );
+}
+
+/**
+ * What one picked file must be sent and stored as, or null when we do not take
+ * it. Images keep the browser's own type; documents get ours, because a .md
+ * arrives with an empty type on Safari and a .docx from a share sheet arrives
+ * as a zip. The picker and the mutation both go through this, so a file the
+ * visitor can choose is a file the server will accept.
+ */
+export function attachmentMimeType(file: {
+  type?: string;
+  name?: string;
+}): string | null {
+  const declared = (file.type ?? "").split(";", 1)[0]!.trim().toLowerCase();
+  if (isAttachmentImage(declared)) return declared;
+  return canonicalDocumentMime(file);
 }
 
 export function isAttachmentImage(value: string): boolean {

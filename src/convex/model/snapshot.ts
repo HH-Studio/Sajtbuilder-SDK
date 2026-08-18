@@ -41,6 +41,11 @@ export const resolvedAsset = v.object({
   width: v.number(),
   height: v.number(),
   blurhash: v.optional(v.string()),
+  // Documents only, and only on snapshots published from 2026-08-18: which KIND
+  // of file this is, so the download row can say "Word" instead of guessing
+  // "PDF". Absent on every older snapshot, and every older snapshot was a PDF,
+  // so the renderer's fallback is correct rather than merely safe.
+  mimeType: v.optional(v.string()),
   // Stock-photo attribution (Unsplash), shown as a subtle credit on the public
   // site. Only set for source:"stock" assets; absent for uploads/AI.
   // `url` = the photo's page on the provider (the "Unsplash" link), and

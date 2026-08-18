@@ -1090,8 +1090,9 @@ export const sectionContent = v.union(
   }),
 
   // Downloadable documents (backlog 0817): legal PDFs, price lists, forms.
-  // `document` is an assetRef to a kind:"document" asset (application/pdf,
-  // byte-sniffed on upload/import); the renderer links its resolved URL. The
+  // `document` is an assetRef to a kind:"document" asset (PDF, Word, text,
+  // markdown or CSV - lib/uploads/documentTypes.ts, byte-sniffed on
+  // upload/import); the renderer links its resolved URL. The
   // ref is optional so a freshly added item validates before any upload.
   v.object({
     type: v.literal("documents"),

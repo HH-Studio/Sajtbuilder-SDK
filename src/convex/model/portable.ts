@@ -274,6 +274,11 @@ export const portableSiteV1 = v.object({
       order: v.number(),
       folderTmpId: v.optional(v.string()),
       showInNav: v.boolean(),
+      // The town a generated town page was written for. Carried so a duplicated
+      // or re-imported site keeps the marker: without it the town-page card
+      // offers the same towns again and writes duplicates beside the pages that
+      // came across.
+      sourceTown: v.optional(v.string()),
       // Menu text when it differs from the page's own title (websites' menu
       // editor writes this). Part of the same menu-fidelity set as the site's
       // `navLinks`/`navOrder` above.

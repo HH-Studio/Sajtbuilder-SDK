@@ -152,18 +152,23 @@ export function toAdminDictLocale(lang: SiteLocale): "sv" | "en" | "pl" {
  *  copy tables for sv/en/pl. A primary language beyond those three seeds in
  *  English.
  *
- *  What happens to that English seed, honestly: the AI polish pass rewrites it
- *  in the real primary language, because `convex/generation/polish.ts` is given
- *  `website.language` itself and `langName` covers all twelve. Nothing else
- *  does. The publish translate pass only ever produces SECONDARY locales - it
- *  filters the primary out (`convex/generation/translate.ts`) - so a site built
- *  with polish unavailable (no model, the budget spent, a deterministic-only
- *  path) stays in English, and so does any chrome the polish pass does not
- *  touch. Picking one of the nine long-tail languages is therefore a partial
- *  promise today; see `docs/i18n-rtl.md` "Known limits" and the backlog ticket
- *  it names. Same fallback rule
- *  as `toAdminDictLocale`, kept as a separate name so call sites read as
- *  "generation seed language", not "admin dict language". */
+ *  What happens to that English seed, honestly: the primary-language pass
+ *  (`convex/generation/localizePrimary.ts`) translates the WHOLE draft - every
+ *  section's text and every page title - into the real primary before the copy
+ *  polish runs, so polish rewrites its slots on a page that is already in the
+ *  owner's language. Before that pass existed, polish was the only thing doing
+ *  any of it, and polish only touches the home hero/about/CTA.
+ *
+ *  It is still an AI pass, so it needs a model key, AI consent and a credit
+ *  balance; with none of those a long-tail site stays in English. That is why
+ *  the create flow says the nine are AI-translated
+ *  (`create.language.aiTranslated`) - see `docs/i18n-rtl.md` "Known limits".
+ *  The publish translate pass is NOT the fallback: it only ever produces
+ *  SECONDARY locales, filtering the primary out by design
+ *  (`convex/generation/translate.ts`).
+ *
+ *  Same fallback rule as `toAdminDictLocale`, kept as a separate name so call
+ *  sites read as "generation seed language", not "admin dict language". */
 export function toGenerationLocale(lang: SiteLocale): GenerationLocale {
   return lang === "sv" || lang === "en" || lang === "pl" ? lang : "en";
 }
