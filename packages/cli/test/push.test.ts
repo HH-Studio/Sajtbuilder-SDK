@@ -57,7 +57,15 @@ const MERGE_DATA = {
     sections: [
       { externalKey: "hero-1", type: "hero", action: "updated" },
       { externalKey: "about-1", type: "textMedia", action: "added" },
-      { externalKey: "faq-1", type: "faq", action: "conflict" },
+      {
+        externalKey: "faq-1",
+        type: "faq",
+        action: "conflict",
+        conflictPreview: {
+          theirs: ["Vi har oppet till 18 pa fredagar"],
+          ours: ["Vi har oppet till 17"],
+        },
+      },
     ],
     restorePointId: "rp1",
   },
@@ -261,5 +269,69 @@ describe("snabbsajt push", () => {
     expect(parsed.ok).toBe(true);
     expect(parsed.siteId).toBe("other-site-id");
     expect(parsed.sectionCounts).toEqual({ updated: 1, added: 1, conflict: 1 });
+  });
+
+  it("prints what each side says under the conflicted section", async () => {
+    const { all, output } = collectOutput();
+    const fetchImpl = pushFetch(toolResult(2, MERGE_DATA));
+
+    await runPushCommand(["pkg"], output, {
+      fetch: fetchImpl as unknown as typeof globalThis.fetch,
+    });
+
+    // The point of the whole feature: the builder can read the client's words
+    // without opening the editor, and tell them apart from their own.
+    expect(all()).toContain("in the app:  Vi har oppet till 18 pa fredagar");
+    expect(all()).toContain("your push:   Vi har oppet till 17");
+  });
+
+  it("says so when the edit was not in the text", async () => {
+    const { all, output } = collectOutput();
+    const fetchImpl = pushFetch(
+      toolResult(2, {
+        ...MERGE_DATA,
+        merge: {
+          ...MERGE_DATA.merge,
+          sections: [
+            {
+              externalKey: "faq-1",
+              type: "faq",
+              action: "conflict",
+              conflictPreview: { theirs: [], ours: [] },
+            },
+          ],
+        },
+      }),
+    );
+
+    await runPushCommand(["pkg"], output, {
+      fetch: fetchImpl as unknown as typeof globalThis.fetch,
+    });
+
+    expect(all()).toContain("(the change is not in the text)");
+  });
+
+  it("prints nothing extra when the server did not send a preview", async () => {
+    // The CLI is installed independently of the deployment it talks to. An
+    // older server omits the field entirely, and the difference between "no
+    // preview" and "no text changed" must stay visible.
+    const { all, output } = collectOutput();
+    const fetchImpl = pushFetch(
+      toolResult(2, {
+        ...MERGE_DATA,
+        merge: {
+          ...MERGE_DATA.merge,
+          sections: [{ externalKey: "faq-1", type: "faq", action: "conflict" }],
+        },
+      }),
+    );
+
+    await runPushCommand(["pkg"], output, {
+      fetch: fetchImpl as unknown as typeof globalThis.fetch,
+    });
+
+    expect(all()).toContain("faq-1");
+    expect(all()).not.toContain("in the app:");
+    expect(all()).not.toContain("(the change is not in the text)");
   });
 });

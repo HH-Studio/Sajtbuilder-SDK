@@ -45,7 +45,16 @@ type PushArgs = {
   forceKeys: string[];
 };
 
-type MergeSectionEntry = { externalKey?: string; type: string; action: string };
+type MergeSectionEntry = {
+  externalKey?: string;
+  type: string;
+  action: string;
+  /** Present on a conflict from a server new enough to send it: what each side
+   *  says that the other does not. Optional because the CLI is installed
+   *  independently of the deployment it talks to, and an older server simply
+   *  omits it. */
+  conflictPreview?: { theirs?: string[]; ours?: string[] };
+};
 type MergeSummary = {
   pagesAdded?: string[];
   pagesMatched?: string[];
@@ -165,6 +174,20 @@ function printMergeReport(
     output.stdout("  Conflicts (edited in the app since the last import — kept, not overwritten):");
     for (const section of conflicts) {
       output.stdout(`    - ${section.externalKey ?? "(no externalKey)"} (${section.type})`);
+      // The words on each side, when the server sent them. This is the half a
+      // builder cannot see from their own repo, and it is usually enough to
+      // decide between keeping the client's version and forcing their own
+      // without opening the editor.
+      const theirs = section.conflictPreview?.theirs ?? [];
+      const ours = section.conflictPreview?.ours ?? [];
+      for (const line of theirs) output.stdout(`        in the app:  ${line}`);
+      for (const line of ours) output.stdout(`        your push:   ${line}`);
+      if (section.conflictPreview && theirs.length === 0 && ours.length === 0) {
+        // Distinguishes "edited, but not in the text" - a swapped image, a
+        // layout knob - from "this server did not tell us", which prints
+        // nothing at all rather than a misleading blank.
+        output.stdout("        (the change is not in the text)");
+      }
     }
     output.stdout("  Re-run with --force-key <externalKey> to overwrite a specific one.");
   }
