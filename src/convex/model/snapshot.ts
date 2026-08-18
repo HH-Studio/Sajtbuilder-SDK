@@ -174,6 +174,15 @@ export const siteSnapshot = v.object({
     email: v.optional(v.string()),
     address: v.optional(address),
   }),
+  // The towns this business travels to, beyond the address in `contact`.
+  // Frozen at publish so the public route can emit `areaServed` without a
+  // second read, and so a published version keeps saying what it said the day
+  // it was published.
+  //
+  // Optional because every snapshot published before the discovery work carries
+  // none: absent simply means the markup names the address and nothing else,
+  // which is exactly what those sites emit today.
+  serviceAreas: v.optional(v.array(v.string())),
   socials: v.optional(socialsValidator),
   // Third-party tracking ids, copied from the draft at publish. The public
   // route reads these to (consent-gate and) inject analytics/marketing tags.
