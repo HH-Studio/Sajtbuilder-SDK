@@ -150,8 +150,18 @@ export function toAdminDictLocale(lang: SiteLocale): "sv" | "en" | "pl" {
 /** Narrow a chosen primary SITE_LOCALE down to a GENERATION_LOCALE for the
  *  deterministic engine (`convex/generation/**`), which only has hand-authored
  *  copy tables for sv/en/pl. A primary language beyond those three seeds in
- *  English; the post-publish translate pass then carries it into the real
- *  primary (same mechanism secondary locales already use). Same fallback rule
+ *  English.
+ *
+ *  What happens to that English seed, honestly: the AI polish pass rewrites it
+ *  in the real primary language, because `convex/generation/polish.ts` is given
+ *  `website.language` itself and `langName` covers all twelve. Nothing else
+ *  does. The publish translate pass only ever produces SECONDARY locales - it
+ *  filters the primary out (`convex/generation/translate.ts`) - so a site built
+ *  with polish unavailable (no model, the budget spent, a deterministic-only
+ *  path) stays in English, and so does any chrome the polish pass does not
+ *  touch. Picking one of the nine long-tail languages is therefore a partial
+ *  promise today; see `docs/i18n-rtl.md` "Known limits" and the backlog ticket
+ *  it names. Same fallback rule
  *  as `toAdminDictLocale`, kept as a separate name so call sites read as
  *  "generation seed language", not "admin dict language". */
 export function toGenerationLocale(lang: SiteLocale): GenerationLocale {

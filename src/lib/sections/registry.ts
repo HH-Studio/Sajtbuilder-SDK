@@ -2865,7 +2865,7 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
         key: "simple",
         label: { sv: "Enkel", en: "Simple", pl: "Prosta" },
         description: {
-          sv: "Företagets namn, en rad om er och länkarna på en enda rad – den minsta sidfoten, för en sajt med få sidor.",
+          sv: "Företagets namn, en rad om er och länkarna på en enda rad – den minsta sidfoten, för en hemsida med få sidor.",
           en: "The business name, one line about you and the links on a single row – the smallest footer, for a site with few pages.",
           pl: "Nazwa firmy, jeden wiersz o was i linki w jednym rzędzie – najmniejsza stopka, dla witryny z kilkoma stronami.",
         },
@@ -2874,7 +2874,7 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
         key: "columns",
         label: { sv: "Kolumner", en: "Columns", pl: "Kolumny" },
         description: {
-          sv: "Länkarna delas upp i spalter med en rubrik över varje – för en sajt med tillräckligt många sidor för att behöva grupperas.",
+          sv: "Länkarna delas upp i spalter med en rubrik över varje – för en hemsida med tillräckligt många sidor för att behöva grupperas.",
           en: "The links are split into columns with a heading over each – for a site with enough pages to need grouping.",
           pl: "Linki podzielone na kolumny z nagłówkiem nad każdą – dla witryny z tyloma stronami, że trzeba je pogrupować.",
         },
@@ -3423,7 +3423,7 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
           pl: "Jedno pole w kolorze",
         },
         description: {
-          sv: "Samma rutnät som \"Tre kort\", men den sista rutan fylls med sajtens huvudfärg så ögat landar där.",
+          sv: "Samma rutnät som \"Tre kort\", men den sista rutan fylls med hemsidans huvudfärg så ögat landar där.",
           en: "The same grid as \"Three cards\", but the last cell is filled with the site's main colour so the eye lands there.",
           pl: "Ta sama siatka co \"Trzy karty\", ale ostatnie pole wypełnione głównym kolorem strony, żeby wzrok tam trafiał.",
         },
