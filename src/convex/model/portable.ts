@@ -304,6 +304,12 @@ export const portableSiteV1 = v.object({
       // Draft/held pages must survive agency migrations without becoming live
       // on the customer's first "publish all" operation.
       excludeFromPublish: v.optional(v.boolean()),
+      // Which town this page was written for, when the owner asked for one page
+      // per town they work in. Carried because the marker is what stops the
+      // town-page card offering to write a page the copy already has: without
+      // it, a duplicated or imported site reports every town as pending and a
+      // second page about the same town can be generated over the first.
+      sourceTown: v.optional(v.string()),
       seo: portableSeo,
     }),
   ),

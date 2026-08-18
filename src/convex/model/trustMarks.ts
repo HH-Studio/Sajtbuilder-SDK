@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import type { Locale } from "./business";
 
 // ---------------------------------------------------------------------------
 // Trust marks — the handful of facts a customer checks before letting a
@@ -99,6 +100,75 @@ export function normalizeTrustMarks(raw: unknown): TrustMark[] {
     out.push(note ? { key: key as TrustMarkKey, note } : { key: key as TrustMarkKey });
   }
   return out;
+}
+
+/**
+ * What each ticked trust mark says, in the site's own language.
+ *
+ * Written in the FIRM'S voice on purpose. "Vi har ansvarsförsäkring" is the
+ * owner stating a fact about their own business, which they can be held to; a
+ * badge reading "Försäkrad" would imply we checked, and we did not.
+ *
+ * "Godkänd för F-skatt" is not here. It is read from the company's invoicing
+ * profile, so a site can never say one thing while its invoices say another.
+ *
+ * Lives here rather than in `generation/build.ts` because generation is no
+ * longer the only writer: Settings materialises the same band onto a site that
+ * was made before the question existed, and two copies of these sentences would
+ * eventually disagree about what the owner ticked.
+ */
+export const TRUST_MARK_LABELS: Record<TrustMarkKey, Record<Locale, string>> = {
+  insured: {
+    sv: "Vi har ansvarsförsäkring",
+    en: "We carry liability insurance",
+    pl: "Mamy ubezpieczenie OC",
+  },
+  collective_agreement: {
+    sv: "Vi har kollektivavtal",
+    en: "We have a collective agreement",
+    pl: "Mamy układ zbiorowy pracy",
+  },
+  id_checked: {
+    sv: "ID- och bakgrundskontrollerad personal",
+    en: "ID-checked and vetted staff",
+    pl: "Personel sprawdzony i zweryfikowany",
+  },
+  guarantee: {
+    sv: "Vi lämnar garanti på arbetet",
+    en: "We guarantee our work",
+    pl: "Dajemy gwarancję na wykonaną pracę",
+  },
+};
+
+/** The trust band's content for a set of ticked marks: the owner's statements,
+ *  in their site's language, in the order the vocabulary defines them. One
+ *  source for the generator and for the Settings door, so a band written last
+ *  month and a band written today say the same thing. */
+export function trustBandContent(
+  marks: readonly TrustMark[],
+  lang: Locale,
+): {
+  type: "certifications";
+  heading: string;
+  items: Array<{ label: string; note?: string }>;
+} {
+  const items = marks
+    .map((mark) => {
+      const label = TRUST_MARK_LABELS[mark.key]?.[lang];
+      if (!label) return null;
+      return mark.note ? { label, note: mark.note } : { label };
+    })
+    .filter((item): item is { label: string; note?: string } => item !== null);
+  return {
+    type: "certifications",
+    heading:
+      lang === "sv"
+        ? "Bra att veta om oss"
+        : lang === "pl"
+          ? "Warto o nas wiedzieć"
+          : "Good to know about us",
+    items,
+  };
 }
 
 /** True when the owner has asserted this mark about their own business. */
