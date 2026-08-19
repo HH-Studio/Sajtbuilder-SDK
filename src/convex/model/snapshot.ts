@@ -41,6 +41,11 @@ export const resolvedAsset = v.object({
   width: v.number(),
   height: v.number(),
   blurhash: v.optional(v.string()),
+  // Documents only, and only on snapshots published from 2026-08-18: which KIND
+  // of file this is, so the download row can say "Word" instead of guessing
+  // "PDF". Absent on every older snapshot, and every older snapshot was a PDF,
+  // so the renderer's fallback is correct rather than merely safe.
+  mimeType: v.optional(v.string()),
   // Stock-photo attribution (Unsplash), shown as a subtle credit on the public
   // site. Only set for source:"stock" assets; absent for uploads/AI.
   // `url` = the photo's page on the provider (the "Unsplash" link), and
@@ -174,6 +179,15 @@ export const siteSnapshot = v.object({
     email: v.optional(v.string()),
     address: v.optional(address),
   }),
+  // The towns this business travels to, beyond the address in `contact`.
+  // Frozen at publish so the public route can emit `areaServed` without a
+  // second read, and so a published version keeps saying what it said the day
+  // it was published.
+  //
+  // Optional because every snapshot published before the discovery work carries
+  // none: absent simply means the markup names the address and nothing else,
+  // which is exactly what those sites emit today.
+  serviceAreas: v.optional(v.array(v.string())),
   socials: v.optional(socialsValidator),
   // Third-party tracking ids, copied from the draft at publish. The public
   // route reads these to (consent-gate and) inject analytics/marketing tags.

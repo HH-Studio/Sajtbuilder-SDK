@@ -425,6 +425,24 @@ export const sectionContent = v.union(
     heading: v.string(),
     intro: v.optional(v.string()),
     areas: v.array(v.string()),
+    // Towns in this band that have a page of their own, written by the
+    // town-pages offer. A parallel list rather than turning `areas` into
+    // objects: every band already published stays valid, and an area with no
+    // entry here renders exactly as it does today.
+    //
+    // Written when a town page is created and removed when that page is
+    // deleted, so the band can never point at a page that is gone. Town pages
+    // hang off this band and not the header menu - six extra nav items is how a
+    // small site stops being navigable.
+    //
+    // `area` is a JOIN key, not prose: the renderer matches it against the
+    // visible `areas[]` entry. The translation pass therefore never translates
+    // it on its own (`SKIP_KEYS` in lib/site/multilang.ts) and rebuilds it from
+    // the localized label instead, so a differently translated or
+    // hand-corrected town name cannot quietly unlink that town's page.
+    areaLinks: v.optional(
+      v.array(v.object({ area: v.string(), pageSlug: v.string() })),
+    ),
   }),
 
   v.object({
@@ -508,6 +526,13 @@ export const sectionContent = v.union(
       v.object({
         label: v.string(),
         logo: v.optional(assetRef),
+        // One line saying what this mark means for THIS firm ("2 års garanti
+        // på allt snickeri"). Optional, and the owner's own words: a badge
+        // with no explanation is the kind of decoration a customer scrolls
+        // past, and inventing the explanation would be the exact false claim
+        // the mark exists to avoid. Absent renders the label alone, which is
+        // what every certifications section published before this does.
+        note: v.optional(v.string()),
       }),
     ),
   }),
@@ -611,6 +636,18 @@ export const sectionContent = v.union(
           v.literal("number"), // m² / antal / timmar - drives per-unit price
           v.literal("text"),
           v.literal("textarea"),
+          // "When would you like this done?" - a native date field, stored and
+          // submitted as the plain ISO string the browser gives us.
+          //
+          // Deliberately NOT a booking. It carries no availability, holds no
+          // slot and promises nothing: it is the visitor telling the firm when
+          // they were hoping for, which is a fact the firm needs to quote and
+          // the one every quote request used to chase by phone.
+          //
+          // Additive: every quote flow already published keeps validating, and
+          // a renderer that does not know this type falls through to a text
+          // input rather than breaking the page.
+          v.literal("date"),
         ),
         options: v.optional(
           v.array(
@@ -1053,8 +1090,9 @@ export const sectionContent = v.union(
   }),
 
   // Downloadable documents (backlog 0817): legal PDFs, price lists, forms.
-  // `document` is an assetRef to a kind:"document" asset (application/pdf,
-  // byte-sniffed on upload/import); the renderer links its resolved URL. The
+  // `document` is an assetRef to a kind:"document" asset (PDF, Word, text,
+  // markdown or CSV - lib/uploads/documentTypes.ts, byte-sniffed on
+  // upload/import); the renderer links its resolved URL. The
   // ref is optional so a freshly added item validates before any upload.
   v.object({
     type: v.literal("documents"),

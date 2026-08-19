@@ -16,7 +16,7 @@
     "maxTotalAssetBytes": 209715200
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:24e524cec2a4b566eb0678766079ae9a54b1fdba4d6a7659745c828e0b4b943a",
+  "hash": "sha256:096aceb02a7a04acd34c9d8f7458339013b654e284b9e18dc8741211d50cbc1d",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1378,6 +1378,12 @@
                     "type": "string"
                   },
                   "optional": false
+                },
+                "sourceTown": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
                 },
                 "title": {
                   "fieldType": {
@@ -4739,6 +4745,15 @@
                 },
                 "optional": true
               },
+              "serviceAreas": {
+                "fieldType": {
+                  "type": "array",
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "optional": true
+              },
               "socials": {
                 "fieldType": {
                   "type": "object",
@@ -7781,6 +7796,47 @@
                         "type": "string"
                       },
                       "optional": true
+                    }
+                  }
+                },
+                "optional": true
+              },
+              "trustMarks": {
+                "fieldType": {
+                  "type": "array",
+                  "value": {
+                    "type": "object",
+                    "value": {
+                      "key": {
+                        "fieldType": {
+                          "type": "union",
+                          "value": [
+                            {
+                              "type": "literal",
+                              "value": "insured"
+                            },
+                            {
+                              "type": "literal",
+                              "value": "collective_agreement"
+                            },
+                            {
+                              "type": "literal",
+                              "value": "id_checked"
+                            },
+                            {
+                              "type": "literal",
+                              "value": "guarantee"
+                            }
+                          ]
+                        },
+                        "optional": false
+                      },
+                      "note": {
+                        "fieldType": {
+                          "type": "string"
+                        },
+                        "optional": true
+                      }
                     }
                   }
                 },

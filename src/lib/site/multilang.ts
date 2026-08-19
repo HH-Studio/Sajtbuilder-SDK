@@ -18,6 +18,14 @@ const SKIP_KEYS = new Set([
   "icon", "color", "bg", "fg", "primary", "accent", "platform", "handle",
   "value", "slug", "pageSlug", "focalX", "focalY", "tone", "variant", "kind",
   "type", "font", "palette", "mimeType", "blurhash",
+  // `areaLinks[].area` on a coverage band is a structural JOIN key, not prose:
+  // `ServiceAreas` links a town to its own page by matching it against the
+  // visible `areas[]` label. Translated as an ordinary string it drifted from
+  // that label - a hedged "Solna och omnejd" corrected in one locale, or simply
+  // rendered differently by the machine pass - and the town silently became
+  // plain text on that locale only. So it is never translated on its own; it is
+  // rebuilt from the localized label instead (`relinkAreas`).
+  "area",
 ]);
 // `metaTitle` used to sit in the list above, which meant the <title>, the OG
 // title and the Google SERP title on /en and /pl were all still Swedish - the
@@ -57,6 +65,50 @@ function walk(node: unknown, key: string | null, fn: (t: string) => string): unk
     return out;
   }
   return node;
+}
+
+type AreaBand = { type?: unknown; areas?: unknown; areaLinks?: unknown };
+
+const areaKey = (value: unknown) =>
+  typeof value === "string" ? value.trim().toLowerCase() : "";
+
+/**
+ * Carry a coverage band's town-page links onto the localized labels.
+ *
+ * `area` is skipped by `isTranslatable` (see SKIP_KEYS), so the link key arrives
+ * here still in the primary language while `areas[]` has been localized. The
+ * pairing is positional against the ORIGINAL list, which is the only place the
+ * two are known to agree — never a second translation of the same town name.
+ * A link whose town is no longer in the list keeps its key and simply renders as
+ * plain text, exactly as it does today.
+ */
+function relinkAreas(original: unknown, localized: unknown): unknown {
+  const before = original as AreaBand | null;
+  if (!before || typeof before !== "object" || before.type !== "service-areas") {
+    return localized;
+  }
+  const links = before.areaLinks;
+  if (!Array.isArray(links) || links.length === 0) return localized;
+  const from = Array.isArray(before.areas) ? before.areas : [];
+  const after = (localized as AreaBand | null)?.areas;
+  const to = Array.isArray(after) ? after : [];
+  return {
+    ...(localized as Record<string, unknown>),
+    areaLinks: links.map((link) => {
+      const key = areaKey((link as { area?: unknown }).area);
+      const index = key ? from.findIndex((label) => areaKey(label) === key) : -1;
+      const localizedLabel = index >= 0 ? to[index] : undefined;
+      return typeof localizedLabel === "string" && localizedLabel.trim()
+        ? { ...(link as Record<string, unknown>), area: localizedLabel }
+        : link;
+    }),
+  };
+}
+
+/** One section's content with every translatable leaf mapped through `fn`, and
+ *  the coverage band's page links carried onto the localized labels. */
+function mapNodeText<T>(node: T, fn: (t: string) => string): T {
+  return relinkAreas(node, walk(node, null, fn)) as T;
 }
 
 /**
@@ -135,7 +187,7 @@ export function mapSnapshotText(
       },
       sections: p.sections.map((sec) => ({
         ...sec,
-        content: walk(sec.content, null, fn) as typeof sec.content,
+        content: mapNodeText(sec.content, fn),
       })),
     })),
   };
@@ -153,7 +205,7 @@ export function mapSnapshotText(
  * email and phone number inside a privacy policy are left exactly as written.
  */
 export function mapContentText<T>(node: T, fn: (t: string) => string): T {
-  return walk(node, null, fn) as T;
+  return mapNodeText(node, fn);
 }
 
 /** Every translatable string in a content node, in deterministic order. */
@@ -542,12 +594,17 @@ export function applySnapshotTextOverrides(
         },
         sections: p.sections.map((sec, sectionIndex) => ({
           ...sec,
-          content: applyNodeOverrides(
+          // Same relink as the machine pass: an owner correcting a town's label
+          // by hand must not break the link to that town's own page.
+          content: relinkAreas(
             sec.content,
-            null,
-            "",
-            `${pagePrefix}.sections.${keys[sectionIndex]}.content`,
-            overrides,
+            applyNodeOverrides(
+              sec.content,
+              null,
+              "",
+              `${pagePrefix}.sections.${keys[sectionIndex]}.content`,
+              overrides,
+            ),
           ) as typeof sec.content,
         })),
       };

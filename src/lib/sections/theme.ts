@@ -441,15 +441,28 @@ function roleVars(
 }
 
 /** Section rhythm + container widths, from `customLayout`. Absent (or rejected)
- *  values fall back to the three numbers the renderer has always used:
- *  4.5rem section padding, and 48/64/72rem containers (Tailwind's max-w-3xl /
- *  5xl / 6xl, which is what `Section` used as classes). */
+ *  values fall back to the numbers below.
+ *
+ *  `default` and `wide` were 64rem/72rem (max-w-5xl / 6xl, the classes `Section`
+ *  used before these were vars). On a large monitor that put a 1024px column of
+ *  content in the middle of a 1920px screen with the rest empty — the site read
+ *  as squeezed rather than as designed (owner directive 2026-08-12). They are
+ *  now 90rem/100rem: 1440px for ordinary content, 1600px for the image-led
+ *  bands that ask for `wide` (galleries, bento, photo grids).
+ *
+ *  `narrow` deliberately stays 48rem. It is the PROSE measure — the container a
+ *  text band asks for so a paragraph does not run 200 characters wide — and
+ *  widening it would make the one band that exists for readability less
+ *  readable.
+ *
+ *  An imported site that measured its own container still wins over all three
+ *  (`theme.customLayout`), so this changes generated sites, not imported ones. */
 function layoutVars(custom: ThemeTokens["customLayout"]): Record<string, string> {
   const out: Record<string, string> = {
     "--site-py-base": safeLength(custom?.sectionPy) ?? "4.5rem",
     "--site-w-narrow": safeLength(custom?.containerNarrow) ?? "48rem",
-    "--site-w-default": safeLength(custom?.containerDefault) ?? "64rem",
-    "--site-w-wide": safeLength(custom?.containerWide) ?? "72rem",
+    "--site-w-default": safeLength(custom?.containerDefault) ?? "90rem",
+    "--site-w-wide": safeLength(custom?.containerWide) ?? "100rem",
   };
   // Only emitted when measured: unlike the four above there is no single
   // "today's value" to default to here - each band keeps its own gap.

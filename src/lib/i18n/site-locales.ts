@@ -150,10 +150,25 @@ export function toAdminDictLocale(lang: SiteLocale): "sv" | "en" | "pl" {
 /** Narrow a chosen primary SITE_LOCALE down to a GENERATION_LOCALE for the
  *  deterministic engine (`convex/generation/**`), which only has hand-authored
  *  copy tables for sv/en/pl. A primary language beyond those three seeds in
- *  English; the post-publish translate pass then carries it into the real
- *  primary (same mechanism secondary locales already use). Same fallback rule
- *  as `toAdminDictLocale`, kept as a separate name so call sites read as
- *  "generation seed language", not "admin dict language". */
+ *  English.
+ *
+ *  What happens to that English seed, honestly: the primary-language pass
+ *  (`convex/generation/localizePrimary.ts`) translates the WHOLE draft - every
+ *  section's text and every page title - into the real primary before the copy
+ *  polish runs, so polish rewrites its slots on a page that is already in the
+ *  owner's language. Before that pass existed, polish was the only thing doing
+ *  any of it, and polish only touches the home hero/about/CTA.
+ *
+ *  It is still an AI pass, so it needs a model key, AI consent and a credit
+ *  balance; with none of those a long-tail site stays in English. That is why
+ *  the create flow says the nine are AI-translated
+ *  (`create.language.aiTranslated`) - see `docs/i18n-rtl.md` "Known limits".
+ *  The publish translate pass is NOT the fallback: it only ever produces
+ *  SECONDARY locales, filtering the primary out by design
+ *  (`convex/generation/translate.ts`).
+ *
+ *  Same fallback rule as `toAdminDictLocale`, kept as a separate name so call
+ *  sites read as "generation seed language", not "admin dict language". */
 export function toGenerationLocale(lang: SiteLocale): GenerationLocale {
   return lang === "sv" || lang === "en" || lang === "pl" ? lang : "en";
 }
