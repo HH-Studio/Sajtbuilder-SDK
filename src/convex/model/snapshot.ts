@@ -129,6 +129,23 @@ export const siteSnapshot = v.object({
   // The logo's content type, so the OG card can refuse to hand Satori an SVG
   // (backlog 0144). Optional: snapshots published before this field carry none.
   logoMimeType: v.optional(v.string()),
+  // The logo's intrinsic pixel size, so the nav can reserve its width before
+  // the image decodes. Without these the brand slot is 0px wide and then jumps
+  // to the logo's natural width — a horizontal shift on every `left` and
+  // `spread` nav layout, on every published site, on every cold load.
+  //
+  // They have to be REAL. The nav renders `h-8 w-auto`, so the browser derives
+  // the reserved width from this ratio; an invented pair reserves the wrong box
+  // and turns a 0→W growth into a |guess − W| shrink, which is worse for a
+  // square icon logo. `assets` already stores both (convex/schema.ts), and
+  // `resolveSnapshotBrandUrls` already reads that doc — it simply discarded
+  // them until now.
+  //
+  // Optional because snapshots published before this field exist and must keep
+  // rendering exactly as they do today: absent → no attributes → the old
+  // behaviour, no migration, nothing changes for a site until it republishes.
+  logoWidth: v.optional(v.number()),
+  logoHeight: v.optional(v.number()),
   // Favicon (browser-tab icon), pre-resolved to a url at publish time. Absent =>
   // the platform's default favicon.
   faviconUrl: v.optional(v.string()),

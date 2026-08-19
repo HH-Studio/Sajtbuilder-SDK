@@ -264,6 +264,19 @@ export const sectionContent = v.union(
         role: v.optional(v.string()),
         photo: v.optional(assetRef),
         bio: v.optional(v.string()),
+        // "credential-cards" only - the person's own qualifications as short
+        // chips under their bio ("Leg. sjuksköterska", "Injektionsbehörighet").
+        // Owner-typed strings, never derived: a qualification is a claim about
+        // a real person and we do not infer one from a role title.
+        credentials: v.optional(v.array(v.string())),
+        // "contact-cards" only - this person's OWN direct line and address, for
+        // the B2B roster where the point of the section is who to call. Never
+        // derived from the website's own contact details: a staff directory
+        // that prints the switchboard number under four faces is a directory
+        // that lies. Rendered as tel:/mailto: links, which the view tracker
+        // already counts as phone_click / email_click.
+        phone: v.optional(v.string()),
+        email: v.optional(v.string()),
       }),
     ),
     // "grid-cta" variant only - a trailing "we're hiring"-style CTA band.
@@ -310,6 +323,12 @@ export const sectionContent = v.union(
         before: assetRef,
         after: assetRef,
         label: v.optional(v.string()),
+        // "filtered" only - the owner's own grouping ("Läppar", "Rynkor"),
+        // drawn as the chips above the grid. Runs of pairs are NOT sorted by
+        // it: the chip list is derived from the pairs in first-appearance
+        // order, so renaming a group on one pair renames its chip and nothing
+        // else. Absent on every pair => the variant renders the plain grid.
+        category: v.optional(v.string()),
       }),
     ),
   }),
@@ -456,8 +475,30 @@ export const sectionContent = v.union(
   v.object({
     type: v.literal("location"),
     heading: v.optional(v.string()),
+    // The business's PRIMARY address. Stays required and stays the one every
+    // other cut renders, and the one the LocalBusiness structured data is built
+    // from (lib/seo/jsonld.ts reads the snapshot's own address, not this
+    // section) - so a site that grows a second branch does not lose the first.
     address: address,
     zoom: v.optional(v.number()),
+    // "branches" only - a business with more than one address (owner directive
+    // 2026-08-16, after two of the eleven client-site references printed two
+    // places each). Each entry stands on its own: its name, its address, and
+    // optionally its own photo, phone and button, because "call the shop you
+    // are looking at" is the whole point of the layout. Absent or empty => the
+    // variant renders the single primary address, so turning it on before
+    // filling it in never blanks the band.
+    branches: v.optional(
+      v.array(
+        v.object({
+          name: v.optional(v.string()),
+          address: address,
+          phone: v.optional(v.string()),
+          media: v.optional(assetRef),
+          cta: v.optional(ctaRef),
+        }),
+      ),
+    ),
   }),
 
   v.object({
@@ -703,6 +744,13 @@ export const sectionContent = v.union(
         // the description is its note, so this is the third slot that layout
         // needs and no other highlights variant renders.
         label: v.optional(v.string()),
+        // "check-columns" only - the short lines ticked off under a column's
+        // own heading ("Skip alcohol for 24 hours"). The title is the column
+        // heading and the description its lead line, so a list that belongs to
+        // ONE column cannot live on the section. Every other highlights variant
+        // ignores it: a benefits grid with a spec sheet in each cell is a
+        // different section.
+        bullets: v.optional(v.array(v.string())),
       }),
     ),
   }),
@@ -816,6 +864,11 @@ export const sectionContent = v.union(
     text: v.string(),
     attribution: v.optional(v.string()),
     cta: v.optional(ctaRef),
+    // "on-photo" only - the photograph the quotation is set over. Absent (or
+    // an asset that no longer resolves) and that variant renders the same calm
+    // centred statement the other cuts do, on the section's own surface: a
+    // pull-quote must never depend on an image to be readable.
+    media: v.optional(assetRef),
   }),
 
   // Article body: constrained rich text - an optional heading plus structured
@@ -1099,6 +1152,53 @@ export const sectionContent = v.union(
     alt: v.optional(v.string()),
   }),
 
+  // TODO(section): shape the real fields for "events" (typed content only -
+  // no raw HTML; assetRef for media, ctaRef for links; see neighbours above).
+  v.object({
+    type: v.literal("events"),
+    heading: v.optional(v.string()),
+    intro: v.optional(v.string()),
+    // What is coming up: a course, a class, a quiz night, an open evening.
+    //
+    // `date` is an ISO `YYYY-MM-DD` CALENDAR DAY, never a timestamp - the same
+    // decision `openingSpecialDay` made and for the same reason. An owner
+    // writes "6 september", not an instant, and the site's own timezone decides
+    // when that day is. Storing a timestamp would move a Swedish salon's course
+    // to the previous evening for a visitor reading from Helsinki.
+    //
+    // `time` stays a free string rather than "HH:MM": real listings say
+    // "18:00-20:00", "kvällstid" and "efter överenskommelse", and a validator
+    // that rejects those forces the owner to lie in a field they can see.
+    //
+    // Every leaf past `title` is optional. A business that only knows the name
+    // and roughly when still has a listing worth publishing, and the renderer
+    // prints nothing where nothing is stored rather than a placeholder dash.
+    items: v.array(
+      v.object({
+        title: v.string(),
+        date: v.optional(v.string()),
+        time: v.optional(v.string()),
+        location: v.optional(v.string()),
+        description: v.optional(v.string()),
+        // Display text, never a checkout amount - same rule as the hero's
+        // price callout and a service's `priceText`. "Från 450 kr", "Gratis".
+        priceText: v.optional(v.string()),
+        media: v.optional(assetRef),
+        // Where to sign up. A typed CTA rather than a bare URL so it cannot
+        // persist a dead hash link or an unsafe scheme.
+        cta: v.optional(ctaRef),
+        // Set by the owner when a date has filled. The renderer must never
+        // DERIVE this - counting attendees or comparing a date to today would
+        // be the software making a claim about somebody's business.
+        soldOut: v.optional(v.literal(true)),
+      }),
+    ),
+    // Shown under the list when there is nothing coming up, so an empty
+    // programme reads as "nothing booked yet" instead of a section that failed
+    // to load. Optional: absent renders the section's own empty state.
+    emptyNote: v.optional(v.string()),
+  }),
+
   // section:new-content-anchor — `bun run section:new <type>` inserts new
   // content shapes ABOVE this line. Do not remove or rename this comment.
 );
@@ -1154,6 +1254,7 @@ export const SECTION_TYPES = [
   "comparison-slider",
   "illustration",
   "imported",
+  "events",
   // section:new-type-anchor — the scaffolder inserts new type literals above.
 ] as const;
 

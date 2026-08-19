@@ -9,6 +9,27 @@ export const MAX_KNOWLEDGE_CHUNK_CHARS = 1_800;
 export const MAX_VISITOR_MESSAGE_CHARS = 1_500;
 export const MAX_SESSION_TURNS = 30;
 export const EMBEDDING_DIMENSIONS = 1_536;
+export const STRONG_VISITOR_ASSISTANT_MATCH_SCORE = 0.68;
+export const FALLBACK_VISITOR_ASSISTANT_MATCH_SCORE = 0.35;
+
+/** Keep every strong result. If none exists, retain only the best plausible
+ * selected-source match so a short exact-fact query can still reach the model. */
+export function selectRelevantVisitorAssistantMatches<T extends { _score: number }>(
+  matches: T[],
+): T[] {
+  const strongMatches = matches.filter(
+    (match) =>
+      Number.isFinite(match._score) &&
+      match._score >= STRONG_VISITOR_ASSISTANT_MATCH_SCORE,
+  );
+  if (strongMatches.length > 0) return strongMatches;
+  const bestMatch = matches[0];
+  return bestMatch &&
+    Number.isFinite(bestMatch._score) &&
+    bestMatch._score >= FALLBACK_VISITOR_ASSISTANT_MATCH_SCORE
+    ? [bestMatch]
+    : [];
+}
 
 // --- Visitor attachments ---------------------------------------------------
 // A visitor can attach a photo of the problem ("is this the part you replace?")
