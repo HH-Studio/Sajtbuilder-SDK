@@ -12,6 +12,13 @@ import type { SiteSnapshot } from "../../convex/model/snapshot";
 //   const sajt = createDeliveryClient({ siteId, token });
 //   const { snapshot } = await sajt.getPublishedSite();
 //
+// STAGING. `getPublishedSite({ stage: "draft" })` reads the CURRENT DRAFT
+// instead - what the site will look like once someone publishes. It needs a
+// different token: a `sajt_draft_` one, minted separately in SnabbSajt, which
+// reads unpublished work and therefore belongs only in a preview deployment.
+// A production `sajt_pub_` token asking for the draft is refused exactly like
+// a token that does not exist, so do not treat that 401 as "wrong stage".
+//
 // Designed for build-time use (SSG/ISR) as much as request-time: a published
 // snapshot only changes when someone publishes, and publishing can fire your
 // deploy hook, so refetching per request buys nothing.
@@ -51,16 +58,37 @@ export class DeliveryError extends Error {
   }
 }
 
+/** Which of the two worlds a read asks for. `published` is production and the
+ *  default; `draft` is staging. There is no third stage, and there will not be
+ *  one: the draft IS the staging environment. */
+export type DeliveryStage = "published" | "draft";
+
 /** A successful read: the frozen snapshot plus the identity of the publish it
  *  came from. `versionId` is stable per publish, which makes it the right
  *  cache key and the right thing to log when a build looks wrong. */
 export type PublishedSite = {
   version: 1;
   siteId: string;
+  stage?: "published";
   versionId: string;
   publishedAt: number;
   snapshot: SiteSnapshot;
 };
+
+/** A staging read. It carries NO `versionId` and NO `publishedAt`, because
+ *  there is no version: a draft is whatever it is right now. That absence is
+ *  deliberate and load-bearing - it is what stops a staging build presenting
+ *  itself downstream, in a cache key or a log line, as a production one. */
+export type DraftSite = {
+  version: 1;
+  siteId: string;
+  stage: "draft";
+  snapshot: SiteSnapshot;
+};
+
+export type SiteForStage<S extends DeliveryStage> = S extends "draft"
+  ? DraftSite
+  : PublishedSite;
 
 export type DeliveryClientOptions = {
   /** The site's id, shown next to its delivery token in SnabbSajt. */
@@ -82,8 +110,15 @@ export type DeliveryClientOptions = {
 
 export type GetPublishedSiteOptions = {
   /** Ask for a specific published language. Falls back to the site's primary
-   *  language when that locale was never published — you always get a site. */
+   *  language when that locale was never published — you always get a site.
+   *
+   *  Ignored for `stage: "draft"`: localized snapshots are built at publish, so
+   *  a draft has only the site's primary language. That is also what the
+   *  editor's own preview shows, so staging and the editor agree. */
   locale?: DeliveryLocale;
+  /** `"published"` (the default) is production. `"draft"` is staging and needs
+   *  a `sajt_draft_` token; a production token is refused. */
+  stage?: DeliveryStage;
   /** Abort a slow build step without leaking the request. */
   signal?: AbortSignal;
 };
@@ -160,32 +195,49 @@ function errorForStatus(status: number, body: unknown): DeliveryError {
   return new DeliveryError("network", `Delivery request failed (${status}).`, status);
 }
 
-function assertPublishedSite(value: unknown): asserts value is PublishedSite {
+function assertSiteForStage(
+  value: unknown,
+  stage: DeliveryStage,
+): asserts value is PublishedSite | DraftSite {
   const body = value as Partial<PublishedSite> | null | undefined;
-  if (
-    !body ||
-    typeof body !== "object" ||
-    Array.isArray(body) ||
-    typeof body.snapshot !== "object" ||
-    body.snapshot === null ||
-    Array.isArray(body.snapshot) ||
-    // Checked because callers print and cache these. A `versionId` that is not
-    // a string reaches a build log as "[object Object]" and a cache key as
-    // nonsense, which is a worse failure than refusing the response.
-    typeof body.versionId !== "string" ||
-    typeof body.siteId !== "string" ||
-    typeof body.publishedAt !== "number"
-  ) {
+  const shapeOk =
+    !!body &&
+    typeof body === "object" &&
+    !Array.isArray(body) &&
+    typeof body.snapshot === "object" &&
+    body.snapshot !== null &&
+    !Array.isArray(body.snapshot) &&
+    typeof body.siteId === "string";
+  // A published answer must carry its identity. Checked because callers print
+  // and cache these: a `versionId` that is not a string reaches a build log as
+  // "[object Object]" and a cache key as nonsense, which is a worse failure
+  // than refusing the response.
+  //
+  // A DRAFT answer must NOT carry one. Verified rather than merely tolerated,
+  // because a draft that arrived with a versionId would be a server-side
+  // confusion between the two worlds, and silently accepting it here is how a
+  // staging document ends up cached under a production key.
+  const stageOk =
+    stage === "draft"
+      ? body?.versionId === undefined && body?.publishedAt === undefined
+      : typeof body?.versionId === "string" &&
+        typeof body?.publishedAt === "number";
+  if (!shapeOk || !stageOk) {
     throw new DeliveryError(
       "malformed",
-      "Delivery response did not contain a published snapshot.",
+      stage === "draft"
+        ? "Delivery response was not a draft snapshot."
+        : "Delivery response did not contain a published snapshot.",
     );
   }
 }
 
 export type DeliveryClient = {
-  /** Fetch the site's published snapshot. Throws `DeliveryError` on failure. */
-  getPublishedSite(options?: GetPublishedSiteOptions): Promise<PublishedSite>;
+  /** Fetch the site's snapshot. Published (production) by default; pass
+   *  `{ stage: "draft" }` for staging. Throws `DeliveryError` on failure. */
+  getPublishedSite<S extends DeliveryStage = "published">(
+    options?: GetPublishedSiteOptions & { stage?: S },
+  ): Promise<SiteForStage<S>>;
   /** The URL this client reads, useful in build logs and error reports. */
   readonly endpoint: string;
 };
@@ -210,10 +262,14 @@ export function createDeliveryClient(
 
   async function getPublishedSite(
     call: GetPublishedSiteOptions = {},
-  ): Promise<PublishedSite> {
-    const url = call.locale
-      ? `${endpoint}?locale=${encodeURIComponent(call.locale)}`
-      : endpoint;
+  ): Promise<PublishedSite | DraftSite> {
+    const stage: DeliveryStage = call.stage ?? "published";
+    const params = new URLSearchParams();
+    // Not sent for a draft: there is nothing to localize before a publish.
+    if (call.locale && stage === "published") params.set("locale", call.locale);
+    if (stage === "draft") params.set("stage", "draft");
+    const query = params.toString();
+    const url = query ? `${endpoint}?${query}` : endpoint;
 
     let lastError: DeliveryError | undefined;
     for (let attempt = 0; attempt <= retries; attempt++) {
@@ -257,7 +313,7 @@ export function createDeliveryClient(
             response.status,
           );
         }
-        assertPublishedSite(body);
+        assertSiteForStage(body, stage);
         return body;
       }
 
@@ -278,5 +334,7 @@ export function createDeliveryClient(
     );
   }
 
-  return { getPublishedSite, endpoint };
+  // The cast carries the stage-to-shape relation the overloaded signature
+  // promises. The runtime guard above is what actually enforces it.
+  return { getPublishedSite, endpoint } as DeliveryClient;
 }

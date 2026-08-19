@@ -47,8 +47,11 @@ export type {
   DeliveryClientOptions,
   DeliveryErrorReason,
   DeliveryLocale,
+  DeliveryStage,
+  DraftSite,
   GetPublishedSiteOptions,
   PublishedSite,
+  SiteForStage,
 } from "./lib/delivery/client";
 // One renderable shape for a locally authored package AND a published
 // snapshot, so a headless app renders both with the same components.

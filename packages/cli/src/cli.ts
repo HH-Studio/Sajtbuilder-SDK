@@ -16,7 +16,7 @@ Usage:
   snabbsajt --version
   snabbsajt link [--site <slug|id>] [--yes] [--relink] [--status] [--json]
   snabbsajt unlink [--json]
-  snabbsajt pull [-o <file>] [--locale sv|en|pl] [--json]
+  snabbsajt pull [-o <file>] [--locale sv|en|pl] [--stage draft] [--json]
   snabbsajt push <site.json|dir> [--site <id>] [--dry-run] [--force-key <k>]... [--json]
   snabbsajt upgrade [--yes] [--json]
   snabbsajt connect [--api-url <url>] [--json]

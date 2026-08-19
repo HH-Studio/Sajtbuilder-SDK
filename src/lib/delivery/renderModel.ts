@@ -1,5 +1,5 @@
 import type { PortableSiteV1 } from "../../convex/model/portable";
-import type { PublishedSite } from "./client";
+import type { DraftSite, PublishedSite } from "./client";
 import type { ResolvedAsset, SiteSnapshot } from "../../convex/model/snapshot";
 
 // ---------------------------------------------------------------------------
@@ -85,8 +85,16 @@ function byOrderKey<T extends { order?: string }>(items: T[]): T[] {
     .map((entry) => entry.item);
 }
 
-/** Normalize a published snapshot into the render model. */
-export function renderModelFromPublished(published: PublishedSite): RenderSite {
+/** Normalize a delivered snapshot into the render model.
+ *
+ *  Takes a DRAFT answer as readily as a published one, which is the whole
+ *  point of headless staging: the same components render both, so a preview
+ *  deployment cannot drift from production. A draft simply arrives with no
+ *  `versionId` and no `publishedAt`, and those pass straight through as
+ *  undefined - the render model already declared them optional. */
+export function renderModelFromPublished(
+  published: PublishedSite | DraftSite,
+): RenderSite {
   const snapshot = published.snapshot as SiteSnapshot;
   const pages: RenderPage[] = snapshot.pages
     .filter((page) => isRoutablePage(page.pageType))
@@ -115,8 +123,8 @@ export function renderModelFromPublished(published: PublishedSite): RenderSite {
     theme: snapshot.theme as unknown as Record<string, unknown>,
     pages,
     assets: snapshot.resolvedAssets ?? {},
-    versionId: published.versionId,
-    publishedAt: published.publishedAt,
+    versionId: "versionId" in published ? published.versionId : undefined,
+    publishedAt: "publishedAt" in published ? published.publishedAt : undefined,
   };
 }
 
