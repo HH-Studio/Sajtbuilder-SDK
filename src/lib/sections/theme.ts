@@ -461,8 +461,8 @@ function layoutVars(custom: ThemeTokens["customLayout"]): Record<string, string>
   const out: Record<string, string> = {
     "--site-py-base": safeLength(custom?.sectionPy) ?? "4.5rem",
     "--site-w-narrow": safeLength(custom?.containerNarrow) ?? "48rem",
-    "--site-w-default": safeLength(custom?.containerDefault) ?? "64rem",
-    "--site-w-wide": safeLength(custom?.containerWide) ?? "72rem",
+    "--site-w-default": safeLength(custom?.containerDefault) ?? "90rem",
+    "--site-w-wide": safeLength(custom?.containerWide) ?? "100rem",
   };
   // Only emitted when measured: unlike the four above there is no single
   // "today's value" to default to here - each band keeps its own gap.
