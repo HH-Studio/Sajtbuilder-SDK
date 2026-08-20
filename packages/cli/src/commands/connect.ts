@@ -19,6 +19,7 @@ import {
 } from "./connect/project";
 import { openBrowser, shouldAutoOpen } from "./openBrowser";
 import { consoleOutput, type Output } from "../output";
+import { runPortablePull } from "./pullPortable";
 
 // ---------------------------------------------------------------------------
 // `snabbsajt connect` and `snabbsajt pull`.
@@ -255,6 +256,7 @@ function usage(output: Output): void {
   output.stdout(`Usage:
   snabbsajt connect [--api-url <url>] [--json]
   snabbsajt pull [-o <file>] [--locale sv|en|pl] [--stage draft] [--json]
+  snabbsajt pull --format portable [--out <dir>] [--site <id>] [--json]
 
 connect pairs this directory with one SnabbSajt site: it prints a code, you
 approve it in the browser, and it writes ${PROJECT_FILE} (safe to commit) plus
@@ -262,6 +264,11 @@ ${TOKEN_ENV_VAR} into ${ENV_FILE} (a secret — gitignore it).
 
 pull fetches that site's published content to ${DEFAULT_PULL_TARGET}. The token
 is read-only and scoped to one site; neither command can change the site.
+
+--format portable fetches the DRAFT as a PortableSiteV1 snapshot and writes one
+file per page under snabbsajt/content, so a page your client added in the
+editor lands in the version you build from. It reads through the admin token
+(site:read, read-only), because the published API only serves published work.
 
 --stage draft fetches the UNPUBLISHED version instead, for a preview
 deployment. It needs a separate test-version key (sajt_draft_…), created in
@@ -282,7 +289,20 @@ export async function runConnectCommand(
       return 0;
     }
     if (command === "connect") return await runConnect(rest, asJson, output, deps);
-    if (command === "pull") return await runPull(rest, asJson, output, deps);
+    if (command === "pull") {
+      // `--format portable` is a different read with a different credential:
+      // the DRAFT as PortableSiteV1, through the admin token. Routed here so
+      // developers keep one verb for "get the site into my repo".
+      const formatIndex = rest.indexOf("--format");
+      const format = formatIndex >= 0 ? rest[formatIndex + 1] : undefined;
+      if (format === "portable") return await runPortablePull(rest, asJson, output);
+      if (format !== undefined && format !== "published") {
+        throw new ConnectError(
+          `Unknown --format "${format}". Use \`--format portable\` for the editable snapshot, or leave it out for the published content.`,
+        );
+      }
+      return await runPull(rest, asJson, output, deps);
+    }
     throw new ConnectError(`unknown command "${command}"`);
   } catch (error) {
     if (error instanceof ConnectError) {

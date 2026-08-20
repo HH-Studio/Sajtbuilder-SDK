@@ -20,6 +20,7 @@ Usage:
   snabbsajt unlink [--json]
   snabbsajt pull [-o <file>] [--locale sv|en|pl] [--stage draft] [--json]
   snabbsajt push <site.json|dir> [--site <id>] [--dry-run] [--force-key <k>]... [--json]
+                 [--branch <name> --preview-url <https://...>]
   snabbsajt upgrade [--yes] [--json]
   snabbsajt connect [--api-url <url>] [--json]
   snabbsajt admin pair [--scopes a,b,c] [--api-url <url>] [--no-open] [--json]
