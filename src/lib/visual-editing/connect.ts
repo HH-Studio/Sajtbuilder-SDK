@@ -4,6 +4,7 @@ import {
   parseEditorMessage,
   VISUAL_EDITING_CHANNEL,
   VISUAL_EDITING_PROTOCOL_VERSION,
+  VISUAL_EDITING_PROTOCOL_VERSIONS,
   type FieldRef,
 } from "./protocol";
 
@@ -150,7 +151,14 @@ export function connectVisualEditing(
     if (root) observer.observe(root);
   }
 
-  post({ type: "ready", ...(options.client ? { client: options.client } : {}) });
+  // Offer every version this build speaks. The editor answers in the newest one
+  // both ends know, so a newer editor talking to this build keeps working, and
+  // a newer build talking to an older editor does too.
+  post({
+    type: "ready",
+    protocols: [...VISUAL_EDITING_PROTOCOL_VERSIONS],
+    ...(options.client ? { client: options.client } : {}),
+  });
 
   return {
     active: true,

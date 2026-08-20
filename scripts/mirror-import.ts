@@ -64,6 +64,12 @@ const FILES = [
   "lib/sections/openingHours.ts",
   "lib/socials.ts",
   "lib/tracking.ts",
+  // The importer started reading the document table on 2026-08-18 (a menu
+  // written in Word), which put this leaf module on the mirror's import graph.
+  // Pure data plus predicates, no runtime of its own.
+  "lib/uploads/documentTypes.ts",
+  "lib/html/attributes.ts",
+  "lib/import/sectionProposal.ts",
 ] as const;
 
 /**
