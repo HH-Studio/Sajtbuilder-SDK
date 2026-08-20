@@ -151,6 +151,14 @@ export const snapshotCollection = v.object({
       label: v.string(),
       type: v.string(),
       options: v.optional(v.array(v.string())),
+      // `reference` fields only: the slug stem of the collection this field
+      // points AT. A row's reference value is frozen to `{ rowSlug }`, and a
+      // slug is unique only within its own collection, so two lists can both
+      // hold an `albin`. Without the target named here, a renderer reading the
+      // immutable snapshot cannot tell which row is meant, nor build the
+      // `/<slugPrefix>/<rowSlug>` address for it. Absent when the target is
+      // not itself in this snapshot.
+      referenceCollection: v.optional(v.string()),
     }),
   ),
   template: v.optional(

@@ -1,4 +1,7 @@
-import type { SiteSnapshot } from "../../convex/model/snapshot";
+import type {
+  SiteSnapshot,
+  SnapshotCollection,
+} from "../../convex/model/snapshot";
 import type { SiteLocale } from "../i18n/site-locales";
 import { NEWS_SEGMENT } from "./news";
 import { CAREERS_SEGMENT } from "./jobs";
@@ -26,6 +29,10 @@ const SKIP_KEYS = new Set([
   // plain text on that locale only. So it is never translated on its own; it is
   // rebuilt from the localized label instead (`relinkAreas`).
   "area",
+  // A collection row's reference to another row, and a collection's URL stem.
+  // Both are addresses inside the site, frozen at creation; translating either
+  // would point a card at a row that does not exist on that locale.
+  "rowSlug", "slugPrefix",
 ]);
 // `metaTitle` used to sit in the list above, which meant the <title>, the OG
 // title and the Google SERP title on /en and /pl were all still Swedish - the
@@ -112,9 +119,59 @@ function mapNodeText<T>(node: T, fn: (t: string) => string): T {
 }
 
 /**
+ * The field keys of one collection whose values are `choice` options.
+ *
+ * A `choice` value is one of the options stored on the field definition, so it
+ * is a stored enum rather than prose: translating the value while the options
+ * stay in the primary language makes the two disagree, and the row stops
+ * matching its own field. Left alone in every pass, exactly like `area`.
+ */
+function choiceFieldKeys(collection: SnapshotCollection): Set<string> {
+  return new Set(
+    collection.fields.filter((f) => f.type === "choice").map((f) => f.key),
+  );
+}
+
+/**
+ * One owner-defined collection with every translatable leaf mapped through
+ * `fn`: its name, its field labels, each row's title, and the prose inside each
+ * row's values (including a link's label and an image's alt text).
+ *
+ * Slugs, field keys, reference targets, the template and choice options are
+ * structure, and none of them move.
+ */
+function mapCollectionText(
+  collection: SnapshotCollection,
+  fn: (t: string) => string,
+): SnapshotCollection {
+  const tx = (key: string, val: string) =>
+    isTranslatable(key, val) ? fn(val) : val;
+  const choices = choiceFieldKeys(collection);
+  return {
+    ...collection,
+    name: tx("name", collection.name),
+    fields: collection.fields.map((field) => ({
+      ...field,
+      label: tx("label", field.label),
+    })),
+    rows: collection.rows.map((row) => ({
+      ...row,
+      title: tx("title", row.title),
+      values: Object.fromEntries(
+        Object.entries(row.values).map(([key, value]) => [
+          key,
+          choices.has(key) ? value : walk(value, key, fn),
+        ]),
+      ) as SnapshotCollection["rows"][number]["values"],
+    })),
+  };
+}
+
+/**
  * Map every translatable display string in a snapshot through `fn`, returning a
  * new snapshot. Scope: page titles + meta descriptions, nav labels, the site
- * default description, and all prose inside section content. Brand name, SEO
+ * default description, all prose inside section content, and the owner-defined
+ * collections (names, field labels, row titles and row values). Brand name, SEO
  * title templates, urls, contact details, theme tokens and asset maps are left
  * untouched.
  */
@@ -155,6 +212,16 @@ export function mapSnapshotText(
             : {}),
         }
       : undefined,
+    // The lists an owner defined themselves. Without this a Polish route drew
+    // the staff list in Swedish, because the collections rode the snapshot
+    // untouched while every other string around them was translated.
+    ...(snapshot.collections
+      ? {
+          collections: snapshot.collections.map((collection) =>
+            mapCollectionText(collection, fn),
+          ),
+        }
+      : {}),
     pages: snapshot.pages.map((p) => ({
       ...p,
       title: tx("title", p.title),
@@ -394,6 +461,47 @@ export function collectSnapshotTextFields(
         scope: "site",
       });
     }
+    // Owner-defined collections. Keyed by the collection's slug stem and the
+    // row's own slug rather than by position, for the same reason sections are
+    // keyed by type and ordinal: adding a row must not shift every correction
+    // below it. Site scope, because a list is not tied to one page.
+    for (const collection of snapshot.collections ?? []) {
+      const meta = {
+        pageSlug: null,
+        pageTitle: null,
+        scope: "site" as const,
+      };
+      const prefix = `collection.${slugKey(collection.slugPrefix)}`;
+      if (isTranslatable("name", collection.name)) {
+        out.push({ ...meta, key: `${prefix}.name`, text: collection.name });
+      }
+      for (const field of collection.fields) {
+        if (!isTranslatable("label", field.label)) continue;
+        out.push({
+          ...meta,
+          key: `${prefix}.fields.${slugKey(field.key)}.label`,
+          text: field.label,
+        });
+      }
+      const choices = choiceFieldKeys(collection);
+      for (const row of collection.rows) {
+        const rowPrefix = `${prefix}.rows.${slugKey(row.slug)}`;
+        if (isTranslatable("title", row.title)) {
+          out.push({ ...meta, key: `${rowPrefix}.title`, text: row.title });
+        }
+        for (const [key, value] of Object.entries(row.values)) {
+          if (choices.has(key)) continue;
+          collectNodeFields(
+            value,
+            key,
+            "",
+            `${rowPrefix}.values.${slugKey(key)}`,
+            meta,
+            out,
+          );
+        }
+      }
+    }
   }
 
   for (const p of snapshot.pages) {
@@ -551,6 +659,47 @@ export function applySnapshotTextOverrides(
             : {}),
         }
       : undefined,
+    // Mirror of the collection walk in `collectSnapshotTextFields`, key for key.
+    ...(snapshot.collections
+      ? {
+          collections: snapshot.collections.map((collection) => {
+            const prefix = `collection.${slugKey(collection.slugPrefix)}`;
+            const choices = choiceFieldKeys(collection);
+            return {
+              ...collection,
+              name: pick(`${prefix}.name`, collection.name),
+              fields: collection.fields.map((field) => ({
+                ...field,
+                label: pick(
+                  `${prefix}.fields.${slugKey(field.key)}.label`,
+                  field.label,
+                ),
+              })),
+              rows: collection.rows.map((row) => {
+                const rowPrefix = `${prefix}.rows.${slugKey(row.slug)}`;
+                return {
+                  ...row,
+                  title: pick(`${rowPrefix}.title`, row.title),
+                  values: Object.fromEntries(
+                    Object.entries(row.values).map(([key, value]) => [
+                      key,
+                      choices.has(key)
+                        ? value
+                        : applyNodeOverrides(
+                            value,
+                            key,
+                            "",
+                            `${rowPrefix}.values.${slugKey(key)}`,
+                            overrides,
+                          ),
+                    ]),
+                  ) as SnapshotCollection["rows"][number]["values"],
+                };
+              }),
+            };
+          }),
+        }
+      : {}),
     pages: snapshot.pages.map((p) => {
       const pagePrefix = `page.${slugKey(p.slug)}`;
       const keys = sectionKeys(p.sections);
