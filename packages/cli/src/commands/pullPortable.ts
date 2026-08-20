@@ -78,8 +78,8 @@ export function portableFiles(
 
 /** The inverse of `portableFiles`: one pulled directory, back into one site.
  *
- *  Without this, the round trip the plan promises — push, the client edits,
- *  pull, push again — stops at step four. `pull --format portable` writes a
+ *  Without this, the round trip the plan promises (push, the client edits,
+ *  pull, push again) stops at step four. `pull --format portable` writes a
  *  site file with an empty `pages` array beside a `pages/` folder, and nothing
  *  put them back together, so the next push carried a site with no pages at all
  *  and would have deleted the client's work rather than preserved it.

@@ -1,4 +1,4 @@
-/** `submitLead` — the SDK half of `POST /v1/sites/{id}/leads`.
+/** `submitLead`, the SDK half of `POST /v1/sites/{id}/leads`.
  *
  *  Plan P0-2026-08-19 slice 2.5. The endpoint shipped without this helper, so
  *  every agency hand-rolled the POST and each one had to rediscover that a

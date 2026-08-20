@@ -3,7 +3,7 @@
  *
  *  This is the property the whole agency programme rests on. The agency owns
  *  the repository, the client owns the editor, and both write to the same
- *  hemsida — so if a pull-then-push loses or reshuffles anything, the agency's
+ *  hemsida. If a pull-then-push loses or reshuffles anything, the agency's
  *  next deploy silently deletes the page their client made, and neither of them
  *  finds out until a visitor does.
  *
@@ -13,7 +13,7 @@
  *  with NO pages. `portableFromFiles` is that missing half, and this is the
  *  test that would have caught its absence.
  *
- *  The server's own merge is not simulated here — it is the server's claim, and
+ *  The server's own merge is not simulated here: it is the server's claim, and
  *  `convex/portability` owns it. What is proved here is the CLI's half: what
  *  comes back out of the repository is exactly what went into it.
  */
@@ -134,7 +134,7 @@ describe("push, edit, pull, push again", () => {
     expect((pushed.pages as unknown[]).length).toBe(1);
 
     // 2. The client adds a page in the editor. The server's export is what the
-    //    agency sent plus that page — which is exactly what the round trip has
+    //    agency sent plus that page, which is exactly what the round trip has
     //    to survive.
     const clientPage = {
       tmpId: "priser",

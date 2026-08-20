@@ -3,7 +3,7 @@
 //
 // An agency renders its client's contact form in its OWN app, so the hosted
 // form's `/lead` route is not reachable from there. Until this helper existed,
-// every agency hand-rolled the POST — and each hand-rolled one had to remember
+// every agency hand-rolled the POST, and each hand-rolled one had to remember
 // the consent flag, the honeypot field and which failures mean "fix your
 // wiring" rather than "try again". Getting `consent` wrong is a 400 on every
 // submission, so the form silently collected nothing.
@@ -56,7 +56,7 @@ export async function submitLead(options: SubmitLeadOptions): Promise<void> {
   }
   const doFetch = options.fetch ?? globalThis.fetch;
   if (typeof doFetch !== "function") {
-    throw new TypeError("submitLead: no global fetch available — pass `fetch` explicitly.");
+    throw new TypeError("submitLead: no global fetch available. Pass `fetch` explicitly.");
   }
   // Same vetting the read path does: https only, `SNABBSAJT_API_URL` honoured.
   // A lead carries no token but it does carry a visitor's name and number.
