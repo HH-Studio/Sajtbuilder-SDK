@@ -2,6 +2,7 @@
 
 import { runAdminCommand } from "./commands/admin";
 import { runConnectCommand } from "./commands/connect";
+import { runInitCommand } from "./commands/init";
 import { runLinkCommand } from "./commands/link";
 import { runPushCommand } from "./commands/push";
 import { cliVersion, runSiteCommand } from "./commands/site";
@@ -14,6 +15,7 @@ function usage(): void {
 
 Usage:
   snabbsajt --version
+  snabbsajt init --agency [--no-pair] [--no-skills] [--force] [--json]
   snabbsajt link [--site <slug|id>] [--yes] [--relink] [--status] [--json]
   snabbsajt unlink [--json]
   snabbsajt pull [-o <file>] [--locale sv|en|pl] [--stage draft] [--json]
@@ -34,6 +36,10 @@ Usage:
   snabbsajt skills install --agent auto|codex|claude|all [--global] [--force] [--json]
   snabbsajt skills list --agent auto|codex|claude|all [--global] [--json]
   snabbsajt skills doctor --agent auto|codex|claude|all [--global] [--json]
+
+init --agency is where an agency starts: it sets up a repository you already
+have, writing the block files and the catch-all route, adding the package, and
+running link and admin pair for you. It never overwrites a file you wrote.
 
 link is where most people start: it connects this directory to one of your sites,
 which you pick right here with the arrow keys. connect is the older flow that
@@ -77,6 +83,10 @@ async function main(): Promise<number> {
     return 0;
   }
   const [namespace, ...rest] = args;
+  // The first thing an agency types in a repository that already exists. It
+  // runs the steps below in the one order that works, and each of them still
+  // works on its own.
+  if (namespace === "init") return runInitCommand(rest, consoleOutput);
   if (namespace === "upgrade") {
     return runUpgradeCommand(rest, safeVersion(), consoleOutput);
   }

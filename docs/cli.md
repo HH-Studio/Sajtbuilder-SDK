@@ -12,6 +12,33 @@ else on this page:
 | `connect`, `pull` | `SNABBSAJT_DELIVERY_TOKEN` — read-only, one site | No |
 | `admin *` | `SNABBSAJT_ADMIN_TOKEN` — capability-scoped | Yes, within the scopes the owner granted |
 
+## Set an agency repository up: `init --agency`
+
+```bash
+snabbsajt init --agency [--no-pair] [--no-skills] [--force] [--json]
+```
+
+Run this inside the Next.js app you already have. It does the four steps in the
+one order that works, and each of them still works on its own afterwards:
+
+1. writes `snabbsajt/blocks.ts` (your components, described as fields the client
+   can fill in) and `snabbsajt/components.ts` (which component draws which
+   block);
+2. writes the catch-all route `app/[[...slug]]/page.tsx`, or `src/app/...` when
+   that is where your routes live. Your own routes keep winning, because Next.js
+   prefers a specific route over a catch-all;
+3. adds `@snabbsajt/site-kit` to `package.json`. It does not run your package
+   manager: your lockfile is yours;
+4. runs `link` for the read token and `admin pair` for the write one, then
+   installs the skills.
+
+**It never overwrites a file you wrote.** An existing file is reported as kept,
+and `--force` is the only way past that. If the pairing fails, the files are
+still in place and the command says which step stopped.
+
+`--no-pair` and `--no-skills` leave out the steps that need the network, which
+is what you want on a machine behind a proxy or in CI.
+
 ## Import rendered HTML
 
 ```bash
