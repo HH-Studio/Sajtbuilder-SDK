@@ -165,6 +165,59 @@ describe("snabbsajt push", () => {
     expect(all()).not.toContain(TOKEN);
   });
 
+  it("--create makes a new website instead of merging into the paired one", async () => {
+    // `snabbsajt init` printed `snabbsajt push . --create` as step 3 and the
+    // parser threw on it, so the one-command story ended at the third command.
+    // `import_site` has always read a missing merge target as "create"; this is
+    // the CLI learning the word.
+    const { out, all, output } = collectOutput();
+    const created = "kd7newsite000000000000000000000";
+    const fetchImpl = pushFetch(
+      toolResult(2, {
+        websiteId: created,
+        editorUrl: `https://example.test/dashboard/websites/${created}/editor`,
+        mode: "create",
+        pagesImported: 1,
+        assetsSkipped: 0,
+      }),
+    );
+
+    const code = await runPushCommand(["pkg", "--create"], output, {
+      fetch: fetchImpl as unknown as typeof globalThis.fetch,
+    });
+
+    expect(code).toBe(0);
+    const body = await callBody(fetchImpl, 1);
+    expect(body.params.name).toBe("import_site");
+    // The paired site is deliberately ignored: --create makes a SECOND site
+    // from the same repository, and sending the pairing would merge into the
+    // first one instead.
+    expect(body.params.arguments?.mergeIntoWebsiteId).toBeUndefined();
+    expect(out.join("\n")).toContain(`Created ${created}`);
+    expect(all()).toContain("1 imported");
+    // No merge counts: nothing was matched, so "0 conflicts" would be a claim
+    // about a website that had nothing to conflict with.
+    expect(all()).not.toContain("conflict(s)");
+  });
+
+  it("refuses --create beside --site or --dry-run, before anything is sent", async () => {
+    const { output } = collectOutput();
+    const fetchImpl = pushFetch(toolResult(2, MERGE_DATA));
+
+    expect(
+      await runPushCommand(["pkg", "--create", "--site", SITE_ID], output, {
+        fetch: fetchImpl as unknown as typeof globalThis.fetch,
+      }),
+    ).toBe(1);
+    expect(
+      await runPushCommand(["pkg", "--create", "--dry-run"], output, {
+        fetch: fetchImpl as unknown as typeof globalThis.fetch,
+      }),
+    ).toBe(1);
+    // Nothing left the machine either time.
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
   it("reports the branch preview after the import, and only then", async () => {
     // Order is the claim: an address for content that failed to land would put
     // a stale page on the client's card (plan P0-2026-08-19 slice 2.4).
