@@ -3,6 +3,7 @@
     "maxAssets": 200,
     "maxBundleBytes": 157286400,
     "maxBundleEntries": 5000,
+    "maxCollectionRows": 10000,
     "maxCollections": 20,
     "maxFolders": 500,
     "maxFonts": 12,
@@ -16,7 +17,7 @@
     "maxTotalAssetBytes": 209715200
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:c1aa7d99de249984d3df1a21d10bb3ddce9e32c90748385a00b8084d34ee3823",
+  "hash": "sha256:761714dcdfa8b7ccb4af02f68512bae57eff0057171bee69884017073a6cdb3a",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -601,12 +602,77 @@
           },
           "optional": true
         },
+        "collectionRows": {
+          "fieldType": {
+            "type": "array",
+            "value": {
+              "type": "object",
+              "value": {
+                "collectionTmpId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "externalKey": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "hidden": {
+                  "fieldType": {
+                    "type": "boolean"
+                  },
+                  "optional": true
+                },
+                "order": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "slug": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "title": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "values": {
+                  "fieldType": {
+                    "type": "any"
+                  },
+                  "optional": false
+                }
+              }
+            }
+          },
+          "optional": true
+        },
         "contentCollections": {
           "fieldType": {
             "type": "array",
             "value": {
               "type": "object",
               "value": {
+                "externalKey": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "fields": {
+                  "fieldType": {
+                    "type": "any"
+                  },
+                  "optional": true
+                },
                 "kind": {
                   "fieldType": {
                     "type": "union",
@@ -618,6 +684,10 @@
                       {
                         "type": "literal",
                         "value": "news"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "custom"
                       }
                     ]
                   },
@@ -640,6 +710,57 @@
                     "type": "string"
                   },
                   "optional": false
+                },
+                "source": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "literal",
+                        "value": "app"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "repo"
+                      }
+                    ]
+                  },
+                  "optional": true
+                },
+                "template": {
+                  "fieldType": {
+                    "type": "object",
+                    "value": {
+                      "bindings": {
+                        "fieldType": {
+                          "keys": {
+                            "type": "string"
+                          },
+                          "type": "record",
+                          "values": {
+                            "fieldType": {
+                              "type": "string"
+                            },
+                            "optional": false
+                          }
+                        },
+                        "optional": true
+                      },
+                      "cardBlockType": {
+                        "fieldType": {
+                          "type": "string"
+                        },
+                        "optional": true
+                      },
+                      "detailBlockType": {
+                        "fieldType": {
+                          "type": "string"
+                        },
+                        "optional": true
+                      }
+                    }
+                  },
+                  "optional": true
                 },
                 "tmpId": {
                   "fieldType": {

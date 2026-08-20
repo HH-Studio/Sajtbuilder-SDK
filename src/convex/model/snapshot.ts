@@ -126,6 +126,64 @@ export const snapshotPage = v.object({
 });
 export type SnapshotPage = Infer<typeof snapshotPage>;
 
+/**
+ * One owner-defined content collection, frozen at publish.
+ *
+ * Plan: `docs/plans/doing/P1-2026-08-19-content-collections.md`. The rows ride
+ * the immutable snapshot like everything else, so a published list keeps saying
+ * what it said the day it was published, and the public route reads no draft
+ * table to render it.
+ *
+ * The `fields` come along because a card is drawn from `values` keyed by field
+ * key, and a renderer that does not know a key's TYPE cannot decide whether to
+ * draw an image, a date or a price. `template` names the block that draws one
+ * row; it never carries markup (`convex/blocks.ts` states the same boundary).
+ *
+ * Image values inside `values` are ordinary `assetId` strings and resolve
+ * through the snapshot's own `resolvedAssets` map, exactly like a section's.
+ */
+export const snapshotCollection = v.object({
+  name: v.string(),
+  slugPrefix: v.string(),
+  fields: v.array(
+    v.object({
+      key: v.string(),
+      label: v.string(),
+      type: v.string(),
+      options: v.optional(v.array(v.string())),
+    }),
+  ),
+  template: v.optional(
+    v.object({
+      cardBlockType: v.optional(v.string()),
+      detailBlockType: v.optional(v.string()),
+      bindings: v.optional(v.record(v.string(), v.string())),
+    }),
+  ),
+  rows: v.array(
+    v.object({
+      slug: v.string(),
+      title: v.string(),
+      // Bounded exactly like the draft column: nine shapes, no raw HTML, and
+      // `v.id` never appears because a snapshot is read by the public route
+      // long after the row it came from may have been edited.
+      values: v.record(
+        v.string(),
+        v.union(
+          v.string(),
+          v.number(),
+          v.boolean(),
+          v.null(),
+          v.object({ assetId: v.string(), alt: v.optional(v.string()) }),
+          v.object({ href: v.string(), label: v.optional(v.string()) }),
+          v.object({ rowSlug: v.string() }),
+        ),
+      ),
+    }),
+  ),
+});
+export type SnapshotCollection = Infer<typeof snapshotCollection>;
+
 export const siteSnapshot = v.object({
   businessName: v.string(),
   // Brand logo, pre-resolved to a url at publish time. Absent => the header
@@ -241,5 +299,10 @@ export const siteSnapshot = v.object({
   // Public AI receptionist configuration. Absent/disabled snapshots render no
   // widget; selected source ids are immutable per published version.
   visitorAssistant: v.optional(publishedVisitorAssistantConfigValidator),
+  // Owner-defined content collections and their rows, frozen at publish. Absent
+  // on every snapshot published before this field existed, and on every site
+  // that has none - which is the overwhelming majority, so it stays optional
+  // rather than an empty array on a million rows.
+  collections: v.optional(v.array(snapshotCollection)),
 });
 export type SiteSnapshot = Infer<typeof siteSnapshot>;

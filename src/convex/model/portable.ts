@@ -254,10 +254,72 @@ export const portableSiteV1 = v.object({
     v.array(
       v.object({
         tmpId: v.string(),
-        kind: v.union(v.literal("blog"), v.literal("news")),
+        // "custom" is an OWNER-DEFINED collection - properties, cases, staff,
+        // menus, vehicles - whose rows are `collectionRows` below rather than
+        // post pages. Widening this union is what stops a site with
+        // collections from being unable to leave, which is the exact thing we
+        // criticise Webflow for (plan P1-2026-08-19-content-collections.md).
+        kind: v.union(
+          v.literal("blog"),
+          v.literal("news"),
+          v.literal("custom"),
+        ),
         name: v.string(),
         slugPrefix: v.string(),
         order: v.number(),
+        // `custom` only. `v.any()` for the same reason `sections[].content` is:
+        // it is re-validated authoritatively on import by
+        // `lib/collections/schema.ts`, and a `v.id("contentCollections")` inside
+        // a `reference` field would break cross-deployment import exactly as a
+        // foreign asset id would. A reference's target is carried as the target
+        // collection's tmpId and remapped on import.
+        fields: v.optional(v.any()),
+        // Who owns the SHAPE. "repo" means an agency's `defineCollection`
+        // declares it and the app edits rows only; a bundle carries this so a
+        // restored or duplicated site keeps that boundary rather than quietly
+        // handing shape control back to the editor.
+        source: v.optional(v.union(v.literal("app"), v.literal("repo"))),
+        externalKey: v.optional(v.string()),
+        // Which registered block draws one row, and the slot-to-field binding.
+        // Names a block; never carries markup.
+        template: v.optional(
+          v.object({
+            cardBlockType: v.optional(v.string()),
+            detailBlockType: v.optional(v.string()),
+            bindings: v.optional(v.record(v.string(), v.string())),
+          }),
+        ),
+      }),
+    ),
+  ),
+
+  // The rows of the `custom` collections above: the data the client added.
+  //
+  // Separate from `contentCollections` rather than nested inside it, because a
+  // row is the thing there are hundreds of and a collection is the thing there
+  // are two of - and because a merge import matches rows on `externalKey` one
+  // by one, exactly as it does pages and sections.
+  //
+  // `values` is `v.any()` and validated on import against the field definitions
+  // (never trusted from the file), so the closed value union and the no-raw-HTML
+  // invariant hold on the way in. Image values carry the export-local asset id
+  // string and are remapped like every other `assetId` in this file.
+  collectionRows: v.optional(
+    v.array(
+      v.object({
+        collectionTmpId: v.string(),
+        // Stable per-row key inside the bundle, so a later merge import updates
+        // the row in place instead of writing a second copy of the same
+        // property. Optional: a create import works without it.
+        externalKey: v.optional(v.string()),
+        slug: v.string(),
+        title: v.string(),
+        values: v.any(),
+        // Fractional-indexing key, preserved when present. Optional for the
+        // same reason a section's is: hand-authoring these is a footgun, and
+        // omitting it lets the import assign valid keys in array position.
+        order: v.optional(v.string()),
+        hidden: v.optional(v.boolean()),
       }),
     ),
   ),
