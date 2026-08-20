@@ -932,6 +932,32 @@ export const sectionContent = v.union(
   // `slots`. The 2026-07-26 "the advanced editor is not Webflow" decision
   // stands: there is no box model here.
   // ---------------------------------------------------------------------
+  // A block the AGENCY's own code renders (plan P0-2026-08-19, slice 1.3).
+  //
+  // The one section whose content shape is not known at compile time, because
+  // the agency defines it in their repo with `defineBlock` and pushes it into
+  // `blockSchemas`. So the union checks the ENVELOPE and nothing else, and
+  // `lib/blocks/schema.ts` checks `props` against the registered schema on
+  // every write. That is a deliberate trade with exactly one honest reading:
+  // this is the only place in the product where a Convex validator is not the
+  // authority, and the price is that every write path has to call the checker.
+  //
+  // `SectionRenderer` never draws one. It shows a placeholder, because the
+  // renderer of an agency-code site is the agency's own Next.js app
+  // (docs/ARCHITECTURE.md, "one named exception").
+  v.object({
+    type: v.literal("block"),
+    /** Which registered block, e.g. "pricing-table". */
+    blockType: v.string(),
+    /** The schema version this content was written against, so an older
+     *  section stays valid until somebody migrates it. */
+    version: v.number(),
+    /** Checked by `validateBlockProps`, never by this union. */
+    props: v.any(),
+    /** Owner-facing name in the section list, since we cannot render a preview
+     *  of somebody else's component to identify it by. */
+    label: v.optional(v.string()),
+  }),
   v.object({
     type: v.literal("imported"),
     /** Owner-facing label for the section list ("Hero", "Om oss"). */
@@ -1335,6 +1361,7 @@ export const SECTION_TYPES = [
   "illustration",
   "imported",
   "events",
+  "block",
   // section:new-type-anchor — the scaffolder inserts new type literals above.
 ] as const;
 
