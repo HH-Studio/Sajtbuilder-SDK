@@ -115,6 +115,19 @@ It writes one file per page under `snabbsajt/content/pages/`, plus a
 `site.json` holding everything that is not a page. Commit the directory: a
 one-file diff per page is what makes a client's change reviewable.
 
+**Push the directory straight back.** `snabbsajt push snabbsajt/content` puts
+the site file and its page files together again, ordered by each page's own
+`order` rather than by file name, so the fourth step of the round trip carries
+exactly what the third step pulled:
+
+```bash
+snabbsajt push pkg              # you push
+                                # your client adds a page
+snabbsajt pull --format portable
+git add snabbsajt/content && git commit -m "the client added Priser"
+snabbsajt push snabbsajt/content   # a no-op: nothing changed on the way through
+```
+
 It reads through the admin token (`site:read`, read-only), because the published
 API only serves published work. Pair once with `snabbsajt admin pair`.
 

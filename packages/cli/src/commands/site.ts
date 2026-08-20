@@ -9,6 +9,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
+import { portableFromFiles } from "./pullPortable";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import {
@@ -180,6 +181,15 @@ export function loadPackage(target: string) {
   } catch (error) {
     throw new CliError(`site.json is not valid JSON: ${(error as Error).message}`);
   }
+  // A directory `pull --format portable` wrote: one site file with an empty
+  // `pages` array beside a `pages/` folder holding one file per page. Put back
+  // together here so `snabbsajt push snabbsajt/content` is the fourth step of
+  // the round trip rather than a push that deletes every page the client made.
+  if (isDir) {
+    const reassembled = portableFromFiles(resolved);
+    if (reassembled) payload = reassembled;
+  }
+
   try {
     const assets = isDir
       ? readBoundedLocalFiles(join(resolved, "assets"), {

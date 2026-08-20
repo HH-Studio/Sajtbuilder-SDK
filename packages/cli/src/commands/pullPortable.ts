@@ -1,5 +1,6 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { PORTABLE_CAPS } from "@snabbsajt/site-kit";
 import { consoleOutput, type Output } from "../output";
 import { ConnectError } from "./connect/deviceAuth";
 import {
@@ -73,6 +74,48 @@ export function portableFiles(
     });
   }
   return files;
+}
+
+/** The inverse of `portableFiles`: one pulled directory, back into one site.
+ *
+ *  Without this, the round trip the plan promises — push, the client edits,
+ *  pull, push again — stops at step four. `pull --format portable` writes a
+ *  site file with an empty `pages` array beside a `pages/` folder, and nothing
+ *  put them back together, so the next push carried a site with no pages at all
+ *  and would have deleted the client's work rather than preserved it.
+ *
+ *  Order comes from each page's own `order`, never from the directory listing:
+ *  file names sort by locale and by filesystem, and a nav that reshuffles on a
+ *  colleague's machine is not a round trip. `slug` breaks a tie so the result is
+ *  total.
+ *
+ *  Returns `null` when this is not a pulled directory, so `loadPackage` can ask
+ *  the question cheaply for every directory it is given. */
+export function portableFromFiles(dir: string): PortableSite | null {
+  const sitePath = join(dir, "site.json");
+  const pagesDir = join(dir, "pages");
+  if (!existsSync(sitePath) || !existsSync(pagesDir)) return null;
+  const site = JSON.parse(readFileSync(sitePath, "utf8")) as PortableSite;
+  // A directory whose site file already carries its pages is an ordinary
+  // package that happens to have a `pages/` folder. Leave it alone.
+  if (Array.isArray(site.pages) && site.pages.length > 0) return null;
+
+  const names = readdirSync(pagesDir)
+    .filter((name) => name.endsWith(".json"))
+    .sort();
+  if (names.length > PORTABLE_CAPS.maxPages) {
+    throw new ConnectError(
+      `${pagesDir} holds ${names.length} pages, over the ${PORTABLE_CAPS.maxPages} page cap`,
+    );
+  }
+  const pages = names.map(
+    (name) => JSON.parse(readFileSync(join(pagesDir, name), "utf8")) as PortablePage,
+  );
+  pages.sort((a, b) => {
+    const byOrder = Number(a.order ?? 0) - Number(b.order ?? 0);
+    return byOrder !== 0 ? byOrder : String(a.slug ?? "").localeCompare(String(b.slug ?? ""));
+  });
+  return { ...site, pages };
 }
 
 export type PortablePullDeps = {
