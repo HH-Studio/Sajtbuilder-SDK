@@ -16,7 +16,7 @@
     "maxTotalAssetBytes": 209715200
   },
   "format": "snabbsajt-site-kit-contract",
-  "hash": "sha256:096aceb02a7a04acd34c9d8f7458339013b654e284b9e18dc8741211d50cbc1d",
+  "hash": "sha256:c1aa7d99de249984d3df1a21d10bb3ddce9e32c90748385a00b8084d34ee3823",
   "importReport": {
     "$id": "https://snabbsajt.com/contracts/import-report-v1.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -556,6 +556,50 @@
             }
           },
           "optional": false
+        },
+        "blockSchemas": {
+          "fieldType": {
+            "type": "array",
+            "value": {
+              "type": "object",
+              "value": {
+                "fields": {
+                  "fieldType": {
+                    "type": "any"
+                  },
+                  "optional": false
+                },
+                "label": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "type": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "variants": {
+                  "fieldType": {
+                    "type": "array",
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "optional": true
+                },
+                "version": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                }
+              }
+            }
+          },
+          "optional": true
         },
         "contentCollections": {
           "fieldType": {
@@ -1892,6 +1936,75 @@
                                   },
                                   "optional": true
                                 },
+                                "motionSequence": {
+                                  "fieldType": {
+                                    "type": "object",
+                                    "value": {
+                                      "steps": {
+                                        "fieldType": {
+                                          "type": "array",
+                                          "value": {
+                                            "type": "object",
+                                            "value": {
+                                              "delayStep": {
+                                                "fieldType": {
+                                                  "type": "number"
+                                                },
+                                                "optional": true
+                                              },
+                                              "motion": {
+                                                "fieldType": {
+                                                  "type": "union",
+                                                  "value": [
+                                                    {
+                                                      "type": "literal",
+                                                      "value": "rise"
+                                                    },
+                                                    {
+                                                      "type": "literal",
+                                                      "value": "fade"
+                                                    },
+                                                    {
+                                                      "type": "literal",
+                                                      "value": "zoom"
+                                                    },
+                                                    {
+                                                      "type": "literal",
+                                                      "value": "pulse"
+                                                    }
+                                                  ]
+                                                },
+                                                "optional": false
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "optional": false
+                                      },
+                                      "trigger": {
+                                        "fieldType": {
+                                          "type": "union",
+                                          "value": [
+                                            {
+                                              "type": "literal",
+                                              "value": "view"
+                                            },
+                                            {
+                                              "type": "literal",
+                                              "value": "hover"
+                                            },
+                                            {
+                                              "type": "literal",
+                                              "value": "load"
+                                            }
+                                          ]
+                                        },
+                                        "optional": false
+                                      }
+                                    }
+                                  },
+                                  "optional": true
+                                },
                                 "radius": {
                                   "fieldType": {
                                     "type": "union",
@@ -2167,6 +2280,75 @@
                                 "motionDelayStep": {
                                   "fieldType": {
                                     "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "motionSequence": {
+                                  "fieldType": {
+                                    "type": "object",
+                                    "value": {
+                                      "steps": {
+                                        "fieldType": {
+                                          "type": "array",
+                                          "value": {
+                                            "type": "object",
+                                            "value": {
+                                              "delayStep": {
+                                                "fieldType": {
+                                                  "type": "number"
+                                                },
+                                                "optional": true
+                                              },
+                                              "motion": {
+                                                "fieldType": {
+                                                  "type": "union",
+                                                  "value": [
+                                                    {
+                                                      "type": "literal",
+                                                      "value": "rise"
+                                                    },
+                                                    {
+                                                      "type": "literal",
+                                                      "value": "fade"
+                                                    },
+                                                    {
+                                                      "type": "literal",
+                                                      "value": "zoom"
+                                                    },
+                                                    {
+                                                      "type": "literal",
+                                                      "value": "pulse"
+                                                    }
+                                                  ]
+                                                },
+                                                "optional": false
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "optional": false
+                                      },
+                                      "trigger": {
+                                        "fieldType": {
+                                          "type": "union",
+                                          "value": [
+                                            {
+                                              "type": "literal",
+                                              "value": "view"
+                                            },
+                                            {
+                                              "type": "literal",
+                                              "value": "hover"
+                                            },
+                                            {
+                                              "type": "literal",
+                                              "value": "load"
+                                            }
+                                          ]
+                                        },
+                                        "optional": false
+                                      }
+                                    }
                                   },
                                   "optional": true
                                 },
@@ -2448,6 +2630,75 @@
                                   },
                                   "optional": true
                                 },
+                                "motionSequence": {
+                                  "fieldType": {
+                                    "type": "object",
+                                    "value": {
+                                      "steps": {
+                                        "fieldType": {
+                                          "type": "array",
+                                          "value": {
+                                            "type": "object",
+                                            "value": {
+                                              "delayStep": {
+                                                "fieldType": {
+                                                  "type": "number"
+                                                },
+                                                "optional": true
+                                              },
+                                              "motion": {
+                                                "fieldType": {
+                                                  "type": "union",
+                                                  "value": [
+                                                    {
+                                                      "type": "literal",
+                                                      "value": "rise"
+                                                    },
+                                                    {
+                                                      "type": "literal",
+                                                      "value": "fade"
+                                                    },
+                                                    {
+                                                      "type": "literal",
+                                                      "value": "zoom"
+                                                    },
+                                                    {
+                                                      "type": "literal",
+                                                      "value": "pulse"
+                                                    }
+                                                  ]
+                                                },
+                                                "optional": false
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "optional": false
+                                      },
+                                      "trigger": {
+                                        "fieldType": {
+                                          "type": "union",
+                                          "value": [
+                                            {
+                                              "type": "literal",
+                                              "value": "view"
+                                            },
+                                            {
+                                              "type": "literal",
+                                              "value": "hover"
+                                            },
+                                            {
+                                              "type": "literal",
+                                              "value": "load"
+                                            }
+                                          ]
+                                        },
+                                        "optional": false
+                                      }
+                                    }
+                                  },
+                                  "optional": true
+                                },
                                 "radius": {
                                   "fieldType": {
                                     "type": "union",
@@ -2726,6 +2977,75 @@
                                   },
                                   "optional": true
                                 },
+                                "motionSequence": {
+                                  "fieldType": {
+                                    "type": "object",
+                                    "value": {
+                                      "steps": {
+                                        "fieldType": {
+                                          "type": "array",
+                                          "value": {
+                                            "type": "object",
+                                            "value": {
+                                              "delayStep": {
+                                                "fieldType": {
+                                                  "type": "number"
+                                                },
+                                                "optional": true
+                                              },
+                                              "motion": {
+                                                "fieldType": {
+                                                  "type": "union",
+                                                  "value": [
+                                                    {
+                                                      "type": "literal",
+                                                      "value": "rise"
+                                                    },
+                                                    {
+                                                      "type": "literal",
+                                                      "value": "fade"
+                                                    },
+                                                    {
+                                                      "type": "literal",
+                                                      "value": "zoom"
+                                                    },
+                                                    {
+                                                      "type": "literal",
+                                                      "value": "pulse"
+                                                    }
+                                                  ]
+                                                },
+                                                "optional": false
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "optional": false
+                                      },
+                                      "trigger": {
+                                        "fieldType": {
+                                          "type": "union",
+                                          "value": [
+                                            {
+                                              "type": "literal",
+                                              "value": "view"
+                                            },
+                                            {
+                                              "type": "literal",
+                                              "value": "hover"
+                                            },
+                                            {
+                                              "type": "literal",
+                                              "value": "load"
+                                            }
+                                          ]
+                                        },
+                                        "optional": false
+                                      }
+                                    }
+                                  },
+                                  "optional": true
+                                },
                                 "radius": {
                                   "fieldType": {
                                     "type": "union",
@@ -3001,6 +3321,75 @@
                                 "motionDelayStep": {
                                   "fieldType": {
                                     "type": "number"
+                                  },
+                                  "optional": true
+                                },
+                                "motionSequence": {
+                                  "fieldType": {
+                                    "type": "object",
+                                    "value": {
+                                      "steps": {
+                                        "fieldType": {
+                                          "type": "array",
+                                          "value": {
+                                            "type": "object",
+                                            "value": {
+                                              "delayStep": {
+                                                "fieldType": {
+                                                  "type": "number"
+                                                },
+                                                "optional": true
+                                              },
+                                              "motion": {
+                                                "fieldType": {
+                                                  "type": "union",
+                                                  "value": [
+                                                    {
+                                                      "type": "literal",
+                                                      "value": "rise"
+                                                    },
+                                                    {
+                                                      "type": "literal",
+                                                      "value": "fade"
+                                                    },
+                                                    {
+                                                      "type": "literal",
+                                                      "value": "zoom"
+                                                    },
+                                                    {
+                                                      "type": "literal",
+                                                      "value": "pulse"
+                                                    }
+                                                  ]
+                                                },
+                                                "optional": false
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "optional": false
+                                      },
+                                      "trigger": {
+                                        "fieldType": {
+                                          "type": "union",
+                                          "value": [
+                                            {
+                                              "type": "literal",
+                                              "value": "view"
+                                            },
+                                            {
+                                              "type": "literal",
+                                              "value": "hover"
+                                            },
+                                            {
+                                              "type": "literal",
+                                              "value": "load"
+                                            }
+                                          ]
+                                        },
+                                        "optional": false
+                                      }
+                                    }
                                   },
                                   "optional": true
                                 },
@@ -3344,6 +3733,10 @@
                       {
                         "type": "literal",
                         "value": "events"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "block"
                       }
                     ]
                   },
@@ -6496,6 +6889,75 @@
                                             },
                                             "optional": true
                                           },
+                                          "motionSequence": {
+                                            "fieldType": {
+                                              "type": "object",
+                                              "value": {
+                                                "steps": {
+                                                  "fieldType": {
+                                                    "type": "array",
+                                                    "value": {
+                                                      "type": "object",
+                                                      "value": {
+                                                        "delayStep": {
+                                                          "fieldType": {
+                                                            "type": "number"
+                                                          },
+                                                          "optional": true
+                                                        },
+                                                        "motion": {
+                                                          "fieldType": {
+                                                            "type": "union",
+                                                            "value": [
+                                                              {
+                                                                "type": "literal",
+                                                                "value": "rise"
+                                                              },
+                                                              {
+                                                                "type": "literal",
+                                                                "value": "fade"
+                                                              },
+                                                              {
+                                                                "type": "literal",
+                                                                "value": "zoom"
+                                                              },
+                                                              {
+                                                                "type": "literal",
+                                                                "value": "pulse"
+                                                              }
+                                                            ]
+                                                          },
+                                                          "optional": false
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "optional": false
+                                                },
+                                                "trigger": {
+                                                  "fieldType": {
+                                                    "type": "union",
+                                                    "value": [
+                                                      {
+                                                        "type": "literal",
+                                                        "value": "view"
+                                                      },
+                                                      {
+                                                        "type": "literal",
+                                                        "value": "hover"
+                                                      },
+                                                      {
+                                                        "type": "literal",
+                                                        "value": "load"
+                                                      }
+                                                    ]
+                                                  },
+                                                  "optional": false
+                                                }
+                                              }
+                                            },
+                                            "optional": true
+                                          },
                                           "radius": {
                                             "fieldType": {
                                               "type": "union",
@@ -6771,6 +7233,75 @@
                                           "motionDelayStep": {
                                             "fieldType": {
                                               "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "motionSequence": {
+                                            "fieldType": {
+                                              "type": "object",
+                                              "value": {
+                                                "steps": {
+                                                  "fieldType": {
+                                                    "type": "array",
+                                                    "value": {
+                                                      "type": "object",
+                                                      "value": {
+                                                        "delayStep": {
+                                                          "fieldType": {
+                                                            "type": "number"
+                                                          },
+                                                          "optional": true
+                                                        },
+                                                        "motion": {
+                                                          "fieldType": {
+                                                            "type": "union",
+                                                            "value": [
+                                                              {
+                                                                "type": "literal",
+                                                                "value": "rise"
+                                                              },
+                                                              {
+                                                                "type": "literal",
+                                                                "value": "fade"
+                                                              },
+                                                              {
+                                                                "type": "literal",
+                                                                "value": "zoom"
+                                                              },
+                                                              {
+                                                                "type": "literal",
+                                                                "value": "pulse"
+                                                              }
+                                                            ]
+                                                          },
+                                                          "optional": false
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "optional": false
+                                                },
+                                                "trigger": {
+                                                  "fieldType": {
+                                                    "type": "union",
+                                                    "value": [
+                                                      {
+                                                        "type": "literal",
+                                                        "value": "view"
+                                                      },
+                                                      {
+                                                        "type": "literal",
+                                                        "value": "hover"
+                                                      },
+                                                      {
+                                                        "type": "literal",
+                                                        "value": "load"
+                                                      }
+                                                    ]
+                                                  },
+                                                  "optional": false
+                                                }
+                                              }
                                             },
                                             "optional": true
                                           },
@@ -7052,6 +7583,75 @@
                                             },
                                             "optional": true
                                           },
+                                          "motionSequence": {
+                                            "fieldType": {
+                                              "type": "object",
+                                              "value": {
+                                                "steps": {
+                                                  "fieldType": {
+                                                    "type": "array",
+                                                    "value": {
+                                                      "type": "object",
+                                                      "value": {
+                                                        "delayStep": {
+                                                          "fieldType": {
+                                                            "type": "number"
+                                                          },
+                                                          "optional": true
+                                                        },
+                                                        "motion": {
+                                                          "fieldType": {
+                                                            "type": "union",
+                                                            "value": [
+                                                              {
+                                                                "type": "literal",
+                                                                "value": "rise"
+                                                              },
+                                                              {
+                                                                "type": "literal",
+                                                                "value": "fade"
+                                                              },
+                                                              {
+                                                                "type": "literal",
+                                                                "value": "zoom"
+                                                              },
+                                                              {
+                                                                "type": "literal",
+                                                                "value": "pulse"
+                                                              }
+                                                            ]
+                                                          },
+                                                          "optional": false
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "optional": false
+                                                },
+                                                "trigger": {
+                                                  "fieldType": {
+                                                    "type": "union",
+                                                    "value": [
+                                                      {
+                                                        "type": "literal",
+                                                        "value": "view"
+                                                      },
+                                                      {
+                                                        "type": "literal",
+                                                        "value": "hover"
+                                                      },
+                                                      {
+                                                        "type": "literal",
+                                                        "value": "load"
+                                                      }
+                                                    ]
+                                                  },
+                                                  "optional": false
+                                                }
+                                              }
+                                            },
+                                            "optional": true
+                                          },
                                           "radius": {
                                             "fieldType": {
                                               "type": "union",
@@ -7330,6 +7930,75 @@
                                             },
                                             "optional": true
                                           },
+                                          "motionSequence": {
+                                            "fieldType": {
+                                              "type": "object",
+                                              "value": {
+                                                "steps": {
+                                                  "fieldType": {
+                                                    "type": "array",
+                                                    "value": {
+                                                      "type": "object",
+                                                      "value": {
+                                                        "delayStep": {
+                                                          "fieldType": {
+                                                            "type": "number"
+                                                          },
+                                                          "optional": true
+                                                        },
+                                                        "motion": {
+                                                          "fieldType": {
+                                                            "type": "union",
+                                                            "value": [
+                                                              {
+                                                                "type": "literal",
+                                                                "value": "rise"
+                                                              },
+                                                              {
+                                                                "type": "literal",
+                                                                "value": "fade"
+                                                              },
+                                                              {
+                                                                "type": "literal",
+                                                                "value": "zoom"
+                                                              },
+                                                              {
+                                                                "type": "literal",
+                                                                "value": "pulse"
+                                                              }
+                                                            ]
+                                                          },
+                                                          "optional": false
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "optional": false
+                                                },
+                                                "trigger": {
+                                                  "fieldType": {
+                                                    "type": "union",
+                                                    "value": [
+                                                      {
+                                                        "type": "literal",
+                                                        "value": "view"
+                                                      },
+                                                      {
+                                                        "type": "literal",
+                                                        "value": "hover"
+                                                      },
+                                                      {
+                                                        "type": "literal",
+                                                        "value": "load"
+                                                      }
+                                                    ]
+                                                  },
+                                                  "optional": false
+                                                }
+                                              }
+                                            },
+                                            "optional": true
+                                          },
                                           "radius": {
                                             "fieldType": {
                                               "type": "union",
@@ -7605,6 +8274,75 @@
                                           "motionDelayStep": {
                                             "fieldType": {
                                               "type": "number"
+                                            },
+                                            "optional": true
+                                          },
+                                          "motionSequence": {
+                                            "fieldType": {
+                                              "type": "object",
+                                              "value": {
+                                                "steps": {
+                                                  "fieldType": {
+                                                    "type": "array",
+                                                    "value": {
+                                                      "type": "object",
+                                                      "value": {
+                                                        "delayStep": {
+                                                          "fieldType": {
+                                                            "type": "number"
+                                                          },
+                                                          "optional": true
+                                                        },
+                                                        "motion": {
+                                                          "fieldType": {
+                                                            "type": "union",
+                                                            "value": [
+                                                              {
+                                                                "type": "literal",
+                                                                "value": "rise"
+                                                              },
+                                                              {
+                                                                "type": "literal",
+                                                                "value": "fade"
+                                                              },
+                                                              {
+                                                                "type": "literal",
+                                                                "value": "zoom"
+                                                              },
+                                                              {
+                                                                "type": "literal",
+                                                                "value": "pulse"
+                                                              }
+                                                            ]
+                                                          },
+                                                          "optional": false
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "optional": false
+                                                },
+                                                "trigger": {
+                                                  "fieldType": {
+                                                    "type": "union",
+                                                    "value": [
+                                                      {
+                                                        "type": "literal",
+                                                        "value": "view"
+                                                      },
+                                                      {
+                                                        "type": "literal",
+                                                        "value": "hover"
+                                                      },
+                                                      {
+                                                        "type": "literal",
+                                                        "value": "load"
+                                                      }
+                                                    ]
+                                                  },
+                                                  "optional": false
+                                                }
+                                              }
                                             },
                                             "optional": true
                                           },
@@ -7944,6 +8682,7 @@
       "banner",
       "before-after",
       "bento",
+      "block",
       "booking",
       "certifications",
       "comparison",
@@ -8022,6 +8761,9 @@
         "rail",
         "uniform",
         "work-index"
+      ],
+      "block": [
+        "default"
       ],
       "booking": [
         "banner",

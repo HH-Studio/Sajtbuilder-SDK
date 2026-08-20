@@ -324,6 +324,28 @@ export const portableSiteV1 = v.object({
     ),
   ),
 
+  // The block library this hemsida's sections are written against, when an
+  // agency registered one (plan P0-2026-08-19 §1.3, and the review that found
+  // this slot missing). Without it an exported agency site is unrenderable
+  // anywhere else: the sections carry `blockType` and props, and nothing on the
+  // receiving side knows what shape those props are meant to be.
+  //
+  // Absent on every bundle from an ordinary site, and on every bundle exported
+  // before this field existed, so no older file becomes invalid.
+  blockSchemas: v.optional(
+    v.array(
+      v.object({
+        type: v.string(),
+        label: v.string(),
+        version: v.number(),
+        // Checked by `lib/blocks/schema.ts` on import, never trusted from the
+        // file, exactly as the stored column is never trusted on read.
+        fields: v.any(),
+        variants: v.optional(v.array(v.string())),
+      }),
+    ),
+  ),
+
   sections: v.array(
     v.object({
       // Stable export-local identity used by authored locale payloads. Optional
