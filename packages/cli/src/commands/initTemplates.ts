@@ -113,11 +113,14 @@ async function loadSite() {
   const pages = await Promise.all(
     names
       .filter((name) => name.endsWith(".json"))
-      .sort()
       .map(async (name) =>
         JSON.parse(await readFile(\`\${dir}/pages/\${name}\`, "utf8")),
       ),
   );
+  // Ordered by each page's own order, never by file name: a directory listing
+  // sorts by locale and by filesystem, so a nav that came from it would
+  // reshuffle on a colleague's machine.
+  pages.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   return { ...site, pages };
 }
 `;
