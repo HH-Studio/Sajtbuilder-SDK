@@ -4576,6 +4576,54 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDef> = {
     }),
   },
 
+  // A block the AGENCY's own code renders. Registered per hemsida in
+  // `blockSchemas` and pushed from their repo (plan P0-2026-08-19, slice 1.3).
+  //
+  // `restricted`, for the same reason `imported` and `illustration` are: there
+  // is nothing to author. The entry exists so the section list, the reorder
+  // controls and the tone/​layout machinery all know the type, not so somebody
+  // can add an empty one from the picker. On an agency site the real palette is
+  // that site's registered library, which the editor reads separately.
+  "block": {
+    type: "block",
+    label: { sv: "Byråns block", en: "Agency block", pl: "Blok agencji" },
+    availability: "restricted",
+    whenToUse: {
+      sv: "En del som byråns egen kod ritar. Du ändrar texter och bilder som vanligt; formen kommer från deras komponent.",
+      en: "A piece drawn by the agency's own code. Words and pictures edit as usual; the shape comes from their component.",
+      pl: "Fragment rysowany przez kod agencji. Teksty i zdjęcia zmieniasz normalnie; forma pochodzi z ich komponentu.",
+    },
+    category: "content",
+    icon: "Code",
+    variants: [
+      {
+        key: "default",
+        label: { sv: "Standard", en: "Default", pl: "Standard" },
+        description: {
+          sv: "Blocket som byrån byggt, i sin egen form.",
+          en: "The block the agency built, in its own shape.",
+          pl: "Blok zbudowany przez agencję, w swojej własnej formie.",
+        },
+      },
+    ],
+    defaultVariant: "default",
+    defaultTone: "light",
+    // One tone: the agency's component brings its own surface, and painting a
+    // tone behind it would either be invisible or fight it. Same call the
+    // captured `imported` block makes.
+    allowedTones: ["light"],
+    // Deliberately empty and deliberately unusable on its own: a block only
+    // means something with a `blockType` naming a registered schema, which the
+    // picker supplies. A default that invented one would name a block that
+    // does not exist.
+    defaultContent: () => ({
+      type: "block",
+      blockType: "",
+      version: 1,
+      props: {},
+    }),
+  },
+
   "imported": {
     type: "imported",
     label: { sv: "Från din gamla sida", en: "From your old site", pl: "Z Twojej starej strony" },
