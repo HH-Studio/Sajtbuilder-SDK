@@ -1,6 +1,6 @@
 {
   "manifestVersion": 1,
-  "releaseVersion": "1.3.0",
+  "releaseVersion": "1.4.0",
   "minimumCliVersion": "0.1.0",
   "portableFormat": {
     "format": "sajt-site",
@@ -103,6 +103,26 @@
         {
           "path": "SKILL.md",
           "sha256": "c1b40d537e497fca13f5aeff6677b2e8ab90f6fe6e590eff55808f17dbe29749"
+        },
+        {
+          "path": "references/mcp-tools.md",
+          "source": "shared/mcp-tools.md",
+          "sha256": "94924883c2cf2fb77b8e23bd98706785df8f5d5420c95aa958682f94917136e4"
+        }
+      ]
+    },
+    {
+      "name": "make-site-editable",
+      "version": "1.0.0",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "7d0ffd837bf774e340766c0b412b3d537eb2f4d91dddc26979aa31b74a1ed180"
+        },
+        {
+          "path": "references/cli-commands.md",
+          "source": "shared/cli-commands.md",
+          "sha256": "f7abed66eacb836a6afecd10be942d5d6b1ca656254434da25de5bb562e4480a"
         },
         {
           "path": "references/mcp-tools.md",
