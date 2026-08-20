@@ -276,6 +276,20 @@ Reports installed CLI, Site Kit and format versions without a network request.
 `snabbsajt --version` prints the CLI version alone, for scripts that only need
 that.
 
+In an agency repository (one holding `snabbsajt/blocks.ts`, a catch-all route,
+or a paired `.snabbsajt-admin.json`), doctor also walks the contract your app
+has to keep, and each finding names what to do:
+
+- **blocks** and **catch-all**: without them nothing is editable, and a page
+  your client creates is a 404.
+- **remote-images**: `images.remotePatterns` has to allow the SnabbSajt asset
+  host, or every picture your client uploads fails to load.
+- **framing**: a `frame-ancestors` policy that does not name SnabbSajt shows
+  your client a blank frame in the editor.
+
+It reads your files, so it answers `unknown` rather than claiming a pass it
+cannot prove, and it never exits non-zero: it is a checklist, not a gate.
+
 ## Agent skills
 
 ```bash
