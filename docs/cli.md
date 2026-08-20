@@ -71,6 +71,24 @@ installed agent skill adds proposals, approval also proves the deterministic
 baseline is unchanged and accepts only additive, unresolved `ai_proposed`
 findings with valid evidence citations.
 
+## Pull the client's own work back: `pull --format portable`
+
+```bash
+snabbsajt pull --format portable [--out <dir>] [--site <id>] [--json]
+```
+
+The ordinary `pull` fetches the PUBLISHED snapshot, which is what a site
+renders. This fetches the DRAFT as a `PortableSiteV1`, which is what a site is
+built from. An agency pushes from its repository, the client adds a page in the
+editor, and this is how that page gets into the version the agency builds from.
+
+It writes one file per page under `snabbsajt/content/pages/`, plus a
+`site.json` holding everything that is not a page. Commit the directory: a
+one-file diff per page is what makes a client's change reviewable.
+
+It reads through the admin token (`site:read`, read-only), because the published
+API only serves published work. Pair once with `snabbsajt admin pair`.
+
 ## Connect an existing repository
 
 ```bash
