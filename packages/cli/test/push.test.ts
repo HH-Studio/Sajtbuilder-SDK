@@ -165,6 +165,62 @@ describe("snabbsajt push", () => {
     expect(all()).not.toContain(TOKEN);
   });
 
+  it("reports the branch preview after the import, and only then", async () => {
+    // Order is the claim: an address for content that failed to land would put
+    // a stale page on the client's card (plan P0-2026-08-19 slice 2.4).
+    const { out, output } = collectOutput();
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(sseResponse({ jsonrpc: "2.0", id: 1, result: INITIALIZE_RESULT }))
+      .mockResolvedValueOnce(toolResult(2, MERGE_DATA))
+      .mockResolvedValueOnce(toolResult(3, { branch: "staging", count: 1 }));
+
+    const code = await runPushCommand(
+      ["pkg", "--branch", "staging", "--preview-url", "https://acme-git-staging.vercel.app"],
+      output,
+      { fetch: fetchImpl as unknown as typeof globalThis.fetch },
+    );
+
+    expect(code).toBe(0);
+    expect((await callBody(fetchImpl, 1)).params.name).toBe("import_site");
+    const second = await callBody(fetchImpl, 2);
+    expect(second.params.name).toBe("record_branch_preview");
+    expect(second.params.arguments?.branch).toBe("staging");
+    expect(out.join("\n")).toContain("staging");
+  });
+
+  it("does not report a branch preview on a dry run", async () => {
+    const { output } = collectOutput();
+    const fetchImpl = pushFetch(toolResult(2, { ...MERGE_DATA, preview: true }));
+
+    const code = await runPushCommand(
+      [
+        "pkg",
+        "--dry-run",
+        "--branch",
+        "staging",
+        "--preview-url",
+        "https://acme-git-staging.vercel.app",
+      ],
+      output,
+      { fetch: fetchImpl as unknown as typeof globalThis.fetch },
+    );
+
+    expect(code).toBe(0);
+    expect(fetchImpl.mock.calls.length).toBe(2);
+  });
+
+  it("refuses half a pair", async () => {
+    const { err, output } = collectOutput();
+    const code = await runPushCommand(["pkg", "--branch", "staging"], output, {
+      fetch: (() => {
+        throw new Error("no request should be made");
+      }) as unknown as typeof globalThis.fetch,
+    });
+    expect(code).toBe(1);
+    expect(err.join("\n")).toContain("--preview-url");
+  });
+
   it("passes --dry-run and --force-key through, and marks the preview", async () => {
     const { all, output } = collectOutput();
     const fetchImpl = pushFetch(toolResult(2, { ...MERGE_DATA, preview: true }));

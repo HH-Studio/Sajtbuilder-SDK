@@ -43,6 +43,13 @@ type PushArgs = {
   appUrl?: string;
   dryRun: boolean;
   forceKeys: string[];
+  /** `--branch <name> --preview-url <https://...>`: the address the agency's
+   *  host built for this branch. Reported after a successful push so the
+   *  client's "Var är den live?" card can list it. Never created here; the host
+   *  builds one per branch on its own. */
+  branch?: string;
+  previewUrl?: string;
+  previewLabel?: string;
 };
 
 type MergeSectionEntry = {
@@ -74,6 +81,9 @@ function parsePushArgs(args: string[]): PushArgs {
   let siteId: string | undefined;
   let appUrl: string | undefined;
   let dryRun = false;
+  let branch: string | undefined;
+  let previewUrl: string | undefined;
+  let previewLabel: string | undefined;
   const forceKeys: string[] = [];
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index]!;
@@ -81,7 +91,14 @@ function parsePushArgs(args: string[]): PushArgs {
       dryRun = true;
       continue;
     }
-    if (argument === "--site" || argument === "--app-url" || argument === "--force-key") {
+    if (
+      argument === "--site" ||
+      argument === "--app-url" ||
+      argument === "--force-key" ||
+      argument === "--branch" ||
+      argument === "--preview-url" ||
+      argument === "--preview-label"
+    ) {
       const value = args[index + 1];
       if (!value || value.startsWith("-")) throw new ConnectError(`${argument} requires a value`);
       index += 1;
@@ -91,6 +108,15 @@ function parsePushArgs(args: string[]): PushArgs {
       } else if (argument === "--app-url") {
         if (appUrl) throw new ConnectError("push accepts --app-url only once");
         appUrl = value;
+      } else if (argument === "--branch") {
+        if (branch) throw new ConnectError("push accepts --branch only once");
+        branch = value;
+      } else if (argument === "--preview-url") {
+        if (previewUrl) throw new ConnectError("push accepts --preview-url only once");
+        previewUrl = value;
+      } else if (argument === "--preview-label") {
+        if (previewLabel) throw new ConnectError("push accepts --preview-label only once");
+        previewLabel = value;
       } else {
         forceKeys.push(value);
       }
@@ -105,10 +131,20 @@ function parsePushArgs(args: string[]): PushArgs {
       "push requires a package: snabbsajt push <site.json|package-dir> [--site <websiteId>] [--dry-run]",
     );
   }
+  // Half a pair is a mistake worth naming: a branch with no address reports
+  // nothing, and an address with no branch has nowhere to go.
+  if ((branch && !previewUrl) || (previewUrl && !branch)) {
+    throw new ConnectError(
+      "--branch and --preview-url go together: --branch staging --preview-url https://...",
+    );
+  }
   return {
     target,
     ...(siteId ? { siteId } : {}),
     ...(appUrl ? { appUrl } : {}),
+    ...(branch ? { branch } : {}),
+    ...(previewUrl ? { previewUrl } : {}),
+    ...(previewLabel ? { previewLabel } : {}),
     dryRun,
     forceKeys,
   };
@@ -266,6 +302,26 @@ export async function runPushCommand(
     }
 
     const data = (result.data ?? {}) as PushResultData;
+
+    // The branch preview, after the import and never before it: reporting an
+    // address for content that failed to land would put a stale page on the
+    // client's card. Skipped on a dry run for the same reason.
+    let branchPreview: { branch: string; reported: boolean; error?: string } | undefined;
+    if (parsed.branch && parsed.previewUrl && !parsed.dryRun) {
+      const reported = await client.callTool("record_branch_preview", {
+        websiteId: siteId,
+        branch: parsed.branch,
+        url: parsed.previewUrl,
+        ...(parsed.previewLabel ? { label: parsed.previewLabel } : {}),
+      });
+      branchPreview = reported.isError
+        ? {
+            branch: parsed.branch,
+            reported: false,
+            error: reported.text || "record_branch_preview reported an error.",
+          }
+        : { branch: parsed.branch, reported: true };
+    }
     if (asJson) {
       json(output, {
         ok: true,
@@ -278,10 +334,18 @@ export async function runPushCommand(
         sectionCounts: countByAction(data.merge?.sections ?? []),
         merge: data.merge,
         editorUrl: data.editorUrl,
+        ...(branchPreview ? { branchPreview } : {}),
       });
     } else {
       output.stdout(parsed.dryRun ? `Previewed push to ${siteId}.` : `Pushed to ${siteId}.`);
       printMergeReport(output, data, parsed.dryRun);
+      if (branchPreview?.reported) {
+        output.stdout(`Branch preview for ${branchPreview.branch} is on the client's card.`);
+      } else if (branchPreview) {
+        // The content landed. Say what did not, and do not fail the push over
+        // a card entry: re-pushing to fix it would re-import everything.
+        output.stderr(`snabbsajt: the push landed, but the branch preview was not recorded: ${branchPreview.error}`);
+      }
     }
     return 0;
   } catch (error) {
@@ -309,6 +373,7 @@ function usage(output: Output): void {
   output.stdout(`Usage:
   snabbsajt push <site.json|package-dir> [--site <websiteId>] [--dry-run]
                  [--force-key <externalKey>]... [--app-url <url>] [--json]
+                 [--branch <name> --preview-url <https://...> [--preview-label <text>]]
 
 push validates the package locally (same checks as \`site validate\`), then
 merge-imports it into an EXISTING website draft through the same import_site
@@ -320,6 +385,12 @@ published.
 
 --dry-run runs the whole merge server-side and rolls it back, printing what a
 real push would do.
+
+--branch reports the preview address your host built for that branch, so the
+client's "Var är den live?" card lists it. It runs after the import, never
+before, and a failure there does not fail the push: the content already landed.
+It needs the settings:write scope, and only the agency that delivers the site
+may call it.
 
 Auth: ${ADMIN_TOKEN_ENV_VAR} (${ADMIN_TOKEN_PREFIX}…) from \`snabbsajt admin pair\`,
 with the content:write scope. The read-only SNABBSAJT_DELIVERY_TOKEN that

@@ -71,6 +71,21 @@ installed agent skill adds proposals, approval also proves the deterministic
 baseline is unchanged and accepts only additive, unresolved `ai_proposed`
 findings with valid evidence citations.
 
+## Report a branch preview with a push
+
+```bash
+snabbsajt push <dir> --branch staging --preview-url https://acme-git-staging.vercel.app
+```
+
+Your host already builds a preview per branch, so this reports the address
+rather than creating it. The client's "Var är den live?" card then lists it, and
+"publish to staging or to prod" matches how you actually work.
+
+It runs after the import and never before: an address for content that failed to
+land would put a stale page on the client's card. A failure here does not fail
+the push, because the content already landed. It needs the `settings:write`
+scope, and only the agency that delivers the site may call it.
+
 ## Pull the client's own work back: `pull --format portable`
 
 ```bash
