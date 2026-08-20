@@ -49,9 +49,14 @@ const SKILLS = [
     version: "1.1.0",
     references: ["mcp-tools.md"],
   },
+  {
+    name: "make-site-editable",
+    version: "1.0.0",
+    references: ["cli-commands.md", "mcp-tools.md"],
+  },
 ] as const;
 
-const RELEASE_VERSION = "1.3.0";
+const RELEASE_VERSION = "1.4.0";
 const MINIMUM_CLI_VERSION = "0.1.0";
 
 const skillsRoot = resolve(import.meta.dirname, "../skills");
