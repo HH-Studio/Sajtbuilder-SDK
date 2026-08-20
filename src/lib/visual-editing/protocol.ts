@@ -27,6 +27,26 @@ import type { SiteSnapshot } from "../../convex/model/snapshot";
  *  know, rather than guessing at a payload they may not understand. */
 export const VISUAL_EDITING_PROTOCOL_VERSION = 1;
 
+/** Every version this end can speak, newest last.
+ *
+ *  Both ends answer an unknown version with SILENCE, which is safe and
+ *  invisible: with one version that is fine, and the day there are two a bump
+ *  in place would not fail loudly, it would turn every agency's canvas into a
+ *  blank box with nothing in any log. So the site OFFERS what it knows in its
+ *  `ready`, the editor answers in the newest they share, and an editor that
+ *  offers nothing is v1 — which is every build shipped before this existed.
+ *
+ *  Adding a version means adding it here and KEEPING the old one, until nothing
+ *  in the wild speaks it. Never a bump in place. */
+export const VISUAL_EDITING_PROTOCOL_VERSIONS = [1] as const;
+
+const SUPPORTED_VERSIONS = new Set<number>(VISUAL_EDITING_PROTOCOL_VERSIONS);
+
+/** True when this end can speak the version on a message. */
+export function speaksProtocolVersion(version: unknown): version is number {
+  return typeof version === "number" && SUPPORTED_VERSIONS.has(version);
+}
+
 /** Namespace on every message, so a page that uses postMessage for its own
  *  purposes never collides with ours. */
 export const VISUAL_EDITING_CHANNEL = "snabbsajt.visual-editing";
@@ -66,6 +86,9 @@ export type ReadyMessage = {
   /** Free-text, display only — shown in the editor so a developer can tell
    *  which build is in the canvas ("next@15.5.0, commit a1b2c3"). */
   client?: string;
+  /** Versions this site can speak. The editor answers in the newest one both
+   *  ends know; absent means v1, which is every build older than this field. */
+  protocols?: number[];
 };
 
 /** The visitor clicked something editable in the rendered site. The editor
@@ -122,13 +145,15 @@ function isFieldRef(value: unknown): value is FieldRef {
 export function parseSiteMessage(data: unknown): SiteMessage | undefined {
   if (!isRecord(data)) return undefined;
   if (data.channel !== VISUAL_EDITING_CHANNEL) return undefined;
-  if (data.version !== VISUAL_EDITING_PROTOCOL_VERSION) return undefined;
+  // Any version this end still speaks, not only the newest: refusing an older
+  // editor here is how a bump would blank canvases that work today.
+  if (!speaksProtocolVersion(data.version)) return undefined;
 
   switch (data.type) {
     case "ready":
       return {
         channel: VISUAL_EDITING_CHANNEL,
-        version: VISUAL_EDITING_PROTOCOL_VERSION,
+        version: data.version,
         type: "ready",
         ...(typeof data.client === "string"
           ? { client: data.client.slice(0, 200) }
@@ -163,7 +188,10 @@ export function parseSiteMessage(data: unknown): SiteMessage | undefined {
 export function parseEditorMessage(data: unknown): EditorMessage | undefined {
   if (!isRecord(data)) return undefined;
   if (data.channel !== VISUAL_EDITING_CHANNEL) return undefined;
-  if (data.version !== VISUAL_EDITING_PROTOCOL_VERSION) return undefined;
+  // Same rule as the site→editor direction: every version this end still
+  // speaks, so an editor answering in an older one is understood rather than
+  // ignored in silence.
+  if (!speaksProtocolVersion(data.version)) return undefined;
 
   switch (data.type) {
     case "render": {

@@ -80,8 +80,10 @@ export {
   originMatches,
   parseEditorMessage,
   parseSiteMessage,
+  speaksProtocolVersion,
   VISUAL_EDITING_CHANNEL,
   VISUAL_EDITING_PROTOCOL_VERSION,
+  VISUAL_EDITING_PROTOCOL_VERSIONS,
 } from "./lib/visual-editing/protocol";
 export type {
   EditIntentMessage,
@@ -93,6 +95,34 @@ export type {
   ResizeMessage,
   SiteMessage,
 } from "./lib/visual-editing/protocol";
+// Developer-defined blocks: your components, your rendering, our content.
+export {
+  BLOCK_FIELD_KINDS,
+  BlockDefinitionError,
+  blockLibrary,
+  blockSchemasForPackage,
+  defineBlock,
+} from "./lib/blocks/defineBlock";
+export type {
+  BlockDefinition,
+  BlockField,
+  BlockFieldKind,
+  BlockLibrary,
+  PortableBlockSchema,
+} from "./lib/blocks/defineBlock";
+export {
+  blockVersionDrift,
+  isBlockSection,
+  missingBlocks,
+  pageForSegments,
+  resolveBlockSection,
+  staticParamsFor,
+} from "./lib/blocks/pages";
+export type {
+  BlockSection,
+  BlockVersionDrift,
+  ResolvedBlock,
+} from "./lib/blocks/pages";
 export { SECTION_REGISTRY, isValidVariant } from "./lib/sections/registry";
 export { PORTABLE_CAPS, checkCaps } from "./lib/portability/caps";
 export type { SiteKitIssue, SiteKitReport } from "./lib/site-kit/validate";
