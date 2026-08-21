@@ -145,6 +145,14 @@ export type SnapshotPage = Infer<typeof snapshotPage>;
 export const snapshotCollection = v.object({
   name: v.string(),
   slugPrefix: v.string(),
+  // The draft collection this was frozen from, exactly like `sourcePageId` on
+  // a page and for the same reason: a slug stem is REUSABLE. Delete a list and
+  // create a different one that happens to take the freed stem, and the
+  // translation carry-over at publish would overlay the dead list's names and
+  // rows onto the replacement, because the localized text is keyed by stem.
+  // Optional: snapshots published before this field carry none, and the
+  // carry-over falls back to the old stem-only behaviour for them.
+  sourceCollectionId: v.optional(v.string()),
   fields: v.array(
     v.object({
       key: v.string(),
@@ -172,6 +180,10 @@ export const snapshotCollection = v.object({
     v.object({
       slug: v.string(),
       title: v.string(),
+      // The draft row this was frozen from. Same argument as
+      // `sourceCollectionId` above, one level down: a row slug is freed when
+      // the row is deleted and the next row may take it.
+      sourceRowId: v.optional(v.string()),
       // Bounded exactly like the draft column: nine shapes, no raw HTML, and
       // `v.id` never appears because a snapshot is read by the public route
       // long after the row it came from may have been edited.

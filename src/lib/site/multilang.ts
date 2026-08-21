@@ -328,7 +328,10 @@ export type SnapshotTextField = {
   scope: "site" | "nav" | "page";
 };
 
-const slugKey = (slug: string) => encodeURIComponent(slug || "__home__");
+/** The slug as it appears inside a translation key. Exported because the
+ *  publish carry-over has to rebuild the same keys to decide which of them
+ *  still describe the same page, list or row. */
+export const slugKey = (slug: string) => encodeURIComponent(slug || "__home__");
 
 /**
  * A stable-enough per-section key: the section TYPE plus its ordinal among the
