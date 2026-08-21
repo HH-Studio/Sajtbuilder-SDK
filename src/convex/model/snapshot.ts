@@ -126,6 +126,84 @@ export const snapshotPage = v.object({
 });
 export type SnapshotPage = Infer<typeof snapshotPage>;
 
+/**
+ * One owner-defined content collection, frozen at publish.
+ *
+ * Plan: `docs/plans/doing/P1-2026-08-19-content-collections.md`. The rows ride
+ * the immutable snapshot like everything else, so a published list keeps saying
+ * what it said the day it was published, and the public route reads no draft
+ * table to render it.
+ *
+ * The `fields` come along because a card is drawn from `values` keyed by field
+ * key, and a renderer that does not know a key's TYPE cannot decide whether to
+ * draw an image, a date or a price. `template` names the block that draws one
+ * row; it never carries markup (`convex/blocks.ts` states the same boundary).
+ *
+ * Image values inside `values` are ordinary `assetId` strings and resolve
+ * through the snapshot's own `resolvedAssets` map, exactly like a section's.
+ */
+export const snapshotCollection = v.object({
+  name: v.string(),
+  slugPrefix: v.string(),
+  // The draft collection this was frozen from, exactly like `sourcePageId` on
+  // a page and for the same reason: a slug stem is REUSABLE. Delete a list and
+  // create a different one that happens to take the freed stem, and the
+  // translation carry-over at publish would overlay the dead list's names and
+  // rows onto the replacement, because the localized text is keyed by stem.
+  // Optional: snapshots published before this field carry none, and the
+  // carry-over falls back to the old stem-only behaviour for them.
+  sourceCollectionId: v.optional(v.string()),
+  fields: v.array(
+    v.object({
+      key: v.string(),
+      label: v.string(),
+      type: v.string(),
+      options: v.optional(v.array(v.string())),
+      // `reference` fields only: the slug stem of the collection this field
+      // points AT. A row's reference value is frozen to `{ rowSlug }`, and a
+      // slug is unique only within its own collection, so two lists can both
+      // hold an `albin`. Without the target named here, a renderer reading the
+      // immutable snapshot cannot tell which row is meant, nor build the
+      // `/<slugPrefix>/<rowSlug>` address for it. Absent when the target is
+      // not itself in this snapshot.
+      referenceCollection: v.optional(v.string()),
+    }),
+  ),
+  template: v.optional(
+    v.object({
+      cardBlockType: v.optional(v.string()),
+      detailBlockType: v.optional(v.string()),
+      bindings: v.optional(v.record(v.string(), v.string())),
+    }),
+  ),
+  rows: v.array(
+    v.object({
+      slug: v.string(),
+      title: v.string(),
+      // The draft row this was frozen from. Same argument as
+      // `sourceCollectionId` above, one level down: a row slug is freed when
+      // the row is deleted and the next row may take it.
+      sourceRowId: v.optional(v.string()),
+      // Bounded exactly like the draft column: nine shapes, no raw HTML, and
+      // `v.id` never appears because a snapshot is read by the public route
+      // long after the row it came from may have been edited.
+      values: v.record(
+        v.string(),
+        v.union(
+          v.string(),
+          v.number(),
+          v.boolean(),
+          v.null(),
+          v.object({ assetId: v.string(), alt: v.optional(v.string()) }),
+          v.object({ href: v.string(), label: v.optional(v.string()) }),
+          v.object({ rowSlug: v.string() }),
+        ),
+      ),
+    }),
+  ),
+});
+export type SnapshotCollection = Infer<typeof snapshotCollection>;
+
 export const siteSnapshot = v.object({
   businessName: v.string(),
   // Brand logo, pre-resolved to a url at publish time. Absent => the header
@@ -241,5 +319,10 @@ export const siteSnapshot = v.object({
   // Public AI receptionist configuration. Absent/disabled snapshots render no
   // widget; selected source ids are immutable per published version.
   visitorAssistant: v.optional(publishedVisitorAssistantConfigValidator),
+  // Owner-defined content collections and their rows, frozen at publish. Absent
+  // on every snapshot published before this field existed, and on every site
+  // that has none - which is the overwhelming majority, so it stays optional
+  // rather than an empty array on a million rows.
+  collections: v.optional(v.array(snapshotCollection)),
 });
 export type SiteSnapshot = Infer<typeof siteSnapshot>;

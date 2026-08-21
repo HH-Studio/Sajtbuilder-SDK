@@ -119,6 +119,7 @@ export function validateSitePackage(
     services: site.services,
     assets: site.assets,
     contentCollections: site.contentCollections,
+    collectionRows: site.collectionRows,
     redirects: site.redirects,
   });
   if (cap) err(issues, cap === "too_many_redirects" ? "redirects" : "$", `payload exceeds import cap: ${cap}`);

@@ -43,7 +43,24 @@ export const PORTABLE_CAPS = {
    *  assets are reported `over_budget` rather than the import failing. */
   maxTotalAssetBytes: 200 * 1024 * 1024,
   // A site realistically has 1-2 (Blog, News) - generous headroom over that.
+  // Matches COLLECTIONS_PER_SITE_CAP in convex/model/collections.ts, which the
+  // owner-defined collections are created under; the two are one ceiling seen
+  // from two sides and must move together.
   maxCollections: 20,
+  /** Rows across ALL owner-defined collections in one bundle
+   *  (P1-2026-08-19-content-collections.md). `COLLECTION_ROW_CAP` (500) is the
+   *  per-collection ceiling and `maxCollections` (20) is the collection
+   *  ceiling, so this is their product: an import that would not fit in the
+   *  database it is going into is refused at the boundary rather than halfway
+   *  through the insert loop.
+   *
+   *  A bundle anywhere near it will not PUBLISH - `MAX_SITE_VERSION_BYTES` is
+   *  900 kB, under a Convex document's own 1 MiB ceiling, and that limit cannot
+   *  be raised by us at all. The publish path already turns that into the plain
+   *  `site_too_large` blocker rather than a raw Convex error, and that is the
+   *  real ceiling on how many rows a site can carry. This cap only stops a
+   *  crafted payload from inflating a workspace on the way in. */
+  maxCollectionRows: 10_000,
   /** Rows in the site's REDIRECT TABLE - matches the persisted read boundary.
    *
    *  NOT an HTTP redirect-hop limit. `maxRedirects` elsewhere in the codebase
@@ -101,6 +118,7 @@ export type CapCode =
   | "too_many_services"
   | "too_many_assets"
   | "too_many_collections"
+  | "too_many_collection_rows"
   | "too_many_redirects";
 
 /** First exceeded cap, or null when the payload is within every limit. */
@@ -112,6 +130,7 @@ export function checkCaps(p: {
   services?: readonly unknown[];
   assets: readonly unknown[];
   contentCollections?: readonly unknown[];
+  collectionRows?: readonly unknown[];
   redirects?: readonly unknown[];
 }): CapCode | null {
   if (p.pages.length > PORTABLE_CAPS.maxPages) return "too_many_pages";
@@ -124,6 +143,9 @@ export function checkCaps(p: {
   if (p.assets.length > PORTABLE_CAPS.maxAssets) return "too_many_assets";
   if ((p.contentCollections?.length ?? 0) > PORTABLE_CAPS.maxCollections) {
     return "too_many_collections";
+  }
+  if ((p.collectionRows?.length ?? 0) > PORTABLE_CAPS.maxCollectionRows) {
+    return "too_many_collection_rows";
   }
   if ((p.redirects?.length ?? 0) > PORTABLE_CAPS.maxRedirects) {
     return "too_many_redirects";
