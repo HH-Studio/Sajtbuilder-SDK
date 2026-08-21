@@ -19,7 +19,7 @@ Usage:
   snabbsajt link [--site <slug|id>] [--yes] [--relink] [--status] [--json]
   snabbsajt unlink [--json]
   snabbsajt pull [-o <file>] [--locale sv|en|pl] [--stage draft] [--json]
-  snabbsajt push <site.json|dir> [--site <id>] [--dry-run] [--force-key <k>]... [--json]
+  snabbsajt push <site.json|dir> [--site <id>] [--create] [--dry-run] [--force-key <k>]... [--json]
                  [--branch <name> --preview-url <https://...>]
   snabbsajt upgrade [--yes] [--json]
   snabbsajt connect [--api-url <url>] [--json]

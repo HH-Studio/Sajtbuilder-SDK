@@ -8,6 +8,7 @@ import {
   BLOCKS_FILE,
   COMPONENTS_FILE,
   PAGE_FILE,
+  REVALIDATE_ROUTE_FILE,
   SITE_KIT,
 } from "./initTemplates";
 
@@ -84,7 +85,7 @@ function writeIfAbsent(
   result.written.push(path);
 }
 
-/** Put the three files and the dependency in place. Pure filesystem work, so the
+/** Put the four files and the dependency in place. Pure filesystem work, so the
  *  scaffold can be tested without a network, a token or a browser. */
 export function scaffoldAgencyProject(cwd: string, force = false): ScaffoldResult {
   const packageJsonPath = join(cwd, "package.json");
@@ -101,6 +102,16 @@ export function scaffoldAgencyProject(cwd: string, force = false): ScaffoldResul
   writeIfAbsent(
     join(appDirectoryFor(cwd), "[[...slug]]", "page.tsx"),
     PAGE_FILE,
+    force,
+    result,
+  );
+
+  // The receiving end of "publishing pokes their host, cheaply first". Written
+  // by init rather than left to the agency: it is not optional wiring, it is
+  // the difference between a publish appearing in seconds and a paid rebuild.
+  writeIfAbsent(
+    join(appDirectoryFor(cwd), "api", "snabbsajt", "revalidate", "route.ts"),
+    REVALIDATE_ROUTE_FILE,
     force,
     result,
   );
@@ -214,7 +225,14 @@ export async function runInitCommand(
   output.stdout("Next:");
   output.stdout("  1. install the dependency");
   output.stdout("  2. describe your components in snabbsajt/blocks.ts");
-  output.stdout("  3. snabbsajt push . --create");
+  // `link` above already paired this directory to a website, so an ordinary
+  // init has a target and the first push needs no flag at all. With --no-pair
+  // there is nothing to push into, so the first one has to make the site.
+  output.stdout(
+    args.includes("--no-pair")
+      ? "  3. snabbsajt push . --create"
+      : "  3. snabbsajt push .",
+  );
   output.stdout("  4. snabbsajt site doctor");
   return 0;
 }

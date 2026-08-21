@@ -42,6 +42,21 @@ export {
   DeliveryError,
   DEFAULT_DELIVERY_BASE_URL,
 } from "./lib/delivery/client";
+// Publishing pokes the agency's own deployment before the deploy hook: this is
+// the route that receives it (`/api/snabbsajt/revalidate`).
+export {
+  createRevalidateHandler,
+  snabbsajtSiteTag,
+  SNABBSAJT_CACHE_TAG,
+} from "./lib/delivery/revalidate";
+export type {
+  RevalidateHandlerOptions,
+  RevalidateRequestBody,
+  RevalidateResult,
+} from "./lib/delivery/revalidate";
+// The other direction: a form on the agency's own site, sending one lead back.
+export { submitLead } from "./lib/delivery/leads";
+export type { LeadFieldValue, SubmitLeadOptions } from "./lib/delivery/leads";
 export type {
   DeliveryClient,
   DeliveryClientOptions,

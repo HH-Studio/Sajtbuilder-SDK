@@ -43,7 +43,13 @@ export type DeliveryErrorReason =
   | "not_published"
   | "rate_limited"
   | "network"
-  | "malformed";
+  | "malformed"
+  // The three a LEAD can fail with (`submitLead`, plan P0-2026-08-19 slice
+  // 2.5). Kept on the shared reason list so one `catch` covers both halves of
+  // delivery rather than two.
+  | "consent_required"
+  | "invalid"
+  | "not_found";
 
 export class DeliveryError extends Error {
   readonly reason: DeliveryErrorReason;
@@ -123,7 +129,9 @@ export type GetPublishedSiteOptions = {
   signal?: AbortSignal;
 };
 
-/** Resolve and VET the host we will send the token to.
+/** Resolve and VET the host we will send the token — or a visitor's answers —
+ *  to. Shared with `submitLead`, which carries no credential but does carry a
+ *  name and a phone number, so the https rule is the same rule.
  *
  *  This is a credential-bearing request, and the base URL can arrive from
  *  `.snabbsajt.json` — a file the CLI tells you to commit, so a pull request
@@ -131,7 +139,7 @@ export type GetPublishedSiteOptions = {
  *  wire in clear text, addressed wherever that PR said. https is therefore not
  *  a nicety here, it is the whole protection, and an insecure base URL is
  *  refused rather than downgraded. */
-function resolveBaseUrl(explicit?: string): string {
+export function resolveDeliveryBaseUrl(explicit?: string): string {
   const fromEnv =
     typeof process !== "undefined" ? process.env?.SNABBSAJT_API_URL : undefined;
   const raw = explicit || fromEnv || DEFAULT_DELIVERY_BASE_URL;
@@ -147,7 +155,7 @@ function resolveBaseUrl(explicit?: string): string {
   if (parsed.protocol !== "https:") {
     throw new DeliveryError(
       "unauthorized",
-      `Delivery base URL must use https — refusing to send a token to ${raw}.`,
+      `Delivery base URL must use https — refusing to send anything to ${raw}.`,
     );
   }
   return raw.replace(/\/+$/, "");
@@ -249,7 +257,7 @@ export function createDeliveryClient(
   if (!siteId) throw new TypeError("createDeliveryClient: `siteId` is required.");
   if (!token) throw new TypeError("createDeliveryClient: `token` is required.");
 
-  const baseUrl = resolveBaseUrl(options.baseUrl);
+  const baseUrl = resolveDeliveryBaseUrl(options.baseUrl);
   const endpoint = `${baseUrl}/v1/sites/${encodeURIComponent(siteId)}/published`;
   const doFetch = options.fetch ?? globalThis.fetch;
   if (typeof doFetch !== "function") {
