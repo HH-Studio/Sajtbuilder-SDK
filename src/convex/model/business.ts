@@ -136,13 +136,6 @@ export const ASSUMPTION_KEYS = [
   "goal",
   "hours",
   "price",
-  // Added 2026-08-21 (backlog 2918). A scrape that returns testimonials but no
-  // copy blocks and no prices left no import signal at all: `StepStory` could
-  // not tell the imported quote apart from the owner's own, so it adopted the
-  // customer's words as her editable one and `commitProof` could silently
-  // overwrite or delete them. This key mirrors `price` exactly, so the same
-  // review-and-approve path covers it.
-  "testimonials",
 ] as const;
 export type AssumptionKey = (typeof ASSUMPTION_KEYS)[number];
 
@@ -171,10 +164,7 @@ export const assumptionEntryValidator = v.object({
   approvedAt: v.optional(v.number()),
 });
 
-/** Fixed keys are deliberate: provenance cannot become an unbounded metadata bag.
- *  `testimonials` is a new OPTIONAL field on an existing table (`onboardingDrafts`
- *  via `assumptionMeta`), so no migration is needed - an absent key reads as
- *  `undefined` on every existing row. */
+/** Fixed keys are deliberate: provenance cannot become an unbounded metadata bag. */
 export const assumptionMetaValidator = v.object({
   targetAudience: v.optional(assumptionEntryValidator),
   positioning: v.optional(assumptionEntryValidator),
@@ -182,7 +172,6 @@ export const assumptionMetaValidator = v.object({
   goal: v.optional(assumptionEntryValidator),
   hours: v.optional(assumptionEntryValidator),
   price: v.optional(assumptionEntryValidator),
-  testimonials: v.optional(assumptionEntryValidator),
 });
 
 /** Model-facing descriptor per positioning (never shown to users). */

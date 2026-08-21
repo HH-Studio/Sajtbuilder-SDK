@@ -161,8 +161,8 @@ export function toAdminDictLocale(lang: SiteLocale): "sv" | "en" | "pl" {
  *
  *  It is still an AI pass, so it needs a model key, AI consent and a credit
  *  balance; with none of those a long-tail site stays in English. That is why
- *  the create flow says so on the language step itself
- *  (`create.step.language.sub`) - see `docs/i18n-rtl.md` "Known limits".
+ *  the create flow says the nine are AI-translated
+ *  (`create.language.aiTranslated`) - see `docs/i18n-rtl.md` "Known limits".
  *  The publish translate pass is NOT the fallback: it only ever produces
  *  SECONDARY locales, filtering the primary out by design
  *  (`convex/generation/translate.ts`).

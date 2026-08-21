@@ -433,6 +433,18 @@ export const portableSiteV1 = v.object({
       // Non-destructive optional-element visibility. Optional keeps older
       // bundles valid; import normalizes the bounded path list before storage.
       hiddenContentPaths: v.optional(v.array(v.string())),
+      // What the agency keeps to itself on this placement: a list of fields,
+      // and a flag for the whole section (plan P2-s01 slice 3).
+      //
+      // In the bundle because an export is the owner's own content and a lock
+      // is WHY a field will not move: a bundle that dropped it would import
+      // back as a hemsida the agency has to lock again by hand. Not a way IN,
+      // though. An import may only carry a lock the receiving hemsida already
+      // agrees to: `lockedPathsTouchedBy` refuses a section whose lock a bundle
+      // would move, and only a Byggare may set or clear one, so the export,
+      // edit, import round trip is not the unlock button.
+      lockedContentPaths: v.optional(v.array(v.string())),
+      locked: v.optional(v.boolean()),
       // Fractional-indexing key, preserved verbatim when present. OPTIONAL
       // (SDK feedback #4): hand-authoring these keys is a footgun — omit it
       // and the import assigns valid keys in array position.
