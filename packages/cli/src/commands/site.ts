@@ -9,6 +9,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
+import { portableFromFiles } from "./pullPortable";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import {
@@ -33,6 +34,7 @@ import { readBoundedLocalFiles } from "@snabbsajt/site-kit/local-files";
 import { importHtmlToDirectory } from "./site/import-html";
 import { importWordpressToDirectory } from "./site/import-wordpress";
 import { consoleOutput, type Output } from "../output";
+import { agencyContractChecks, looksLikeAgencyProject } from "./agencyDoctor";
 
 class CliError extends Error {}
 
@@ -179,6 +181,15 @@ export function loadPackage(target: string) {
   } catch (error) {
     throw new CliError(`site.json is not valid JSON: ${(error as Error).message}`);
   }
+  // A directory `pull --format portable` wrote: one site file with an empty
+  // `pages` array beside a `pages/` folder holding one file per page. Put back
+  // together here so `snabbsajt push snabbsajt/content` is the fourth step of
+  // the round trip rather than a push that deletes every page the client made.
+  if (isDir) {
+    const reassembled = portableFromFiles(resolved);
+    if (reassembled) payload = reassembled;
+  }
+
   try {
     const assets = isDir
       ? readBoundedLocalFiles(join(resolved, "assets"), {
@@ -234,6 +245,10 @@ function requiredTarget(command: string, target: string | undefined): string {
 
 function runDoctor(asJson: boolean, output: Output): number {
   const versions = installedVersions();
+  // The agency contract, when this directory is one. A plain package directory
+  // gets the versions and nothing else, because none of it applies there.
+  const cwd = process.cwd();
+  const contract = looksLikeAgencyProject(cwd) ? agencyContractChecks(cwd) : [];
   const result = {
     ok: true,
     command: "site doctor",
@@ -242,6 +257,12 @@ function runDoctor(asJson: boolean, output: Output): number {
     portableFormat: { format: PORTABLE_FORMAT, version: PORTABLE_VERSION },
     importReport: { format: IMPORT_REPORT_FORMAT, version: IMPORT_REPORT_FORMAT_VERSION },
     skills: { supportedManifestVersion: 1, installed: false },
+    ...(contract.length > 0
+      ? {
+          contract,
+          contractProblems: contract.filter((f) => f.status === "problem").length,
+        }
+      : {}),
   } as const;
   if (asJson) json(output, result);
   else {
@@ -250,7 +271,17 @@ function runDoctor(asJson: boolean, output: Output): number {
     output.stdout(`Portable format: ${result.portableFormat.format} v${result.portableFormat.version}`);
     output.stdout(`Import report: ${result.importReport.format} v${result.importReport.version}`);
     output.stdout("Skills: bundled skill assets available; no skills installed in this project");
+    for (const finding of contract) {
+      if (finding.status === "ok") {
+        output.stdout(`ok    ${finding.id}`);
+      } else {
+        output.stdout(`${finding.status === "problem" ? "FIX  " : "?    "} ${finding.id}: ${finding.advice}`);
+      }
+    }
   }
+  // A found problem is reported, not fatal: doctor is a checklist, and exiting
+  // 1 in a CI step would stop a build over something the agency may have
+  // handled another way. The count is in the JSON for anyone who wants to.
   return 0;
 }
 

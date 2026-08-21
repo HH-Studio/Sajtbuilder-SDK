@@ -18,7 +18,7 @@ else on this page:
 snabbsajt init --agency [--no-pair] [--no-skills] [--force] [--json]
 ```
 
-Run this inside the Next.js app you already have. It does the four steps in the
+Run this inside the Next.js app you already have. It does the five steps in the
 one order that works, and each of them still works on its own afterwards:
 
 1. writes `snabbsajt/blocks.ts` (your components, described as fields the client
@@ -27,9 +27,14 @@ one order that works, and each of them still works on its own afterwards:
 2. writes the catch-all route `app/[[...slug]]/page.tsx`, or `src/app/...` when
    that is where your routes live. Your own routes keep winning, because Next.js
    prefers a specific route over a catch-all;
-3. adds `@snabbsajt/site-kit` to `package.json`. It does not run your package
+3. writes `app/api/snabbsajt/revalidate/route.ts`, the route SnabbSajt calls the
+   moment your client publishes. It drops the `snabbsajt` cache tag in
+   milliseconds; without it, publishing falls back to the deploy hook, which is
+   a full rebuild. Tag the fetches that read your published content with
+   `SNABBSAJT_CACHE_TAG` and one publish refreshes all of them;
+4. adds `@snabbsajt/site-kit` to `package.json`. It does not run your package
    manager: your lockfile is yours;
-4. runs `link` for the read token and `admin pair` for the write one, then
+5. runs `link` for the read token and `admin pair` for the write one, then
    installs the skills.
 
 **It never overwrites a file you wrote.** An existing file is reported as kept,
@@ -38,6 +43,15 @@ still in place and the command says which step stopped.
 
 `--no-pair` and `--no-skills` leave out the steps that need the network, which
 is what you want on a machine behind a proxy or in CI.
+
+Because step 5 pairs this directory to one of your websites, the first push
+needs no target: `snabbsajt push .`. With `--no-pair` there is no website to
+push into yet, so the first one has to make one: `snabbsajt push . --create`.
+
+The catch-all it writes reads `snabbsajt/content/site.json` and the page files
+beside it, which is exactly where `pull --format portable` writes. The two used
+to name different paths, so a fresh `init` followed by a `pull` rendered a blank
+page and neither command said why.
 
 ## Import rendered HTML
 
@@ -101,8 +115,47 @@ It writes one file per page under `snabbsajt/content/pages/`, plus a
 `site.json` holding everything that is not a page. Commit the directory: a
 one-file diff per page is what makes a client's change reviewable.
 
+**Push the directory straight back.** `snabbsajt push snabbsajt/content` puts
+the site file and its page files together again, ordered by each page's own
+`order` rather than by file name, so the fourth step of the round trip carries
+exactly what the third step pulled:
+
+```bash
+snabbsajt push pkg              # you push
+                                # your client adds a page
+snabbsajt pull --format portable
+git add snabbsajt/content && git commit -m "the client added Priser"
+snabbsajt push snabbsajt/content   # a no-op: nothing changed on the way through
+```
+
 It reads through the admin token (`site:read`, read-only), because the published
 API only serves published work. Pair once with `snabbsajt admin pair`.
+
+The catch-all route `init --agency` scaffolds reads this layout as it is: the
+`site.json` for everything that is not a page, and every file under `pages/`
+put back together into one site.
+
+## Push into a website: `push`
+
+```bash
+snabbsajt push <site.json|dir> [--site <id>] [--create] [--dry-run]
+               [--force-key <externalKey>]... [--json]
+```
+
+Validates the package locally, then merge-imports it into an EXISTING website
+through the same `import_site` tool an AI assistant uses. Sections match by
+`externalKey`: new ones are added, unedited matches are updated, and a section
+the client edited in the app is reported and kept unless `--force-key` names it.
+
+`--create` makes a NEW website out of the package instead, for the first push
+out of a repository that is not paired to a site yet. It takes no `--site`,
+because naming both says two things at once, and no `--dry-run`, because create
+mode has no preview: previewing one would have to make a real website to
+describe it. Run `snabbsajt link` afterwards so later pushes need no flag.
+
+A push never lifts a lock the agency put on a field. A bundle that would move a
+locked field has that section refused, and the report names the fields, so the
+answer is to take them out of the bundle or unlock them in the editor.
 
 ## Connect an existing repository
 
@@ -275,6 +328,20 @@ snabbsajt site doctor [--json]
 Reports installed CLI, Site Kit and format versions without a network request.
 `snabbsajt --version` prints the CLI version alone, for scripts that only need
 that.
+
+In an agency repository (one holding `snabbsajt/blocks.ts`, a catch-all route,
+or a paired `.snabbsajt-admin.json`), doctor also walks the contract your app
+has to keep, and each finding names what to do:
+
+- **blocks** and **catch-all**: without them nothing is editable, and a page
+  your client creates is a 404.
+- **remote-images**: `images.remotePatterns` has to allow the SnabbSajt asset
+  host, or every picture your client uploads fails to load.
+- **framing**: a `frame-ancestors` policy that does not name SnabbSajt shows
+  your client a blank frame in the editor.
+
+It reads your files, so it answers `unknown` rather than claiming a pass it
+cannot prove, and it never exits non-zero: it is a checklist, not a gate.
 
 ## Agent skills
 

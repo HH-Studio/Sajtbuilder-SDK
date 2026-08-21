@@ -245,6 +245,46 @@ and off the client bundle.
 | `rate_limited` | Too many reads. Retried automatically with backoff; if you see it in a build, cache between builds instead of fetching per request. |
 | `network` / `malformed` | Could not reach the host, or the answer was not a snapshot. |
 
+**A publish reaches your deployment in milliseconds, not in a rebuild.** Mount
+the receiver once and SnabbSajt drops your cache tags the moment your client
+presses publish; the deploy hook stays as the fallback for a site that has no
+route yet.
+
+```ts
+// app/api/snabbsajt/revalidate/route.ts
+import { revalidateTag } from "next/cache";
+import { createRevalidateHandler } from "@snabbsajt/site-kit";
+
+export const POST = createRevalidateHandler({ revalidateTag });
+```
+
+Tag the fetches that read your published content with `SNABBSAJT_CACHE_TAG`
+(`"snabbsajt"`), or pass your own `tags` and `paths`. `snabbsajt init --agency`
+writes this file for you. There is no shared secret: the route carries no data
+and reveals nothing, so the most a stranger achieves is making your deployment
+refetch content that is already public.
+
+**A form on your site, a lead in Förfrågningar.** `submitLead` posts to the
+same pipeline the hosted form uses, with the same spam guard, the same dedupe
+and the same owner email. It carries no token, so it is safe to call from the
+browser.
+
+```ts
+import { submitLead } from "@snabbsajt/site-kit";
+
+await submitLead({
+  siteId: process.env.NEXT_PUBLIC_SNABBSAJT_SITE_ID!,
+  consent: true, // what the visitor ticked. Anything else is refused.
+  fields: { Namn: name, "E-post": email, Meddelande: message },
+  pageSlug: "kontakt",
+  hp: honeypotValue, // send it even when empty
+});
+```
+
+It throws a `DeliveryError` with three further reasons: `consent_required`
+(your form did not pass the tick through), `not_found` (wrong `siteId`, or the
+hemsida is not published) and `invalid` (`fields` was not a flat object).
+
 Build-time use is the intended shape. A published snapshot changes only when
 someone publishes, and publishing can fire your deploy hook — so refetching per
 request buys nothing. Point `baseUrl` (or `SNABBSAJT_API_URL`) at another

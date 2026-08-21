@@ -9,6 +9,7 @@ import {
   InitError,
 } from "../src/commands/init";
 import type { Output } from "../src/output";
+import { DEFAULT_PORTABLE_DIR } from "../src/commands/pullPortable";
 
 // `snabbsajt init --agency` (plan P0-2026-08-19 slice 1.5).
 //
@@ -40,6 +41,11 @@ describe("the scaffold", () => {
     expect(existsSync(join(dir, "snabbsajt/blocks.ts"))).toBe(true);
     expect(existsSync(join(dir, "snabbsajt/components.ts"))).toBe(true);
     expect(existsSync(join(dir, "app/[[...slug]]/page.tsx"))).toBe(true);
+    // The revalidation receiver. Without it every publish 404s and falls back
+    // to the deploy hook, which is the slow, paid path.
+    expect(
+      readFileSync(join(dir, "app/api/snabbsajt/revalidate/route.ts"), "utf8"),
+    ).toContain("createRevalidateHandler");
     expect(result.kept).toEqual([]);
     expect(result.addedDependency).toBe(true);
     const pkg = JSON.parse(readFileSync(join(dir, "package.json"), "utf8"));
@@ -55,6 +61,8 @@ describe("the scaffold", () => {
     expect(appDirectoryFor(dir)).toBe(join(dir, "src", "app"));
     expect(existsSync(join(dir, "src/app/[[...slug]]/page.tsx"))).toBe(true);
     expect(existsSync(join(dir, "app/[[...slug]]/page.tsx"))).toBe(false);
+    expect(existsSync(join(dir, "src/app/api/snabbsajt/revalidate/route.ts"))).toBe(true);
+    expect(existsSync(join(dir, "app/api/snabbsajt/revalidate/route.ts"))).toBe(false);
   });
 
   it("never overwrites a file the agency wrote", () => {
@@ -161,6 +169,21 @@ describe("the command", () => {
     expect(seen).toEqual([]);
     const answer = JSON.parse(output.out.at(-1)!);
     expect(answer.ok).toBe(true);
-    expect(answer.written.length).toBe(3);
+    expect(answer.written.length).toBe(4);
+  });
+
+  it("scaffolds a route that reads exactly where pull writes", () => {
+    // The bug this closes: the catch-all read `snabbsajt/site.json` and
+    // `pull --format portable` wrote `snabbsajt/content/site.json` plus one
+    // file per page. A fresh init followed by a pull rendered nothing, and
+    // nothing in either command said why. Both sides now name one directory,
+    // and this test fails if either moves without the other.
+    const dir = project();
+    scaffoldAgencyProject(dir);
+    const page = readFileSync(join(dir, "app/[[...slug]]/page.tsx"), "utf8");
+    expect(page).toContain(`"${DEFAULT_PORTABLE_DIR}"`);
+    expect(page).toContain("/site.json");
+    expect(page).toContain("/pages/");
+    expect(page).not.toContain("snabbsajt/site.json");
   });
 });

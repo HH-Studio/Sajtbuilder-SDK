@@ -41,6 +41,10 @@ type PushArgs = {
   target: string;
   siteId?: string;
   appUrl?: string;
+  /** Make a NEW website out of this package instead of merging into one.
+   *  `import_site` has always had the mode; the CLI had no word for it, so
+   *  `snabbsajt init`'s own printed step 3 named a flag that did not parse. */
+  create: boolean;
   dryRun: boolean;
   forceKeys: string[];
   /** `--branch <name> --preview-url <https://...>`: the address the agency's
@@ -80,6 +84,7 @@ function parsePushArgs(args: string[]): PushArgs {
   let target: string | undefined;
   let siteId: string | undefined;
   let appUrl: string | undefined;
+  let create = false;
   let dryRun = false;
   let branch: string | undefined;
   let previewUrl: string | undefined;
@@ -89,6 +94,10 @@ function parsePushArgs(args: string[]): PushArgs {
     const argument = args[index]!;
     if (argument === "--dry-run") {
       dryRun = true;
+      continue;
+    }
+    if (argument === "--create") {
+      create = true;
       continue;
     }
     if (
@@ -128,7 +137,22 @@ function parsePushArgs(args: string[]): PushArgs {
   }
   if (!target) {
     throw new ConnectError(
-      "push requires a package: snabbsajt push <site.json|package-dir> [--site <websiteId>] [--dry-run]",
+      "push requires a package: snabbsajt push <site.json|package-dir> [--site <websiteId>] [--create] [--dry-run]",
+    );
+  }
+  // Naming both says two different things at once, and guessing which one the
+  // agency meant is how a push lands in the wrong website.
+  if (create && siteId) {
+    throw new ConnectError(
+      "--create makes a new website, so it cannot take --site. Drop one of them.",
+    );
+  }
+  // Create mode has no preview: the server refuses a dry run without a merge
+  // target precisely so one cannot silently make a real site. Say so here
+  // rather than after the package has been uploaded.
+  if (create && dryRun) {
+    throw new ConnectError(
+      "--dry-run previews a merge into an existing website, so it cannot be combined with --create.",
     );
   }
   // Half a pair is a mistake worth naming: a branch with no address reports
@@ -145,6 +169,7 @@ function parsePushArgs(args: string[]): PushArgs {
     ...(branch ? { branch } : {}),
     ...(previewUrl ? { previewUrl } : {}),
     ...(previewLabel ? { previewLabel } : {}),
+    create,
     dryRun,
     forceKeys,
   };
@@ -182,6 +207,23 @@ function countByAction(sections: MergeSectionEntry[]): Record<string, number> {
     counts[section.action] = (counts[section.action] ?? 0) + 1;
   }
   return counts;
+}
+
+/** Create mode has no merge to report: nothing was matched, nothing was kept,
+ *  and the only useful lines are how much landed and where to open it. Printing
+ *  the merge counts here would say "0 conflicts" about a website that had
+ *  nothing to conflict with. */
+function printCreateReport(output: Output, data: PushResultData): void {
+  output.stdout(`  Pages     ${data.pagesImported ?? 0} imported`);
+  if (data.assetsSkipped) {
+    output.stdout(
+      `  Assets    ${data.assetsSkipped} skipped (not fetchable server-side — assets must be reachable URLs)`,
+    );
+  }
+  if (data.editorUrl) output.stdout(`  Editor    ${data.editorUrl}`);
+  output.stdout(
+    "  Pair this directory to it with `snabbsajt link` so later pushes need no --site.",
+  );
 }
 
 function printMergeReport(
@@ -267,10 +309,13 @@ export async function runPushCommand(
     // 2. Resolve credential + target site.
     const token = requirePushToken(cwd);
     const config = readAdminConfig(cwd);
-    const siteId = parsed.siteId ?? config?.siteId;
-    if (!siteId) {
+    // `--create` deliberately ignores the paired site: a directory paired to
+    // one website is the normal state, and the whole point of the flag is to
+    // make a second one from the same repository.
+    const siteId = parsed.create ? undefined : (parsed.siteId ?? config?.siteId);
+    if (!siteId && !parsed.create) {
       throw new ConnectError(
-        "push needs a target website: pass --site <websiteId>, or run `snabbsajt admin pair` in this directory first.",
+        "push needs a target website: pass --site <websiteId>, run `snabbsajt admin pair` in this directory first, or pass --create to make a new one.",
       );
     }
     const appUrl =
@@ -289,7 +334,10 @@ export async function runPushCommand(
     });
     const result = await client.callTool("import_site", {
       site: loaded.payload as PortableSiteV1,
-      mergeIntoWebsiteId: siteId,
+      // Omitted in create mode: `import_site` reads a missing merge target as
+      // "make a new website", which is the same branch the browser import and
+      // an AI assistant take. No second server path exists for this.
+      ...(siteId ? { mergeIntoWebsiteId: siteId } : {}),
       ...(parsed.forceKeys.length > 0 ? { forceKeys: parsed.forceKeys } : {}),
       ...(parsed.dryRun ? { dryRun: true } : {}),
     });
@@ -302,14 +350,17 @@ export async function runPushCommand(
     }
 
     const data = (result.data ?? {}) as PushResultData;
+    // In create mode the website did not exist until this call, so its id comes
+    // back in the result rather than from the pairing on disk.
+    const targetSiteId = siteId ?? data.websiteId;
 
     // The branch preview, after the import and never before it: reporting an
     // address for content that failed to land would put a stale page on the
     // client's card. Skipped on a dry run for the same reason.
     let branchPreview: { branch: string; reported: boolean; error?: string } | undefined;
-    if (parsed.branch && parsed.previewUrl && !parsed.dryRun) {
+    if (parsed.branch && parsed.previewUrl && !parsed.dryRun && targetSiteId) {
       const reported = await client.callTool("record_branch_preview", {
-        websiteId: siteId,
+        websiteId: targetSiteId,
         branch: parsed.branch,
         url: parsed.previewUrl,
         ...(parsed.previewLabel ? { label: parsed.previewLabel } : {}),
@@ -326,7 +377,8 @@ export async function runPushCommand(
       json(output, {
         ok: true,
         command: "push",
-        siteId,
+        siteId: targetSiteId,
+        created: parsed.create,
         dryRun: parsed.dryRun,
         preview: data.preview === true,
         pagesImported: data.pagesImported,
@@ -337,8 +389,15 @@ export async function runPushCommand(
         ...(branchPreview ? { branchPreview } : {}),
       });
     } else {
-      output.stdout(parsed.dryRun ? `Previewed push to ${siteId}.` : `Pushed to ${siteId}.`);
-      printMergeReport(output, data, parsed.dryRun);
+      if (parsed.create) {
+        output.stdout(`Created ${targetSiteId ?? "a new website"} from this package.`);
+        printCreateReport(output, data);
+      } else {
+        output.stdout(
+          parsed.dryRun ? `Previewed push to ${targetSiteId}.` : `Pushed to ${targetSiteId}.`,
+        );
+        printMergeReport(output, data, parsed.dryRun);
+      }
       if (branchPreview?.reported) {
         output.stdout(`Branch preview for ${branchPreview.branch} is on the client's card.`);
       } else if (branchPreview) {
@@ -371,7 +430,7 @@ function safeVersion(): string {
 
 function usage(output: Output): void {
   output.stdout(`Usage:
-  snabbsajt push <site.json|package-dir> [--site <websiteId>] [--dry-run]
+  snabbsajt push <site.json|package-dir> [--site <websiteId>] [--create] [--dry-run]
                  [--force-key <externalKey>]... [--app-url <url>] [--json]
                  [--branch <name> --preview-url <https://...> [--preview-label <text>]]
 
@@ -386,6 +445,12 @@ published.
 --dry-run runs the whole merge server-side and rolls it back, printing what a
 real push would do.
 
+--create makes a NEW website from this package instead of merging into one, for
+the first push out of a repository that is not paired to a site yet. It takes no
+--site and no --dry-run: create mode has no preview, so a dry run there would
+have to make a real website to describe one. Run `snabbsajt link` afterwards to
+pair this directory to the site it made.
+
 --branch reports the preview address your host built for that branch, so the
 client's "Var är den live?" card lists it. It runs after the import, never
 before, and a failure there does not fail the push: the content already landed.
@@ -395,5 +460,5 @@ may call it.
 Auth: ${ADMIN_TOKEN_ENV_VAR} (${ADMIN_TOKEN_PREFIX}…) from \`snabbsajt admin pair\`,
 with the content:write scope. The read-only SNABBSAJT_DELIVERY_TOKEN that
 \`pull\` uses is never accepted. The target site comes from --site or the
-paired .snabbsajt-admin.json.`);
+paired .snabbsajt-admin.json, unless --create makes a new one.`);
 }

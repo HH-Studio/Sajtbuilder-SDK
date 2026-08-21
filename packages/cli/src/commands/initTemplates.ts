@@ -96,10 +96,53 @@ export default async function Page({
   );
 }
 
-// Replace this with your own read: the published site from the delivery API,
-// or the JSON that snabbsajt pull writes into the repo.
+// Reads exactly what \`snabbsajt pull --format portable\` writes into the repo:
+// snabbsajt/content/site.json (the site WITHOUT its pages) and one file per
+// page under snabbsajt/content/pages/. The split is what keeps a page edit to
+// a one-file diff, so this puts the two halves back together.
+//
+// Replace it with your own read whenever you would rather fetch the published
+// site from the delivery API than commit the JSON.
 async function loadSite() {
-  const { readFile } = await import("node:fs/promises");
-  return JSON.parse(await readFile("snabbsajt/site.json", "utf8"));
+  const { readFile, readdir } = await import("node:fs/promises");
+  const dir = "snabbsajt/content";
+  const site = JSON.parse(await readFile(\`\${dir}/site.json\`, "utf8"));
+  // A repository that has never been pulled has no pages directory yet. An
+  // empty site draws nothing, which beats a build that cannot start.
+  const names = await readdir(\`\${dir}/pages\`).catch(() => [] as string[]);
+  const pages = await Promise.all(
+    names
+      .filter((name) => name.endsWith(".json"))
+      .map(async (name) =>
+        JSON.parse(await readFile(\`\${dir}/pages/\${name}\`, "utf8")),
+      ),
+  );
+  // Ordered by each page's own order, never by file name: a directory listing
+  // sorts by locale and by filesystem, so a nav that came from it would
+  // reshuffle on a colleague's machine.
+  pages.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  return { ...site, pages };
 }
+`;
+
+export const REVALIDATE_ROUTE_FILE = `import { revalidateTag } from "next/cache";
+import { createRevalidateHandler } from "${SITE_KIT}";
+
+// SnabbSajt calls this the moment your client publishes.
+//
+// Dropping a cache tag takes milliseconds. Rebuilding the whole deployment
+// takes minutes and costs money, and that is what happens instead when this
+// route is missing. So keep it, and tag the fetches that read your published
+// content with SNABBSAJT_CACHE_TAG ("snabbsajt") so this one call refreshes
+// them all:
+//
+//   fetch(url, { next: { tags: [SNABBSAJT_CACHE_TAG] } })
+//
+// There is no shared secret. The route carries no data and reveals nothing:
+// the most a stranger achieves is making your deployment refetch content that
+// is already public. Pass \`paths\` as well if you cache whole routes:
+//
+//   createRevalidateHandler({ revalidateTag, revalidatePath, paths: ["/"] })
+
+export const POST = createRevalidateHandler({ revalidateTag });
 `;
