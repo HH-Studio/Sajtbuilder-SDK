@@ -1,8 +1,8 @@
 ---
 name: make-site-editable
-description: Turn an agency's own Next.js app into a SnabbSajt agency site - wrap components in defineBlock, move each page's composition into SnabbSajt content, push, and walk the doctor contract. Use when the human says "make this site editable", "gor den har sajten redigerbar", "connect this repo to SnabbSajt", "our client should be able to edit this", or asks to add a field to a block their client cannot change yet. The code keeps rendering the site; SnabbSajt only holds the content.
+description: Turn an agency's own Next.js app into a SnabbSajt agency site - wrap components in defineBlock, declare the lists they fill in with defineCollection, move each page's composition into SnabbSajt content, push, and walk the doctor contract. Use when the human says "make this site editable", "gor den har sajten redigerbar", "connect this repo to SnabbSajt", "our client should be able to edit this", or asks to add a field to a block their client cannot change yet. The code keeps rendering the site; SnabbSajt only holds the content.
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.1.0"
   minimum-cli-version: "0.5.0"
   portable-format: "sajt-site@1"
 ---
@@ -45,8 +45,8 @@ so do not stop at "the block compiles".
      label: "Hero",
      version: 1,
      fields: [
-       { name: "heading", kind: "text", label: "Rubrik" },
-       { name: "image", kind: "image", label: "Bild" },
+       { key: "heading", kind: "text", label: "Rubrik" },
+       { key: "image", kind: "image", label: "Bild" },
      ],
    });
    ```
@@ -98,6 +98,46 @@ so do not stop at "the block compiles".
 - **Bump the version when a field changes shape.** A page keeps the version it
   was written against, so nothing goes blank while you work.
 - **Do not publish.** Publishing is the client's, or an explicit ask.
+
+## When the page is a LIST
+
+A block is one thing on a page. When the client's ask is "we add a new property
+every week", that is a collection: you design the card once, they add rows
+forever, and they can never change the shape, because the shape is in the repo.
+
+```ts
+// snabbsajt/collections.ts
+export const properties = defineCollection({
+  key: "properties",
+  name: "Objekt",
+  slugPrefix: "objekt",
+  fields: [
+    { key: "address", type: "text", label: "Adress", required: true },
+    { key: "price", type: "number", label: "Pris" },
+    { key: "photo", type: "image", label: "Bild" },
+  ],
+  template: {
+    cardBlockType: "property-card",
+    detailBlockType: "property-page",
+    bindings: { heading: "address", amount: "price", image: "photo" },
+  },
+});
+
+export const library = collectionLibrary(properties);
+```
+
+Three things follow from that file and nothing else is needed:
+
+- `snabbsajt push` sends it, so the list appears in the client's sidebar.
+- `rowsFor(site, "objekt")` gives your own list component its rows.
+- `/objekt/<slug>` renders through the catch-all, drawn by `property-page`.
+
+Nine field types: `text`, `longText`, `number`, `date`, `image`, `link`,
+`boolean`, `choice`, `reference`. A `reference` names another collection by its
+`key`, and `referencedHref` turns one into an address.
+
+**Rows are never in the repo.** They are the client's, and a push that carried
+them would overwrite a month of their typing on every deploy.
 
 ## When you are asked for one more field
 

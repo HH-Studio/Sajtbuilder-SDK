@@ -32,14 +32,47 @@ export const hero = defineBlock({
   label: "Hero",
   version: 1,
   fields: [
-    { name: "heading", kind: "text", label: "Rubrik" },
-    { name: "body", kind: "richtext", label: "Text" },
-    { name: "image", kind: "image", label: "Bild" },
-    { name: "cta", kind: "link", label: "Knapp" },
+    { key: "heading", kind: "text", label: "Rubrik" },
+    { key: "body", kind: "richtext", label: "Text" },
+    { key: "image", kind: "image", label: "Bild" },
+    { key: "cta", kind: "link", label: "Knapp" },
   ],
 });
 
 export const library = blockLibrary(hero);
+`;
+
+export const COLLECTIONS_FILE = `import { defineCollection, collectionLibrary } from "${SITE_KIT}";
+
+// The lists your client fills in: properties, staff, cases, menus, vehicles.
+//
+// You design the card once. They add rows forever, and they can never change
+// the shape, because the shape lives here in your repository.
+//
+// Each row gets its own address, /<slugPrefix>/<row slug>, drawn by the block
+// named in template.detailBlockType. bindings maps that block's field keys to
+// this list's field keys, so one card block can draw two different lists.
+//
+// Data only, like blocks.ts. Delete this file if the site has no lists.
+
+export const cases = defineCollection({
+  key: "cases",
+  name: "Referenser",
+  slugPrefix: "referenser",
+  fields: [
+    { key: "client", type: "text", label: "Kund", required: true },
+    { key: "summary", type: "longText", label: "Kort beskrivning" },
+    { key: "cover", type: "image", label: "Bild" },
+    { key: "year", type: "number", label: "\u00c5r" },
+  ],
+  template: {
+    cardBlockType: "hero",
+    detailBlockType: "hero",
+    bindings: { heading: "client", body: "summary", image: "cover" },
+  },
+});
+
+export const library = collectionLibrary(cases);
 `;
 
 export const COMPONENTS_FILE = `import type { ComponentType } from "react";
@@ -56,9 +89,13 @@ export const components: Record<string, ComponentType<Record<string, unknown>>> 
 `;
 
 export const PAGE_FILE = `import {
+  collectionRowParams,
   isBlockSection,
   pageForSegments,
+  renderModelFromPackage,
+  resolveCollectionRow,
   resolveBlockSection,
+  rowForSegments,
   staticParamsFor,
 } from "${SITE_KIT}";
 import { library } from "@/snabbsajt/blocks";
@@ -71,7 +108,11 @@ import { components } from "@/snabbsajt/components";
 // this one. Nothing you already built changes.
 
 export async function generateStaticParams() {
-  return staticParamsFor(await loadSite());
+  const site = await loadSite();
+  // Pages and rows in one list, because one catch-all answers for both. A row
+  // whose list has no detail block is left out on purpose: its address would
+  // draw nothing, and a build that pre-rendered it would publish a blank page.
+  return [...staticParamsFor(site), ...collectionRowParams(site)];
 }
 
 export default async function Page({
@@ -80,7 +121,25 @@ export default async function Page({
   params: Promise<{ slug?: string[] }>;
 }) {
   const { slug } = await params;
-  const page = pageForSegments(await loadSite(), slug ?? []);
+  const site = await loadSite();
+
+  // A row's own page, asked first: /referenser/villa-4 is two segments, which
+  // a page can never be here, so this costs one array lookup and saves the
+  // case where a client's page slug happens to collide with a list prefix.
+  const found = rowForSegments(site, slug ?? []);
+  if (found) {
+    const resolved = resolveCollectionRow(
+      found.collection,
+      found.row,
+      library,
+      "detail",
+    );
+    const RowComponent = resolved ? components[resolved.blockType] : undefined;
+    if (!RowComponent || !resolved) return null;
+    return <RowComponent {...resolved.props} />;
+  }
+
+  const page = pageForSegments(site, slug ?? []);
   if (!page) return null;
   return (
     <>
@@ -121,7 +180,11 @@ async function loadSite() {
   // sorts by locale and by filesystem, so a nav that came from it would
   // reshuffle on a colleague's machine.
   pages.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  return { ...site, pages };
+  // Through the render model rather than raw, so the lists your client fills
+  // in arrive joined to their rows and a reference points at an address
+  // instead of an internal id. A published site read from the delivery API
+  // goes through renderModelFromPublished instead, and draws identically.
+  return renderModelFromPackage({ ...site, pages });
 }
 `;
 

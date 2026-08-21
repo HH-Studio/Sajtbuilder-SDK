@@ -11,6 +11,7 @@ import { DEFAULT_APP_URL, createMcpClient } from "./admin/mcpClient";
 import { cliVersion, loadPackage, printReport, reportCounts } from "./site";
 import { validateSitePackage, type PortableSiteV1, type SiteKitReport } from "@snabbsajt/site-kit";
 import { consoleOutput, type Output } from "../output";
+import { loadDeclarations, withDeclarations } from "./push/declarations";
 
 // ---------------------------------------------------------------------------
 // `snabbsajt push` — upload a locally validated Site Kit package into an
@@ -54,6 +55,13 @@ type PushArgs = {
   branch?: string;
   previewUrl?: string;
   previewLabel?: string;
+  /** `--register <file.json>`: where the repo's block and collection
+   *  declarations are, when a build step writes them instead of the CLI
+   *  reading `snabbsajt/blocks.ts` directly. */
+  registerFile?: string;
+  /** `--no-register`: send the package exactly as it is on disk. For a repo
+   *  that keeps declarations for a different hemsida in the same tree. */
+  skipRegister: boolean;
 };
 
 type MergeSectionEntry = {
@@ -89,6 +97,8 @@ function parsePushArgs(args: string[]): PushArgs {
   let branch: string | undefined;
   let previewUrl: string | undefined;
   let previewLabel: string | undefined;
+  let registerFile: string | undefined;
+  let skipRegister = false;
   const forceKeys: string[] = [];
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index]!;
@@ -100,13 +110,18 @@ function parsePushArgs(args: string[]): PushArgs {
       create = true;
       continue;
     }
+    if (argument === "--no-register") {
+      skipRegister = true;
+      continue;
+    }
     if (
       argument === "--site" ||
       argument === "--app-url" ||
       argument === "--force-key" ||
       argument === "--branch" ||
       argument === "--preview-url" ||
-      argument === "--preview-label"
+      argument === "--preview-label" ||
+      argument === "--register"
     ) {
       const value = args[index + 1];
       if (!value || value.startsWith("-")) throw new ConnectError(`${argument} requires a value`);
@@ -126,6 +141,9 @@ function parsePushArgs(args: string[]): PushArgs {
       } else if (argument === "--preview-label") {
         if (previewLabel) throw new ConnectError("push accepts --preview-label only once");
         previewLabel = value;
+      } else if (argument === "--register") {
+        if (registerFile) throw new ConnectError("push accepts --register only once");
+        registerFile = value;
       } else {
         forceKeys.push(value);
       }
@@ -162,8 +180,15 @@ function parsePushArgs(args: string[]): PushArgs {
       "--branch and --preview-url go together: --branch staging --preview-url https://...",
     );
   }
+  // Naming a file and refusing to read one is two instructions at once, and
+  // the quiet reading would be the one that mattered.
+  if (registerFile && skipRegister) {
+    throw new ConnectError("--register names declarations to send, so it cannot take --no-register.");
+  }
   return {
     target,
+    ...(registerFile ? { registerFile } : {}),
+    skipRegister,
     ...(siteId ? { siteId } : {}),
     ...(appUrl ? { appUrl } : {}),
     ...(branch ? { branch } : {}),
@@ -289,10 +314,23 @@ export async function runPushCommand(
     const parsed = parsePushArgs(args);
     const cwd = process.cwd();
 
-    // 1. Validate locally, with the exact validator `site validate` runs. An
-    //    invalid package never leaves the machine.
+    // 1. Read what this repository DECLARES, and fold it into the package
+    //    before anything is validated, so the blocks and lists an agency
+    //    writes go through the same check as the content beside them. Slices
+    //    3.4 and 3.7 of the master plan stop here without it: the declaration
+    //    files were data nobody read.
+    const declarations = parsed.skipRegister
+      ? { sources: [], warnings: [] }
+      : await loadDeclarations(cwd, parsed.registerFile);
     const loaded = loadPackage(parsed.target);
-    const report: SiteKitReport = validateSitePackage(loaded.payload, {
+    const payload = withDeclarations(
+      loaded.payload as Record<string, unknown>,
+      declarations,
+    ) as typeof loaded.payload;
+
+    // 2. Validate locally, with the exact validator `site validate` runs. An
+    //    invalid package never leaves the machine.
+    const report: SiteKitReport = validateSitePackage(payload, {
       assetFileNames: loaded.dir ? new Set(Object.keys(loaded.assetFiles)) : undefined,
       fontFileNames: loaded.dir ? new Set(Object.keys(loaded.fontFiles)) : undefined,
     });
@@ -306,7 +344,7 @@ export async function runPushCommand(
       return 1;
     }
 
-    // 2. Resolve credential + target site.
+    // 3. Resolve credential + target site.
     const token = requirePushToken(cwd);
     const config = readAdminConfig(cwd);
     // `--create` deliberately ignores the paired site: a directory paired to
@@ -325,7 +363,7 @@ export async function runPushCommand(
       config?.appUrl ??
       DEFAULT_APP_URL;
 
-    // 3. Merge-import through the same MCP tool layer an AI assistant uses.
+    // 4. Merge-import through the same MCP tool layer an AI assistant uses.
     const client = createMcpClient({
       appUrl,
       token,
@@ -333,7 +371,7 @@ export async function runPushCommand(
       ...(deps.fetch ? { fetch: deps.fetch } : {}),
     });
     const result = await client.callTool("import_site", {
-      site: loaded.payload as PortableSiteV1,
+      site: payload as PortableSiteV1,
       // Omitted in create mode: `import_site` reads a missing merge target as
       // "make a new website", which is the same branch the browser import and
       // an AI assistant take. No second server path exists for this.
@@ -384,6 +422,12 @@ export async function runPushCommand(
         pagesImported: data.pagesImported,
         assetsSkipped: data.assetsSkipped,
         sectionCounts: countByAction(data.merge?.sections ?? []),
+        declarations: {
+          blocks: declarations.blockSchemas?.length ?? 0,
+          collections: declarations.contentCollections?.length ?? 0,
+          sources: declarations.sources,
+          ...(declarations.warnings.length > 0 ? { warnings: declarations.warnings } : {}),
+        },
         merge: data.merge,
         editorUrl: data.editorUrl,
         ...(branchPreview ? { branchPreview } : {}),
@@ -397,6 +441,19 @@ export async function runPushCommand(
           parsed.dryRun ? `Previewed push to ${targetSiteId}.` : `Pushed to ${targetSiteId}.`,
         );
         printMergeReport(output, data, parsed.dryRun);
+      }
+      const blockCount = declarations.blockSchemas?.length ?? 0;
+      const collectionCount = declarations.contentCollections?.length ?? 0;
+      if (blockCount > 0 || collectionCount > 0) {
+        output.stdout(
+          `  Declared  ${blockCount} block(s), ${collectionCount} list(s) from ${declarations.sources.join(", ")}`,
+        );
+      }
+      // A warning never fails the push: the content landed, and a builder who
+      // reads "the blocks were not sent" fixes one file. A non-zero exit here
+      // would make them re-push everything to find out what changed.
+      for (const warning of declarations.warnings) {
+        output.stderr(`snabbsajt: ${warning}`);
       }
       if (branchPreview?.reported) {
         output.stdout(`Branch preview for ${branchPreview.branch} is on the client's card.`);
@@ -433,6 +490,7 @@ function usage(output: Output): void {
   snabbsajt push <site.json|package-dir> [--site <websiteId>] [--create] [--dry-run]
                  [--force-key <externalKey>]... [--app-url <url>] [--json]
                  [--branch <name> --preview-url <https://...> [--preview-label <text>]]
+                 [--register <declarations.json> | --no-register]
 
 push validates the package locally (same checks as \`site validate\`), then
 merge-imports it into an EXISTING website draft through the same import_site
@@ -441,6 +499,15 @@ unedited matches are updated, and sections edited in the app are reported as
 conflicts and kept — unless you name them with --force-key. Site config, theme
 and fonts are never touched, a restore point is taken first, and nothing is
 published.
+
+Your own declarations ride along. push reads snabbsajt/blocks.ts and
+snabbsajt/collections.ts and sends the blocks and lists they declare with the
+content, so the client's editor offers the blocks you built and the lists you
+designed. Nothing is overwritten: a package that already carries them wins, and
+a repo that declares nothing leaves the library on the hemsida exactly as it is.
+Node reads TypeScript on its own from 22.18; on an older one, have your build
+write { blockSchemas, contentCollections } to snabbsajt/declarations.json, or
+name it with --register. --no-register sends the package untouched.
 
 --dry-run runs the whole merge server-side and rolls it back, printing what a
 real push would do.

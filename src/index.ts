@@ -77,6 +77,7 @@ export {
   resolveAsset,
 } from "./lib/delivery/renderModel";
 export type {
+  RenderCollection,
   RenderPage,
   RenderSection,
   RenderSite,
@@ -138,6 +139,42 @@ export type {
   BlockVersionDrift,
   ResolvedBlock,
 } from "./lib/blocks/pages";
+// Owner-defined lists: the agency declares the shape, the client fills it in.
+export {
+  COLLECTION_FIELD_TYPES,
+  CollectionDefinitionError,
+  collectionLibrary,
+  collectionsForPackage,
+  defineCollection,
+} from "./lib/blocks/defineCollection";
+export type {
+  CollectionDefinition,
+  CollectionFieldDefinition,
+  CollectionFieldType,
+  CollectionLibrary,
+  CollectionTemplate,
+  PortableCollection,
+} from "./lib/blocks/defineCollection";
+export {
+  collectionForPrefix,
+  collectionRowParams,
+  collectionsFor,
+  isImageValue,
+  isLinkValue,
+  isReferenceValue,
+  missingCollectionBlocks,
+  referencedHref,
+  referencedRow,
+  resolveCollectionRow,
+  rowProps,
+  rowsFor,
+} from "./lib/blocks/collections";
+export type {
+  CollectionFieldShape,
+  CollectionRow,
+  CollectionRowValue,
+  CollectionSurface,
+} from "./lib/blocks/collections";
 export { SECTION_REGISTRY, isValidVariant } from "./lib/sections/registry";
 export { PORTABLE_CAPS, checkCaps } from "./lib/portability/caps";
 export type { SiteKitIssue, SiteKitReport } from "./lib/site-kit/validate";

@@ -50,6 +50,7 @@ snabbsajt admin pair [--scopes a,b,c] [--api-url <url>] [--no-open] [--json]
 snabbsajt admin tools [--app-url <url>] [--json]
 snabbsajt admin run <tool> [--args '<json>'] [--app-url <url>] [--json]
 snabbsajt push <site.json|dir> [--site <id>] [--dry-run] [--force-key <k>]... [--json]
+                               [--register <declarations.json> | --no-register]
 
 # local package work — no credentials, no network
 snabbsajt site init <dir> [--template nextjs|html] [--json]
@@ -115,6 +116,13 @@ snabbsajt push ./acme --json
 - `--dry-run` runs the real merge server-side and rolls it back. Run it before
   every real push and show the human the result.
 - The delivery token is rejected here by design; `push` needs the admin token.
+- **Your declarations ride along.** `push` reads `snabbsajt/blocks.ts` and
+  `snabbsajt/collections.ts` and sends the blocks and lists they declare with
+  the content, so the client's editor offers them. A package that already
+  carries them wins, so a pulled repo never overwrites the client's rows.
+  Node reads TypeScript itself from 22.18; on an older one write
+  `{ blockSchemas, contentCollections }` to `snabbsajt/declarations.json`, or
+  name a file with `--register`. `--no-register` sends the package untouched.
 
 ## Installing these skills
 

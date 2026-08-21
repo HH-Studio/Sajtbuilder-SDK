@@ -1,6 +1,14 @@
 import type { PortableSiteV1 } from "../../convex/model/portable";
 import type { DraftSite, PublishedSite } from "./client";
-import type { ResolvedAsset, SiteSnapshot } from "../../convex/model/snapshot";
+import type {
+  ResolvedAsset,
+  SiteSnapshot,
+  SnapshotCollection,
+} from "../../convex/model/snapshot";
+
+/** One row as a package carries it, before `collectionsFromPackage` joins it
+ *  to the shape it belongs to. */
+type PortableCollectionRow = NonNullable<PortableSiteV1["collectionRows"]>[number];
 
 // ---------------------------------------------------------------------------
 // One renderable shape for both directions of the round-trip.
@@ -41,6 +49,12 @@ export type RenderPage = {
   sections: RenderSection[];
 };
 
+/** One list, ready to render: the shape, the template, and the rows.
+ *
+ *  Structurally the snapshot's own collection, re-exported under a render name
+ *  so a component never imports a Convex model type to draw a card. */
+export type RenderCollection = SnapshotCollection;
+
 export type RenderSite = {
   /** Which payload this model came from. Useful in a build log: a deploy that
    *  silently fell back to the checked-in content is the failure mode worth
@@ -54,6 +68,13 @@ export type RenderSite = {
   /** assetId -> resolved url/dimensions. Empty for a local package, whose
    *  image refs still point at bundle files rather than published URLs. */
   assets: Record<string, ResolvedAsset>;
+  /** Owner-defined lists and their rows.
+   *
+   *  Both builders always fill this in. It is OPTIONAL on the type for the
+   *  repositories that build a `RenderSite` by hand, which were written before
+   *  lists existed and must keep compiling; every reader here treats an absent
+   *  one as an empty one. */
+  collections?: RenderCollection[];
   /** Present only for a published model: the id of the publish it came from.
    *  Stable per publish, so it is the right build-cache key and the right
    *  thing to print when a deploy renders content nobody recognises. */
@@ -123,6 +144,7 @@ export function renderModelFromPublished(
     theme: snapshot.theme as unknown as Record<string, unknown>,
     pages,
     assets: snapshot.resolvedAssets ?? {},
+    collections: snapshot.collections ?? [],
     versionId: "versionId" in published ? published.versionId : undefined,
     publishedAt: "publishedAt" in published ? published.publishedAt : undefined,
   };
@@ -167,7 +189,75 @@ export function renderModelFromPackage(site: PortableSiteV1): RenderSite {
     // A package's image refs point at bundle files that were never uploaded
     // anywhere. Nothing to resolve until the site has been imported+published.
     assets: {},
+    collections: collectionsFromPackage(site),
   };
+}
+
+/** Put a package's two collection halves back together into the one shape the
+ *  renderer reads.
+ *
+ *  A package keeps the SHAPE (`contentCollections`) apart from the ROWS
+ *  (`collectionRows`) because a row is the thing there are hundreds of. A
+ *  snapshot has already joined them, so this is the package doing the same
+ *  join, and it is why one component draws a pulled repo and a published site.
+ *
+ *  Two differences from a snapshot, both deliberate:
+ *   - **`blog` and `news` lists are skipped.** Their rows are post PAGES, which
+ *     already come through `pages`, so including them here would draw every
+ *     post twice.
+ *   - **A hidden row is dropped**, the same call the section loop above makes:
+ *     a publish drops them, so a local preview that showed them would flatter
+ *     the draft. */
+function collectionsFromPackage(site: PortableSiteV1): RenderCollection[] {
+  const declared = (site.contentCollections ?? []).filter(
+    (collection) => collection.kind === "custom",
+  );
+  if (declared.length === 0) return [];
+
+  const rowsByCollection = new Map<string, PortableCollectionRow[]>();
+  for (const row of site.collectionRows ?? []) {
+    if (row.hidden) continue;
+    const bucket = rowsByCollection.get(row.collectionTmpId);
+    if (bucket) bucket.push(row);
+    else rowsByCollection.set(row.collectionTmpId, [row]);
+  }
+
+  // A package's `reference` field names its target by the target's tmpId, and
+  // the render side addresses a list by its slug prefix. Translated once here,
+  // so `referencedRow` asks the same question of both sources.
+  const prefixByTmpId = new Map(
+    declared.map((collection) => [collection.tmpId, collection.slugPrefix]),
+  );
+
+  return declared
+    .slice()
+    .sort((a, b) => a.order - b.order)
+    .map((collection) => ({
+      name: collection.name,
+      slugPrefix: collection.slugPrefix,
+      fields: (Array.isArray(collection.fields) ? collection.fields : []).map(
+        (field: Record<string, unknown>) => {
+          const target = field.referenceCollectionId;
+          const prefix =
+            typeof target === "string" ? prefixByTmpId.get(target) : undefined;
+          return {
+            key: String(field.key ?? ""),
+            label: String(field.label ?? field.key ?? ""),
+            type: String(field.type ?? "text"),
+            ...(Array.isArray(field.options)
+              ? { options: field.options.map((option) => String(option)) }
+              : {}),
+            ...(prefix ? { referenceCollection: prefix } : {}),
+          };
+        },
+      ),
+      ...(collection.template ? { template: collection.template } : {}),
+      rows: byOrderKey(rowsByCollection.get(collection.tmpId) ?? []).map((row) => ({
+        slug: row.slug,
+        title: row.title,
+        values: (row.values ?? {}) as RenderCollection["rows"][number]["values"],
+      })),
+    }));
 }
 
 /** Resolve an image reference against a model's published assets.

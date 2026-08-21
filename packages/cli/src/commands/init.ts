@@ -6,6 +6,7 @@ import { runAdminCommand } from "./admin";
 import { runSkillsCommand } from "./skills";
 import {
   BLOCKS_FILE,
+  COLLECTIONS_FILE,
   COMPONENTS_FILE,
   PAGE_FILE,
   REVALIDATE_ROUTE_FILE,
@@ -98,6 +99,7 @@ export function scaffoldAgencyProject(cwd: string, force = false): ScaffoldResul
   const result: ScaffoldResult = { written: [], kept: [], addedDependency: false };
 
   writeIfAbsent(join(cwd, "snabbsajt", "blocks.ts"), BLOCKS_FILE, force, result);
+  writeIfAbsent(join(cwd, "snabbsajt", "collections.ts"), COLLECTIONS_FILE, force, result);
   writeIfAbsent(join(cwd, "snabbsajt", "components.ts"), COMPONENTS_FILE, force, result);
   writeIfAbsent(
     join(appDirectoryFor(cwd), "[[...slug]]", "page.tsx"),
@@ -148,7 +150,7 @@ export async function runInitCommand(
       [
         "Usage: snabbsajt init --agency [--no-pair] [--no-skills] [--force] [--json]",
         "",
-        "Sets your existing Next.js app up as an agency site: writes snabbsajt/blocks.ts and components.ts",
+        "Sets your existing Next.js app up as an agency site: writes snabbsajt/blocks.ts, collections.ts and components.ts",
         "and the catch-all route, adds @snabbsajt/site-kit, links this directory to one",
         "of your sites, pairs a write token, and installs the skills.",
         "",
@@ -224,7 +226,7 @@ export async function runInitCommand(
   output.stdout("");
   output.stdout("Next:");
   output.stdout("  1. install the dependency");
-  output.stdout("  2. describe your components in snabbsajt/blocks.ts");
+  output.stdout("  2. describe your components in snabbsajt/blocks.ts, and your client's lists in snabbsajt/collections.ts");
   // `link` above already paired this directory to a website, so an ordinary
   // init has a target and the first push needs no flag at all. With --no-pair
   // there is nothing to push into, so the first one has to make the site.
