@@ -51,6 +51,17 @@ export type BlockField = {
   options?: readonly string[];
   /** `text` and `richtext` only. The app clamps this to its own ceiling. */
   maxLength?: number;
+  /** Keep this field for yourselves. Every NEW placement of the block arrives
+   *  with it locked, so the price you negotiated and the legal line are frozen
+   *  for the client without anyone locking them section by section.
+   *
+   *  A DEFAULT, not a rule. The placed section is the authority: a Byggare who
+   *  unlocks one placement in the dock has unlocked it, and pushing this file
+   *  again never locks it back. The reverse would let a file the client cannot
+   *  see quietly take back what they were told they could change.
+   *
+   *  You can still write the field yourself. A lock is about the client. */
+  locked?: boolean;
 };
 
 export type BlockDefinition = {
@@ -129,6 +140,15 @@ export function defineBlock(definition: BlockDefinition): BlockDefinition {
     if (field.kind === "select" && (!field.options || field.options.length === 0)) {
       throw new BlockDefinitionError(
         `Block "${type}" field "${key}" is a select with no options.`,
+      );
+    }
+    // Refused rather than coerced. The app only ever carries `locked: true`, so
+    // a truthy string here would read as locked in your editor and arrive
+    // unlocked on the client's hemsida - the one way this feature can fail
+    // silently.
+    if (field.locked !== undefined && typeof field.locked !== "boolean") {
+      throw new BlockDefinitionError(
+        `Block "${type}" field "${key}" has a non-boolean "locked".`,
       );
     }
   }
