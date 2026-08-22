@@ -226,6 +226,47 @@ export { extractWxrSeo } from "./import/wordpress/seo";
 export { DEFAULT_WXR_LIMITS } from "./import/wordpress/model";
 export type { WxrAuthor, WxrDocument, WxrItem, WxrItemTerm, WxrLimits, WxrSeo, WxrTerm } from "./import/wordpress/model";
 
+// --- Sanity dataset import (plan P1-s08-2026-08-20-sanity-importer) ---------
+// A dataset export is DATA, so this lane reads and converts and never runs
+// anything: not a GROQ query, not a schema file, not a Portable Text
+// serializer, not one of the agency's own React block components.
+export { readSanityExport, readTar, assetIdFromPath, SanityExportError } from "./import/sanity/export";
+export { readSchemaFile, readSchemaFiles } from "./import/sanity/schema";
+export { detectI18n, pickLocale } from "./import/sanity/i18n";
+export { isPortableText, portableTextToPlain } from "./import/sanity/portableText";
+export {
+  MAPPING_FIELD_TYPES,
+  SANITY_MAPPING_REVISION,
+  mappingKey,
+  proposeMapping,
+  validateMapping,
+} from "./import/sanity/mapping";
+export type {
+  MappingField,
+  MappingFieldType,
+  MappingIssue,
+  MappingType,
+  SanityMapping,
+} from "./import/sanity/mapping";
+export { convertSanityExport, SanityConvertError } from "./import/sanity/convert";
+export type { ConvertOptions, SanityConvertResult, SanityLoss } from "./import/sanity/convert";
+export { splitIntoBatches } from "./import/sanity/batch";
+export type { SanityBatch } from "./import/sanity/batch";
+export { mapSanityImport } from "./import/sanity/map";
+export type { SanityMappingOptions, SanityMappingResult } from "./import/sanity/map";
+export { SANITY_EXPORT_LIMITS } from "./import/sanity/model";
+export type {
+  SanityDocument,
+  SanityExport,
+  SanityExportAsset,
+  SanityFieldKind,
+  SanityI18nConvention,
+  SanityI18nDetection,
+  SanitySchemaField,
+  SanitySchemaType,
+} from "./import/sanity/model";
+export type { PortableTextLoss, PortableTextResult } from "./import/sanity/portableText";
+
 type SectionBase = Omit<PortableSiteV1["sections"][number], "type" | "content">;
 
 /** Convert deployment-specific Convex IDs into portable package references. */

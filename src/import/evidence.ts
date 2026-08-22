@@ -5,6 +5,16 @@ export const EVIDENCE_KINDS = [
   "css_rule",
   "script",
   "wxr_item",
+  /** One document out of a `sanity dataset export` NDJSON stream, located by
+   *  its `_id`. A Sanity export is data rather than markup, so a document is
+   *  the smallest thing a Sanity import can point at when it explains a
+   *  decision - the equivalent of an `html_node` in the HTML lane. */
+  "sanity_document",
+  /** One `defineType` call read STATICALLY out of the agency's schema
+   *  directory. Evidence for a field mapping, and the reason a mapping can be
+   *  argued with: the export says a document has a field called `body`, and
+   *  only the schema says it is Portable Text. */
+  "sanity_schema_type",
   "asset",
   "metadata",
 ] as const;

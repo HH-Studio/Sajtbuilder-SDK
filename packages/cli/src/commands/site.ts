@@ -33,6 +33,7 @@ import {
 import { readBoundedLocalFiles } from "@snabbsajt/site-kit/local-files";
 import { importHtmlToDirectory } from "./site/import-html";
 import { importWordpressToDirectory } from "./site/import-wordpress";
+import { importSanityToDirectory, proposeSanityMapping } from "./site/import-sanity";
 import { consoleOutput, type Output } from "../output";
 import { agencyContractChecks, looksLikeAgencyProject } from "./agencyDoctor";
 
@@ -67,6 +68,72 @@ function parseImportHtmlArgs(args: string[]): { input: string; outputDirectory?:
   }
   if (!input) throw new CliError("site import html requires a public URL, .html file, or .zip archive");
   return { input, ...(outputDirectory ? { outputDirectory } : {}) };
+}
+
+type SanityArgs = {
+  exportPath: string;
+  schemaPath?: string;
+  mappingPath: string;
+  outputDirectory: string;
+  businessName?: string;
+  locale?: string;
+  propose: boolean;
+};
+
+/** `--export` is the tarball, `--schema` the agency's schema directory,
+ *  `--mapping` the reviewed artefact. `--propose` writes the mapping and stops,
+ *  which is the first of the two steps this adapter deliberately has. */
+function parseImportSanityArgs(args: string[]): SanityArgs {
+  let exportPath: string | undefined;
+  let schemaPath: string | undefined;
+  let mappingPath: string | undefined;
+  let outputDirectory: string | undefined;
+  let businessName: string | undefined;
+  let locale: string | undefined;
+  let propose = false;
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index]!;
+    if (argument === "--propose") {
+      propose = true;
+      continue;
+    }
+    const value = args[index + 1];
+    if (["--export", "--schema", "--mapping", "--out", "-o", "--name", "--locale"].includes(argument)) {
+      if (!value || value.startsWith("-")) throw new CliError(`site import sanity ${argument} requires a value`);
+      index += 1;
+      if (argument === "--export") {
+        if (exportPath) throw new CliError("site import sanity accepts --export only once");
+        exportPath = value;
+      } else if (argument === "--schema") {
+        if (schemaPath) throw new CliError("site import sanity accepts --schema only once");
+        schemaPath = value;
+      } else if (argument === "--mapping") {
+        if (mappingPath) throw new CliError("site import sanity accepts --mapping only once");
+        mappingPath = value;
+      } else if (argument === "--name") {
+        if (businessName) throw new CliError("site import sanity accepts --name only once");
+        businessName = value;
+      } else if (argument === "--locale") {
+        if (locale) throw new CliError("site import sanity accepts --locale only once");
+        locale = value;
+      } else {
+        if (outputDirectory) throw new CliError("site import sanity accepts --out only once");
+        outputDirectory = value;
+      }
+      continue;
+    }
+    throw new CliError(argument.startsWith("-") ? `unknown site import sanity option "${argument}"` : `unexpected site import sanity argument "${argument}"`);
+  }
+  if (!exportPath) throw new CliError("site import sanity requires --export production.tar.gz");
+  return {
+    exportPath,
+    ...(schemaPath ? { schemaPath } : {}),
+    mappingPath: mappingPath ?? "sanity-mapping.json",
+    outputDirectory: outputDirectory ?? "sanity-snabbsajt",
+    ...(businessName ? { businessName } : {}),
+    ...(locale ? { locale } : {}),
+    propose,
+  };
 }
 
 function parseImportWordpressArgs(args: string[]): { url: string; wxr: string; outputDirectory: string } {
@@ -478,6 +545,8 @@ export async function runSiteCommand(
       if (target === "--help" || target === "-h") {
         output.stdout("Usage: snabbsajt site import html <url|file.html|site.zip> [-o package-dir] [--json]");
         output.stdout("       snabbsajt site import wordpress --url <public-url> --wxr <export.xml> --out <package-dir> [--json]");
+        output.stdout("       snabbsajt site import sanity --export <dataset.tar.gz> [--schema <dir>] --propose [--mapping sanity-mapping.json]");
+        output.stdout("       snabbsajt site import sanity --export <dataset.tar.gz> [--schema <dir>] --mapping <file> --name \"Client AB\" --out <package-dir>");
         output.stdout("       snabbsajt site import approve <package-dir> --yes [--json]");
         return 0;
       }
@@ -490,6 +559,79 @@ export async function runSiteCommand(
         const directory = rest.shift();
         if (!directory) throw new CliError("site import approve requires a package directory");
         return approveImport(directory, rest, asJson, output);
+      }
+      if (target === "sanity") {
+        if (rest.includes("--help") || rest.includes("-h")) {
+          output.stdout("Usage, step 1: read the dataset and write a mapping you review.");
+          output.stdout("  snabbsajt site import sanity --export production.tar.gz --schema ./sanity/schemas --propose");
+          output.stdout("Usage, step 2: convert with the mapping you corrected.");
+          output.stdout("  snabbsajt site import sanity --export production.tar.gz --schema ./sanity/schemas --mapping sanity-mapping.json --name \"Client AB\" --out client-snabbsajt");
+          output.stdout("The stop in the middle is deliberate: the mapping decides what a client's whole content history becomes, so a person reads it before anything converts.");
+          output.stdout("Nothing from the dataset or the schema is executed. The schema files are read as text.");
+          return 0;
+        }
+        const parsed = parseImportSanityArgs(rest);
+        if (parsed.propose) {
+          const proposal = proposeSanityMapping(parsed.exportPath, parsed.schemaPath, parsed.mappingPath);
+          const response = {
+            ok: true,
+            command: "site import sanity --propose",
+            mapping: proposal.mappingPath,
+            types: proposal.types,
+            documents: proposal.documents,
+            assets: proposal.assets,
+          };
+          if (asJson) json(output, response);
+          else {
+            output.stdout(`wrote ${proposal.mappingPath}`);
+            output.stdout(`Read: ${proposal.documents} document(s) across ${proposal.types} type(s), ${proposal.assets} file(s).`);
+            output.stdout("Open that file. Every field is listed; the ones we could not place say \"skip\".");
+            output.stdout("Fix what is wrong, commit it, then run the same command again with --mapping instead of --propose.");
+          }
+          return 0;
+        }
+        if (!parsed.businessName) {
+          throw new CliError('site import sanity requires --name "Client AB" so the hemsida has a business name. A dataset holds content, not a company.');
+        }
+        const result = importSanityToDirectory(
+          parsed.exportPath,
+          parsed.schemaPath,
+          parsed.mappingPath,
+          parsed.outputDirectory,
+          parsed.businessName,
+          installedVersions().cli,
+          parsed.locale ? { locale: parsed.locale } : {},
+        );
+        const counts = reportCounts(result.validation);
+        const response = {
+          ok: result.validation.ok,
+          command: "site import sanity",
+          directory: result.directory,
+          status: result.report.status,
+          publishReady: result.report.status === "ready" && result.validation.ok,
+          collections: result.site.contentCollections?.length ?? 0,
+          rows: result.site.collectionRows?.length ?? 0,
+          pages: result.site.pages.length,
+          assets: result.site.assets.length,
+          runs: result.batches.length,
+          losses: result.losses.length,
+          ...counts,
+          issues: result.validation.issues,
+        };
+        if (asJson) json(output, response);
+        else {
+          output.stdout(`created ${result.directory}`);
+          output.stdout(`Import status: ${result.report.status}; publish-ready: ${response.publishReady ? "yes" : "no"}`);
+          output.stdout(`Imported: ${response.collections} list(s), ${response.rows} row(s), ${response.pages} page(s), ${response.assets} picture(s)`);
+          if (response.runs > 1) {
+            output.stdout(`This is more than one import can carry, so it was split into ${response.runs} runs under ${join(result.directory, "run-01")}. Import run 1, then merge the rest into the same hemsida.`);
+          }
+          output.stdout(`${response.losses} thing(s) did not come across. Every one is named in the report.`);
+          output.stdout(`Review: ${join(result.directory, "import-report.md")}`);
+          output.stdout(`Next: snabbsajt site import approve ${shellArg(result.directory)} --yes`);
+          printReport(result.validation, output);
+        }
+        return result.validation.ok ? 0 : 1;
       }
       if (target === "wordpress") {
         if (rest.includes("--help") || rest.includes("-h")) {
@@ -524,7 +666,7 @@ export async function runSiteCommand(
         }
         return result.validation.ok ? 0 : 1;
       }
-      if (target !== "html") throw new CliError(`unknown site import adapter "${target ?? ""}"`);
+      if (target !== "html") throw new CliError(`unknown site import adapter "${target ?? ""}". Try html, wordpress or sanity.`);
       if (rest.includes("--help") || rest.includes("-h")) {
         output.stdout("Usage: snabbsajt site import html <url|file.html|site.zip> [-o package-dir] [--json]");
         output.stdout("Review import-report.md, edit site.json if needed, then run: snabbsajt site import approve <package-dir> --yes");
