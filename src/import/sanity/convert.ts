@@ -186,7 +186,7 @@ export function convertSanityExport(
     losses.push({
       documentId: draft._id,
       reason:
-        "this was still a draft in Sanity, so it came across hidden. Publish it in SnabbSajt when it is ready.",
+        "this was still a draft in Sanity, so it came across hidden. Publish it in Snabbsite when it is ready.",
     });
   }
   for (const doc of [...inScope, ...draftOnly]) collectWanted(doc);
@@ -221,21 +221,21 @@ export function convertSanityExport(
       // than smuggled in as an image.
       losses.push({
         documentId: ref,
-        reason: `this is a ${ext.toUpperCase()} file, and a list field holds a picture or a web address. Upload it in SnabbSajt and link to it.`,
+        reason: `this is a ${ext.toUpperCase()} file, and a list field holds a picture or a web address. Upload it in Snabbsite and link to it.`,
       });
       continue;
     }
     if (file.bytes.byteLength > PORTABLE_CAPS.maxSingleAssetBytes) {
       losses.push({
         documentId: ref,
-        reason: `this picture is ${Math.round(file.bytes.byteLength / (1024 * 1024))} MB, and one import takes ${Math.round(PORTABLE_CAPS.maxSingleAssetBytes / (1024 * 1024))} MB per file. Shrink it and add it in SnabbSajt.`,
+        reason: `this picture is ${Math.round(file.bytes.byteLength / (1024 * 1024))} MB, and one import takes ${Math.round(PORTABLE_CAPS.maxSingleAssetBytes / (1024 * 1024))} MB per file. Shrink it and add it in Snabbsite.`,
       });
       continue;
     }
     if (assetBytes + file.bytes.byteLength > PORTABLE_CAPS.maxTotalAssetBytes) {
       losses.push({
         documentId: ref,
-        reason: `this picture is past the ${Math.round(PORTABLE_CAPS.maxTotalAssetBytes / (1024 * 1024))} MB one import carries in total, so it was left out. Add it in SnabbSajt, or export fewer documents at a time.`,
+        reason: `this picture is past the ${Math.round(PORTABLE_CAPS.maxTotalAssetBytes / (1024 * 1024))} MB one import carries in total, so it was left out. Add it in Snabbsite, or export fewer documents at a time.`,
       });
       continue;
     }
@@ -504,7 +504,7 @@ type ConvertContext = {
   losses: SanityLoss[];
 };
 
-/** One field's value, converted into what its chosen SnabbSajt type holds.
+/** One field's value, converted into what its chosen Snabbsite type holds.
  *  `undefined` means "nothing to store", and every reason it can happen is
  *  either harmless (an empty field) or already recorded as a loss. */
 function convertValue(
@@ -592,7 +592,7 @@ function convertValue(
           documentId: ctx.doc._id,
           field: field.from,
           reason:
-            "the picture had a focal point set in Sanity. Set it again in SnabbSajt if the crop looks wrong.",
+            "the picture had a focal point set in Sanity. Set it again in Snabbsite if the crop looks wrong.",
         });
       }
       const alt = (value as { alt?: unknown }).alt;

@@ -261,7 +261,7 @@ function readField(entry: string): SanitySchemaField | null {
 
   // `validation: (Rule) => Rule.required()`. Read as a hint only: a required
   // field the client cannot fill in is worse than an optional one they can, so
-  // the mapping proposal never turns this into a required SnabbSajt field on
+  // the mapping proposal never turns this into a required Snabbsite field on
   // its own.
   if (/\.required\s*\(/.test(entry)) field.required = true;
   return field;

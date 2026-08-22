@@ -15,7 +15,7 @@
 //     `"skip"`, never absent. Absence would be indistinguishable from a field
 //     nobody noticed, which is how content goes missing quietly.
 //  2. **Nothing is required by default.** The schema's `.required()` is carried
-//     as a hint and not applied, because a required SnabbSajt field that the
+//     as a hint and not applied, because a required Snabbsite field that the
 //     imported rows cannot fill is a list the client cannot save.
 // ---------------------------------------------------------------------------
 
@@ -28,7 +28,7 @@ import { isPortableText } from "./portableText";
 
 export const SANITY_MAPPING_REVISION = "snabbsajt.sanity-mapping/v1" as const;
 
-/** The nine SnabbSajt collection field types, plus `skip`. Kept as a literal
+/** The nine Snabbsite collection field types, plus `skip`. Kept as a literal
  *  list here rather than imported from `defineCollection` so that the mapping
  *  FILE FORMAT is stable even if the SDK's export surface moves. A mismatch is
  *  caught by `validateMapping`. */
@@ -50,7 +50,7 @@ export type MappingFieldType = (typeof MAPPING_FIELD_TYPES)[number];
 export type MappingField = {
   /** The Sanity field name, as it appears in the documents. */
   from: string;
-  /** The SnabbSajt field key it becomes. Lowercase identifier. */
+  /** The Snabbsite field key it becomes. Lowercase identifier. */
   to: string;
   type: MappingFieldType;
   label?: string;
@@ -268,7 +268,7 @@ export function proposeMapping(
       if (declaredField && declaredField.kind !== "unknown") {
         type = typeFromKind(declaredField.kind);
         if (type === "skip") {
-          note = `the schema calls this "${declaredField.kind}", which has no SnabbSajt field. Pick one, or leave it skipped.`;
+          note = `the schema calls this "${declaredField.kind}", which has no Snabbsite field. Pick one, or leave it skipped.`;
         }
         // The schema said `array`/`object`/`unknown` and the documents may
         // still be readable, so ask them before giving up.
