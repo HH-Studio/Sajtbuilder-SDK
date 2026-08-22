@@ -1006,6 +1006,48 @@ export const sectionContent = v.union(
      *  with different glyph widths, which re-breaks every line. Host-restricted
      *  to font services (`FONT_STYLESHEET_HOSTS`). */
     fontLinks: v.optional(v.array(v.string())),
+    /** Bounded look overrides for ONE captured band.
+     *
+     *  A capture brings the source's own colours and rhythm, and the whole
+     *  point of it is that they are kept. So this is not a style panel: it is
+     *  three closed enums for the three edits an owner actually asks for on a
+     *  band they otherwise want untouched - stand it on the site's own paper,
+     *  put the site's own ink in it, breathe more or less. Every value is a
+     *  palette ROLE, never a colour, so a captured band cannot be given text
+     *  that fails contrast; the same rule `slotStyle` follows and for the same
+     *  reason.
+     *
+     *  Absent on every capture, and absent means the band renders exactly as
+     *  the source painted it. Anything beyond these three is reached by turning
+     *  the band into a native block, which hands over the whole editor. */
+    look: v.optional(
+      v.object({
+        surface: v.optional(
+          v.union(
+            v.literal("default"),
+            v.literal("muted"),
+            v.literal("primary"),
+            v.literal("card"),
+          ),
+        ),
+        ink: v.optional(
+          v.union(
+            v.literal("default"),
+            v.literal("muted"),
+            v.literal("primary"),
+            v.literal("onMedia"),
+          ),
+        ),
+        space: v.optional(
+          v.union(
+            v.literal("none"),
+            v.literal("compact"),
+            v.literal("normal"),
+            v.literal("spacious"),
+          ),
+        ),
+      }),
+    ),
   }),
 
   v.object({
