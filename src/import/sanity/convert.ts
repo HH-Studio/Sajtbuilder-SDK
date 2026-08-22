@@ -614,6 +614,22 @@ function convertValue(
         });
         return undefined;
       }
+      // The target has to be in the list this field points into. A slug is
+      // unique inside its own collection and nowhere else, so binding on the
+      // slug alone is how a property's `agent` field ends up pointing at a
+      // case study that happens to share an address stem.
+      const targetCollection = ctx.collectionKeyById.get(ref);
+      if (
+        field.referenceCollectionKey &&
+        targetCollection !== field.referenceCollectionKey
+      ) {
+        ctx.losses.push({
+          documentId: ctx.doc._id,
+          field: field.from,
+          reason: `this points at a document in "${targetCollection ?? "no list"}", and the field expects one from "${field.referenceCollectionKey}". The link was left empty rather than pointed at the wrong row.`,
+        });
+        return undefined;
+      }
       // The portable format names a reference target by the target row's SLUG,
       // and the import resolves it. A cycle costs nothing here: the slug was
       // decided before any value was read, so nothing recurses.
